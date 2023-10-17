@@ -1,0 +1,25 @@
+Goals of task 1
+
+1. Listen to incoming connections on port 18018
+    - If a connection is received, read the data and print it to the console
+    - Be able to handle multiple connections at the same time
+
+    Questions: How to handle connections? How to store connection info?
+
+2. Perform the handshake
+    - When receiving connection
+        - If its hello message, send hello back
+        - After hello, send getpeers message
+    - If protocol not followed -> invalid handshake error -> close connection
+
+3. Discover and connect to new peers
+    - Disconnect and connect again
+    - Invalid messages -> error message w/ ? -> Disconnect?
+    - Peers received are stored -> following requests will receive new peers
+    - Create two simultaneous connections from same node -> how?
+    
+    Questions: How to handle slow info? Read until \n or x time.
+
+
+More info:
+    - Implement canonical JSON encoder/decoder -> verify always JSON format and message type -> send format error
