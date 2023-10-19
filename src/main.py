@@ -396,5 +396,8 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
         LISTEN_CFG['address'] = sys.argv[1]
         LISTEN_CFG['port'] = sys.argv[2]
+    
+    # Create empty file in home directory
+    open(const.DB_FILE, 'a').close()
 
     main()
