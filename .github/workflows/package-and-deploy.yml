@@ -21,6 +21,7 @@ jobs:
       - id: 'auth'
         uses: 'google-github-actions/auth@v1'
         with:
+          credentials_json: '${{ secrets.GCE_SA_KEY }}'
           service_account: 'kerma-project-sa@kermanodeg4.iam.gserviceaccount.com'
   
       - name: 'Set up Cloud SDK'
