@@ -1,0 +1,46 @@
+name: Package and deploy container to GCP VM.
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and push Docker image
+        run: |
+          docker login --username rsasantos --password ${{ secrets.GH_PAT }} ghcr.io
+          docker build . --tag ghcr.io/rsasantos/kerma:latest
+          docker push ghcr.io/rsasantos/kerma:latest
+  update-vm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Pull Docker image metadata
+        id: docker-metadata
+        run: |
+          echo "::set-output name=image_name::ghcr.io/rsasantos/kerma"
+        shell: bash
+
+      - name: Get Docker image digest
+        id: docker-digest
+        run: |
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ steps.docker-metadata.outputs.image_name }})
+          echo "::set-output name=digest::$DIGEST"
+        shell: bash
+
+      - name: Update VM Container
+        run: |
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh rubensas@34.141.115.183 "\
+          docker login ghcr.io -u rsasantos -p $GITHUB_TOKEN && \
+          docker pull ghcr.io/rsasantos/kerma@${{ steps.docker-digest.outputs.digest }} && \
+          docker stop kerma && \
+          docker rm kerma && \
+          docker run -d --name kerma ghcr.io/rsasantos/kerma@${{ steps.docker-digest.outputs.digest }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PK }}
