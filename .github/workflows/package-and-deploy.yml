@@ -30,5 +30,5 @@ jobs:
           version: '>= 363.0.0'
   
       - name: 'Use gcloud CLI to update container'
-        run: 'gcloud --quiet beta compute instances update-container kerma-node-g4-vm --container-image=ghcr.io/rsasantos/kerma:latest'
+        run: 'gcloud --quiet beta compute instances update-container kerma-node-g4-vm --zone europe-west3-c --container-image=ghcr.io/rsasantos/kerma:latest'
         
