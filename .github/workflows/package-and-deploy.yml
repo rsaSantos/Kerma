@@ -21,14 +21,14 @@ jobs:
       - name: Pull Docker image metadata
         id: docker-metadata
         run: |
-          echo "::set-output name=image_name::ghcr.io/rsasantos/kerma"
+          echo "image_name=ghcr.io/rsasantos/kerma" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Get Docker image digest
         id: docker-digest
         run: |
-          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ steps.docker-metadata.outputs.image_name }})
-          echo "::set-output name=digest::$DIGEST"
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ steps.docker-metadata.outputs.image_name }}:latest)
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Update VM Container
