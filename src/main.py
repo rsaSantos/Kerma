@@ -372,7 +372,7 @@ async def listen():
 
 # TODO: bootstrap peers. connect to hardcoded peers
 async def bootstrap():
-    await connect_to_node(Peer("34.159.4.46", 18018))
+    await connect_to_node(Peer("35.207.97.80", 18018))
     print("Bootstrapping done.")
 
 # connect to some peers
