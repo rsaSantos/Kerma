@@ -9,7 +9,8 @@ class Peer:
         self.port = port
         self.host_formated = ''
         self.host = ''
-        # todo: validate host_str and populate properties
+        # TODO: validate host_str and populate properties
+        self.host = host_str
 
     def __str__(self) -> str:
         return f"{self.host_formated}:{self.port}"

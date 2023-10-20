@@ -44,10 +44,13 @@ def mk_error_msg(error_str, error_name):
     pass # TODO
 
 def mk_hello_msg():
-    pass # TODO
+    hello_str = '{"type":"hello","version":"0.10.0","agent":"Sending messages"}' + '\n'
+    return canonicalize(hello_str)
+
 
 def mk_getpeers_msg():
-    pass # TODO
+    getpeers_str = '{"type":"getpeers"}' + '\n'
+    return canonicalize(getpeers_str)
 
 def mk_peers_msg():
     pass # TODO
@@ -277,8 +280,14 @@ async def handle_connection(reader, writer):
 
     try:
         # Send initial messages
+        await write_msg(writer, mk_hello_msg())
 
         # Complete handshake
+
+        # TODO: Validate hello message. Check this code below.
+        validate_hello_msg(parse_msg(await reader.readline()))
+
+        await write_msg(writer, mk_getpeers_msg())
 
         msg_str = None
         while True:
