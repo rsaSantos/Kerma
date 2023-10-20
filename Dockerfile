@@ -4,4 +4,6 @@ COPY src/ .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+EXPOSE 18018/tcp
+
 CMD [ "python", "main.py" ]
