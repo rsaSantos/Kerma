@@ -280,13 +280,32 @@ async def handle_connection(reader, writer):
 
     try:
         # Send initial messages
+        #
+        # Start with hello message
         await write_msg(writer, mk_hello_msg())
+        #
+        # Wait to receive another hello message
+        # Validate the message
+        #  - if its not hello, pass more than 20 seconds, or received a second hello
+        #  - THEN raise an exception, return INVALID_HANDSHAKE
+        try:
+            raw_hello_future = await asyncio.wait_for(
+                await reader.readline(),
+                timeout=const.HELLO_MSG_TIMEOUT
+            )
+            
+            # Validate the hello message (raises an exception if not valid)
+            validate_hello_msg(parse_msg(raw_hello_future))
 
-        # Complete handshake
+        except asyncio.TimeoutError:
+            print("Waited too long for hello message from {}".format(peer))
+            # TODO: Raise exception, return INVALID_HANDSHAKE
 
-        # TODO: Validate hello message. Check this code below.
-        validate_hello_msg(parse_msg(await reader.readline()))
+        except Exception as e: # TODO: Maybe indicate the type of exception?
+            print(str(e))
+            # TODO: Raise exception, return INVALID_HANDSHAKE
 
+        # TODO: Create task for get peers? Instead of waiting for it..
         await write_msg(writer, mk_getpeers_msg())
 
         msg_str = None
@@ -370,10 +389,13 @@ async def listen():
     async with server:
         await server.serve_forever()
 
-# TODO: bootstrap peers. connect to hardcoded peers
 async def bootstrap():
-    await connect_to_node(Peer("35.207.97.80", 18018))
-    print("Bootstrapping done.")
+    for peer in const.PRELOADED_PEERS:
+        if str(peer.host) == str(LISTEN_CFG['address']) and str(peer.port) == str(LISTEN_CFG['port']):
+            continue
+
+        print("Trying to connect to {}:{}".format(peer.host, peer.port))
+        await connect_to_node(peer)
 
 # connect to some peers
 def resupply_connections():
