@@ -345,8 +345,15 @@ async def handle_connection(reader, writer):
 
 async def connect_to_node(peer: Peer):
     try:
-        reader, writer = await asyncio.open_connection(peer.host, peer.port,
-                limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.wait_for(
+            asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT),
+            timeout=5
+        )
+    except asyncio.TimeoutError:
+        # Handle timeout error here
+        print("Connection attempt timed out.")
+        return
+
     except Exception as e:
         print(str(e))
         return
@@ -363,9 +370,10 @@ async def listen():
     async with server:
         await server.serve_forever()
 
-# bootstrap peers. connect to hardcoded peers
+# TODO: bootstrap peers. connect to hardcoded peers
 async def bootstrap():
-    pass # TODO
+    await connect_to_node(Peer("34.159.4.46", 18018))
+    print("Bootstrapping done.")
 
 # connect to some peers
 def resupply_connections():
