@@ -44,16 +44,17 @@ def mk_error_msg(error_str, error_name):
     pass # TODO
 
 def mk_hello_msg():
-    hello_str = '{"type":"hello","version":"0.10.0","agent":"Sending messages"}' + '\n'
-    return canonicalize(hello_str)
+    hello_str = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    return hello_str
 
 
 def mk_getpeers_msg():
-    getpeers_str = '{"type":"getpeers"}' + '\n'
-    return canonicalize(getpeers_str)
+    getpeers_str = {'type':'getpeers'}
+    return getpeers_str
 
 def mk_peers_msg():
-    pass # TODO
+    peers_str = {'type':'peers', 'peers': []}
+    return peers_str
 
 def mk_getobject_msg(objid):
     pass # TODO
@@ -78,11 +79,12 @@ def mk_getmempool_msg():
 
 # parses a message as json. returns decoded message
 def parse_msg(msg_str):
-    pass # TODO
+    return json.loads(msg_str.decode())
 
 # Send data over the network as a message
 async def write_msg(writer, msg_dict):
-    pass # TODO
+    writer.write(b''.join([canonicalize(msg_dict), b'\n']))
+    await writer.drain()
 
 # Check if message contains no invalid keys,
 # raises a MalformedMsgException
@@ -93,7 +95,7 @@ def validate_allowed_keys(msg_dict, allowed_keys, msg_type):
 # Validate the hello message
 # raises an exception
 def validate_hello_msg(msg_dict):
-    pass # TODO
+    print(msg_dict)
 
 # returns true iff host_str is a valid hostname
 def validate_hostname(host_str):
@@ -109,11 +111,11 @@ def validate_peer_str(peer_str):
 
 # raise an exception if not valid
 def validate_peers_msg(msg_dict):
-    pass # TODO
+    print(msg_dict)
 
 # raise an exception if not valid
 def validate_getpeers_msg(msg_dict):
-    pass # TODO
+    print(msg_dict)
 
 # raise an exception if not valid
 def validate_getchaintip_msg(msg_dict):
@@ -172,7 +174,7 @@ def validate_msg(msg_dict):
     elif msg_type == 'mempool':
         validate_mempool_msg(msg_dict)
     else:
-        pass # TODO
+        raise MessageException("Invalid type")
 
 
 def handle_peers_msg(msg_dict):
@@ -281,12 +283,10 @@ async def handle_connection(reader, writer):
     try:
         # Send initial messages
         await write_msg(writer, mk_hello_msg())
-
         # Complete handshake
 
         # TODO: Validate hello message. Check this code below.
         validate_hello_msg(parse_msg(await reader.readline()))
-
         await write_msg(writer, mk_getpeers_msg())
 
         msg_str = None
@@ -313,11 +313,14 @@ async def handle_connection(reader, writer):
             if read_task is not None:
                 continue
 
-            print(f"Received: {msg_str}")
+            try:
+                validate_msg(parse_msg(msg_str))
+            except Exception as e:
+                print("Exception")
+                raise MessageException("closing connection")
             # todo handle message
             
             # for now, close connection
-            raise MessageException("closing connection")
 
     except asyncio.exceptions.TimeoutError:
         print("{}: Timeout".format(peer))
@@ -345,14 +348,7 @@ async def handle_connection(reader, writer):
 
 async def connect_to_node(peer: Peer):
     try:
-        reader, writer = await asyncio.wait_for(
-            asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT),
-            timeout=5
-        )
-    except asyncio.TimeoutError:
-        # Handle timeout error here
-        print("Connection attempt timed out.")
-        return
+        reader, writer = await asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT)
 
     except Exception as e:
         print(str(e))
@@ -372,7 +368,7 @@ async def listen():
 
 # TODO: bootstrap peers. connect to hardcoded peers
 async def bootstrap():
-    await connect_to_node(Peer("35.207.97.80", 18018))
+    await connect_to_node(Peer("0.0.0.0", 18019))
     print("Bootstrapping done.")
 
 # connect to some peers
