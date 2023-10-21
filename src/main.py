@@ -40,20 +40,22 @@ def del_connection(peer):
     pass # TODO
 
 # Make msg objects
-def mk_error_msg(error_str, error_name):
-    pass # TODO
+def mk_error_msg(error_name, error_str = ""):
+    return {"type":"error","name":error_name,"msg":error_str}
 
 def mk_hello_msg():
-    hello_str = '{"type":"hello","version":"0.10.0","agent":"Sending messages"}' + '\n'
-    return canonicalize(hello_str)
-
+    return {'type':'hello','version':'0.10.0','agent':'Sending messages'}
 
 def mk_getpeers_msg():
-    getpeers_str = '{"type":"getpeers"}' + '\n'
-    return canonicalize(getpeers_str)
+    return {"type":"getpeers"}
 
 def mk_peers_msg():
-    pass # TODO
+    peers_list = [str(const.EXTERNAL_IP + ':' + str(LISTEN_CFG['port']))]
+    peers_list.extend(peer_db.get_shareable_peers())
+    
+    peers_msg = {'type':'peers', 'peers': peers_list}
+    print("Sending peers message: {}".format(peers_msg))
+    return peers_msg
 
 def mk_getobject_msg(objid):
     pass # TODO
@@ -78,11 +80,12 @@ def mk_getmempool_msg():
 
 # parses a message as json. returns decoded message
 def parse_msg(msg_str):
-    pass # TODO
+    return json.loads(msg_str.decode())
 
 # Send data over the network as a message
 async def write_msg(writer, msg_dict):
-    pass # TODO
+    writer.write(b''.join([canonicalize(msg_dict), b'\n']))
+    await writer.drain()
 
 # Check if message contains no invalid keys,
 # raises a MalformedMsgException
@@ -172,12 +175,19 @@ def validate_msg(msg_dict):
     elif msg_type == 'mempool':
         validate_mempool_msg(msg_dict)
     else:
-        pass # TODO
+        return UnsupportedMsgException("Unsupported message type: {}".format(msg_type))
 
 
 def handle_peers_msg(msg_dict):
-    pass # TODO
+    peers_list = msg_dict['peers']
+    rcv_peers = set()
+    for peer_str in peers_list:
+        # Syntax: <host>:<port>
+        host_str, port_str = peer_str.split(':')
+        rcv_peers.add(Peer(host_str, port_str))
 
+    # TODO: Now we're only saving in file, when to use memory? There is a global peers set...
+    peer_db.store_peers(rcv_peers)
 
 def handle_error_msg(msg_dict, peer_self):
     pass # TODO
@@ -255,7 +265,44 @@ async def handle_mempool_msg(msg_dict):
 
 # Helper function
 async def handle_queue_msg(msg_dict, writer):
-    pass # TODO
+    #
+    # Let's identify the message type and pass it to the appropriate handler
+    #
+    if msg_dict['type'] == 'getpeers':
+        await write_msg(writer, mk_peers_msg())
+        print("Sent peers message.")
+
+    elif msg_dict['type'] == 'peers':
+        handle_peers_msg(msg_dict)
+        print("Handled peers message!")
+    else:
+        raise UnsupportedMsgException("Unsupported message type: {}".format(msg_dict['type']))
+
+#
+# Send initial messages
+#  - Start with hello message
+#  - Wait for hello message
+#    - Validate the message
+#      - if its not hello, pass more than 20 seconds, or received a second hello
+#      - THEN raise an exception, return INVALID_HANDSHAKE
+#
+async def handshake(reader, writer):
+    #
+    await write_msg(writer, mk_hello_msg())
+    #
+    try:
+        raw_hello_future = await asyncio.wait_for(
+            reader.readline(),
+            timeout=const.HELLO_MSG_TIMEOUT
+        )
+        # Validate the hello message (raises an exception if not valid)
+        validate_hello_msg(parse_msg(raw_hello_future))
+    
+    except asyncio.TimeoutError:
+        raise InvalidHandshakeException("Waited too long for hello message (>20s).")
+    
+    except MessageException as e:
+        raise InvalidHandshakeException(str(e))
 
 # how to handle a connection
 async def handle_connection(reader, writer):
@@ -279,39 +326,21 @@ async def handle_connection(reader, writer):
         return
 
     try:
-        # Send initial messages
-        #
-        # Start with hello message
-        await write_msg(writer, mk_hello_msg())
-        #
-        # Wait to receive another hello message
-        # Validate the message
-        #  - if its not hello, pass more than 20 seconds, or received a second hello
-        #  - THEN raise an exception, return INVALID_HANDSHAKE
-        try:
-            raw_hello_future = await asyncio.wait_for(
-                await reader.readline(),
-                timeout=const.HELLO_MSG_TIMEOUT
-            )
-            
-            # Validate the hello message (raises an exception if not valid)
-            validate_hello_msg(parse_msg(raw_hello_future))
+        # Handshake the connection -> exchange hello messages
+        await handshake(reader, writer)
 
-        except asyncio.TimeoutError:
-            print("Waited too long for hello message from {}".format(peer))
-            # TODO: Raise exception, return INVALID_HANDSHAKE
+        # Create task for get peers (no need to wait for it, keep going)
+        asyncio.create_task(write_msg(writer, mk_getpeers_msg()))
 
-        except Exception as e: # TODO: Maybe indicate the type of exception?
-            print(str(e))
-            # TODO: Raise exception, return INVALID_HANDSHAKE
-
-        # TODO: Create task for get peers? Instead of waiting for it..
-        await write_msg(writer, mk_getpeers_msg())
+        # TODO: REMOVE -> TESTING ONLY -> for doing stuff with only one program
+        #if LISTEN_CFG['port'] == 18018:
+        #    print("Sending double hello.")
+        #    await write_msg(writer, mk_hello_msg()) # TODO: REMOVE
 
         msg_str = None
         while True:
             if read_task is None:
-                read_task = asyncio.create_task(reader.readline())
+                read_task = asyncio.create_task(reader.readline()) # TODO: Set timeout for readlines/readtasks...
             if queue_task is None:
                 queue_task = asyncio.create_task(queue.get())
 
@@ -332,26 +361,55 @@ async def handle_connection(reader, writer):
             if read_task is not None:
                 continue
 
-            print(f"Received: {msg_str}")
-            # todo handle message
+            # Validate message (handle double hello messages here)
+            msg_dict = parse_msg(msg_str)
+            try:
+                validate_msg(msg_dict)
+
+                # If message is a hello message, raise an exception and close connection.
+                if msg_dict['type'] == 'hello':
+                    raise InvalidHandshakeException("Received hello message after handshake")
+
+            # Handle outside this try block with other terminal-errors
+            except InvalidHandshakeException as e:
+                raise e
+
+            # Here the message is invalid but we still want to continue...
+            # TODO: Does this make sense? Should we have an exception threshold and close the connection?
+            except MessageException as e:
+                print("{}: {}".format(peer, str(e)))
+                try:
+                    await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e)))
+                except:
+                    pass
+                finally:
+                    continue
             
-            # for now, close connection
-            raise MessageException("closing connection")
+            # For further message processing, create a task
+            await queue.put(msg_dict)
+            
+            
+            # ...
 
     except asyncio.exceptions.TimeoutError:
         print("{}: Timeout".format(peer))
         try:
-            await write_msg(writer, mk_error_msg("Timeout"))
+            await write_msg(writer, mk_error_msg("TIMEOUT")) # TODO: I don't think this is in the protocol...remove?
         except:
             pass
+
     except MessageException as e:
         print("{}: {}".format(peer, str(e)))
         try:
-            await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE))
+            print("Sending error message....")
+            await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e)))
+            print("Sent error message.")
         except:
             pass
+
     except Exception as e:
         print("{}: {}".format(peer, str(e)))
+
     finally:
         print("Closing connection with {}".format(peer))
         writer.close()
