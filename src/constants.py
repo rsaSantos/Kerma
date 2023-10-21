@@ -1,5 +1,6 @@
 from Peer import Peer
 
+EXTERNAL_IP = "35.207.97.80" # This is hardcoded...
 
 PORT = 18018
 ADDRESS = "0.0.0.0"
@@ -32,6 +33,9 @@ GENESIS_BLOCK = {
 BANNED_HOSTS = [
 ]
 
+# TODO: Uncomment the following lines to connect to the network...
 PRELOADED_PEERS = {
-    Peer("128.130.122.101", 18018), # lecturers node
+    #Peer("128.130.122.101", 18018), # lecturers node
+    #Peer("35.207.97.80", 18018),    # google cloud node
+    Peer("0.0.0.0", 18019),         # For testing purposes
 }

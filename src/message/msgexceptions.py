@@ -21,3 +21,9 @@ class UnsupportedMsgException(MessageException):
 
 class UnexpectedMsgException(MessageException):
     NETWORK_ERROR_MESSAGE = "Unexpected message received"
+
+class InvalidFormatException(MessageException):
+    NETWORK_ERROR_MESSAGE = "INVALID_FORMAT"
+
+class InvalidHandshakeException(MessageException):
+    NETWORK_ERROR_MESSAGE = "INVALID_HANDSHAKE"

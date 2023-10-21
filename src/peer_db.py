@@ -4,29 +4,40 @@ import csv
 
 PEER_DB_FILE = "peers.csv"
 
+##################
+# Writing to DB:
 
-def store_peer(peer: Peer, existing_peers: Optional[Iterable[Peer]] = None):
-    with open(PEER_DB_FILE, 'a',newline='') as fd:
-        row = [peer.host_formated, peer.port] #or host? what's the difference?
-        writer = csv.writer(fd)
-        writer.writerow(row)
-    # append to file
+def get_peer_db_str(peer: Peer) -> str:
+    return f"{peer.host},{peer.port}"
 
+def store_peers(peers: Iterable[Peer]):
+    # Update the DB: get all peers and add the new ones
+    all_peers = load_peers()
+    all_peers = set([get_peer_db_str(peer) for peer in all_peers])
+
+    new_rcvd_peers = set([get_peer_db_str(peer) for peer in peers])
+
+    all_peers.update(new_rcvd_peers)
+
+    with open(PEER_DB_FILE, "w") as f:
+        f.write("host,port\n") # Write the header
+        f.writelines([peer + "\n" for peer in all_peers])
+
+##################
+# Reading from DB:
+
+def get_peer_from_str(s: str) -> Peer:
+    host, port = s.split(",")
+    return Peer(host, int(port))
 
 def load_peers() -> Set[Peer]:
-    file = open(PEER_DB_FILE)
-    reader = csv.reader(file)
-    peers = set()
-    for row in reader:
-        if row[1].isdigit():        # this should skip the header, ok
-            peer = Peer (row[0], int(row[1])) #TODO test cases: what if row1 is negative? etc
-            print(peer)
-            peers.add(peer)
-        else:
-            pass
-    print(peers)
-    return peers
+    with open(PEER_DB_FILE, "r") as f:
+        f.readline() # Skip the first line
+        return set([get_peer_from_str(line) for line in f.readlines()])
 
+def get_shareable_peers() -> Set[str]:
+    all_peers = load_peers()
 
-    # read from file
-
+    # TODO: For now, there is no strategy for choosing which peers to share.
+    all_peers_str = [str(peer) for peer in all_peers]
+    return set(list(all_peers_str)[:29])
