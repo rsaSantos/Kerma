@@ -1,5 +1,6 @@
 from Peer import Peer
 
+EXTERNAL_IP = "35.207.97.80" # This is hardcoded...
 
 PORT = 18018
 ADDRESS = "0.0.0.0"
@@ -38,6 +39,3 @@ PRELOADED_PEERS = {
     #Peer("35.207.97.80", 18018),    # google cloud node
     Peer("0.0.0.0", 18019),         # For testing purposes
 }
-
-# TIMEOUTS
-HELLO_MSG_TIMEOUT = 20.0
