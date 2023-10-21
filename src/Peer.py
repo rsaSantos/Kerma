@@ -6,11 +6,10 @@ host_formated == host for hostname and ipv4
 """
 class Peer:
     def __init__(self, host_str, port:int):
-        self.port = port
-        self.host_formated = ''
-        self.host = ''
         # TODO: validate host_str and populate properties
+        self.port = port
         self.host = host_str
+        self.host_formated = host_str
 
     def __str__(self) -> str:
         return f"{self.host_formated}:{self.port}"

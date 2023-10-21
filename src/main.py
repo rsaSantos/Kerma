@@ -41,22 +41,22 @@ def del_connection(peer):
     pass # TODO
 
 # Make msg objects
-def mk_error_msg(error_str, error_name):
-    error_msg = {'type':'error','name':error_str,'msg':'Error'}
-    return error_msg
+def mk_error_msg(error_name, error_str = ""):
+    return {"type":"error","name":error_name,"msg":error_str}
 
 def mk_hello_msg():
-    hello_str = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-    return hello_str
-
+    return {'type':'hello','version':'0.10.0','agent':'Sending messages'}
 
 def mk_getpeers_msg():
-    getpeers_str = {'type':'getpeers'}
-    return getpeers_str
+    return {"type":"getpeers"}
 
 def mk_peers_msg():
-    peers_str = {'type':'peers', 'peers': ["kermanode . net:18017", "138.197.191.170:18018"]}
-    return peers_str
+    peers_list = [str(const.EXTERNAL_IP + ':' + str(LISTEN_CFG['port']))]
+    peers_list.extend(peer_db.get_shareable_peers())
+    
+    peers_msg = {'type':'peers', 'peers': peers_list}
+    print("Sending peers message: {}".format(peers_msg))
+    return peers_msg
 
 def mk_getobject_msg(objid):
     pass # TODO
@@ -179,7 +179,7 @@ def validate_mempool_msg(msg_dict):
 def validate_msg(msg_dict):
     msg_type = msg_dict['type']
     if msg_type == 'hello':
-        raise InvalidHandshakeException()
+        raise InvalidHandshakeException("Received hello message after handshake")
     elif msg_type == 'getpeers':
         validate_getpeers_msg(msg_dict)
     elif msg_type == 'peers':
@@ -201,12 +201,19 @@ def validate_msg(msg_dict):
     elif msg_type == 'mempool':
         validate_mempool_msg(msg_dict)
     else:
-        raise UnsupportedMsgException()
+        return UnsupportedMsgException("Unsupported message type: {}".format(msg_type))
 
 
 def handle_peers_msg(msg_dict):
-    pass # TODO
+    peers_list = msg_dict['peers']
+    rcv_peers = set()
+    for peer_str in peers_list:
+        # Syntax: <host>:<port>
+        host_str, port_str = peer_str.split(':')
+        rcv_peers.add(Peer(host_str, port_str))
 
+    # TODO: Now we're only saving in file, when to use memory? There is a global peers set...
+    peer_db.store_peers(rcv_peers)
 
 def handle_error_msg(msg_dict, peer_self):
     pass # TODO
@@ -284,12 +291,49 @@ async def handle_mempool_msg(msg_dict):
 
 # Helper function
 async def handle_queue_msg(msg_dict, writer):
-    pass # TODO
+    #
+    # Let's identify the message type and pass it to the appropriate handler
+    #
+    if msg_dict['type'] == 'getpeers':
+        await write_msg(writer, mk_peers_msg())
+        print("Sent peers message.")
+
+    elif msg_dict['type'] == 'peers':
+        handle_peers_msg(msg_dict)
+        print("Handled peers message!")
+        
+    # else:
+        # raise UnsupportedMsgException("Unsupported message type: {}".format(msg_dict['type']))
+
+#
+# Send initial messages
+#  - Start with hello message
+#  - Wait for hello message
+#    - Validate the message
+#      - if its not hello, pass more than 20 seconds, or received a second hello
+#      - THEN raise an exception, return INVALID_HANDSHAKE
+#
+async def handshake(reader, writer):
+    #
+    await write_msg(writer, mk_hello_msg())
+    #
+    try:
+        raw_hello_future = await asyncio.wait_for(
+            reader.readline(),
+            timeout=const.HELLO_MSG_TIMEOUT
+        )
+        # Validate the hello message (raises an exception if not valid)
+        validate_hello_msg(parse_msg(raw_hello_future))
+    
+    except asyncio.TimeoutError:
+        raise InvalidHandshakeException("Waited too long for hello message (>20s).")
+    except InvalidFormatException:
+        raise InvalidFormatException("Incorrect format")
+    except MessageException as e:
+        raise InvalidHandshakeException(str(e))
 
 # how to handle a connection
 async def handle_connection(reader, writer):
-
-    HANDLE_CONNECTION_START_TIME = datetime.datetime.now().time()
 
     read_task = None
     queue_task = None
@@ -311,22 +355,16 @@ async def handle_connection(reader, writer):
         return
 
     try:
-        # Send initial messages
-        await write_msg(writer, mk_hello_msg())
-        # Complete handshake
+        # Handshake the connection -> exchange hello messages
+        await handshake(reader, writer)
 
-        # TODO: Validate hello message. Check this code below.
-        hello_msg = parse_msg(await reader.readline())
-        current_time = datetime.datetime.now().time()
-        if((datetime.datetime.combine(datetime.date.today(), current_time) - datetime.datetime.combine(datetime.date.today(), HANDLE_CONNECTION_START_TIME)).total_seconds() >= 20):
-            raise InvalidHandshakeException()
-        validate_hello_msg(hello_msg)
-        await write_msg(writer, mk_getpeers_msg())
+        # Create task for get peers (no need to wait for it, keep going)
+        asyncio.create_task(write_msg(writer, mk_getpeers_msg()))
 
         msg_str = None
         while True:
             if read_task is None:
-                read_task = asyncio.create_task(reader.readline())
+                read_task = asyncio.create_task(reader.readline()) # TODO: Set timeout for readlines/readtasks...
             if queue_task is None:
                 queue_task = asyncio.create_task(queue.get())
 
@@ -347,26 +385,51 @@ async def handle_connection(reader, writer):
             if read_task is not None:
                 continue
 
-            validate_msg(parse_msg(msg_str))
-            if((parse_msg(msg_str))['type'] == "getpeers"):
-                await write_msg(writer, mk_peers_msg())
-                
-            # raise MessageException("closing connection")
+            # Validate message (handle double hello messages here)
+            msg_dict = parse_msg(msg_str)
+            try:
+                validate_msg(msg_dict)
+
+            # Handle outside this try block with other terminal-errors
+            except InvalidHandshakeException as e:
+                raise e
+
+            # Here the message is invalid but we still want to continue...
+            # TODO: Does this make sense? Should we have an exception threshold and close the connection?
+            except MessageException as e:
+                print("{}: {}".format(peer, str(e)))
+                try:
+                    await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e)))
+                except:
+                    pass
+                finally:
+                    continue
+            
+            # For further message processing, create a task
+            await queue.put(msg_dict)
+            
+            
+            # ...
 
     except asyncio.exceptions.TimeoutError:
         print("{}: Timeout".format(peer))
         try:
-            await write_msg(writer, mk_error_msg("Timeout", ""))
+            await write_msg(writer, mk_error_msg("TIMEOUT")) # TODO: I don't think this is in the protocol...remove?
         except:
             pass
+
     except MessageException as e:
         print("{}: {}".format(peer, str(e)))
         try:
-            await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, ""))
+            print("Sending error message....")
+            await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e)))
+            print("Sent error message.")
         except:
             pass
+
     except Exception as e:
         print("{}: {}".format(peer, str(e)))
+
     finally:
         print("Closing connection with {}".format(peer))
         writer.close()
@@ -379,7 +442,14 @@ async def handle_connection(reader, writer):
 
 async def connect_to_node(peer: Peer):
     try:
-        reader, writer = await asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.wait_for(
+            asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT),
+            timeout=5
+        )
+    except asyncio.TimeoutError:
+        # Handle timeout error here
+        print("Connection attempt timed out.")
+        return
 
     except Exception as e:
         print(str(e))
@@ -397,10 +467,13 @@ async def listen():
     async with server:
         await server.serve_forever()
 
-# TODO: bootstrap peers. connect to hardcoded peers
 async def bootstrap():
-    await connect_to_node(Peer("0.0.0.0", 18019))
-    print("Bootstrapping done.")
+    for peer in const.PRELOADED_PEERS:
+        if str(peer.host) == str(LISTEN_CFG['address']) and str(peer.port) == str(LISTEN_CFG['port']):
+            continue
+
+        print("Trying to connect to {}:{}".format(peer.host, peer.port))
+        await connect_to_node(peer)
 
 # connect to some peers
 def resupply_connections():

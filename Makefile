@@ -56,4 +56,4 @@ remove-submission:
 	rm -rf _submission
 
 test-script:
-	python3 test_script.py
+	python3 src/test_script.py
