@@ -1,7 +1,7 @@
 from Peer import Peer
 
 
-PORT = 18018
+PORT = 18020
 ADDRESS = "0.0.0.0"
 SERVICE_LOOP_DELAY = 10
 VERSION = '0.10.0'

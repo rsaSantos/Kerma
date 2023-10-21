@@ -14,6 +14,7 @@ import random
 import re
 import sqlite3
 import sys
+import datetime
 
 PEERS = set()
 CONNECTIONS = dict()
@@ -41,7 +42,8 @@ def del_connection(peer):
 
 # Make msg objects
 def mk_error_msg(error_str, error_name):
-    pass # TODO
+    error_msg = {'type':'error','name':error_str,'msg':'Error'}
+    return error_msg
 
 def mk_hello_msg():
     hello_str = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
@@ -53,7 +55,7 @@ def mk_getpeers_msg():
     return getpeers_str
 
 def mk_peers_msg():
-    peers_str = {'type':'peers', 'peers': []}
+    peers_str = {'type':'peers', 'peers': ["kermanode . net:18017", "138.197.191.170:18018"]}
     return peers_str
 
 def mk_getobject_msg(objid):
@@ -95,27 +97,51 @@ def validate_allowed_keys(msg_dict, allowed_keys, msg_type):
 # Validate the hello message
 # raises an exception
 def validate_hello_msg(msg_dict):
-    print(msg_dict)
+
+    if(msg_dict['type'] != "hello"):
+        raise InvalidHandshakeException()
+    if(list(msg_dict.keys()) != ['agent', 'type', 'version']):
+        raise InvalidFormatException()
+    if((not msg_dict['agent'].isprintable()) or (len(msg_dict['agent']) > 128)):
+        raise InvalidFormatException()
+    if(not re.match(r'^0\.10\.\d$', msg_dict['version'])):
+        raise InvalidFormatException()  
 
 # returns true iff host_str is a valid hostname
 def validate_hostname(host_str):
-    pass # TODO
+    return re.match(r"^(?=.*[a-zA-Z])[a-zA-Z0-9.-_]{3,50}$", host_str) and '.' in host_str[1:-1]
 
 # returns true iff host_str is a valid ipv4 address
 def validate_ipv4addr(host_str):
-    pass # TODO
+    try:
+        ipaddress.IPv4Address(host_str)
+        return True
+    except Exception as e:
+        return False
 
 # returns true iff peer_str is a valid peer address
 def validate_peer_str(peer_str):
-    pass # TODO
+    if(peer_str.count(":") != 1):
+        raise InvalidFormatException()
+    host, port = peer_str.split(":")
+    if(int(port) < 1 or int(port) > 65535):
+        raise InvalidFormatException()
+    if((not validate_hostname(hostname)) and (not validate_ipv4addr(host))):
+        raise InvalidFormatException()
 
 # raise an exception if not valid
 def validate_peers_msg(msg_dict):
-    print(msg_dict)
+    if(list(msg_dict.keys()) != ['type', 'peers']):
+        raise InvalidFormatException()
+    if(len(msg_dict['peers'] > 30)):
+        raise InvalidFormatException()
+    for p in msg_dict['peers']:
+        validate_peer_str(p)
 
 # raise an exception if not valid
 def validate_getpeers_msg(msg_dict):
-    print(msg_dict)
+    if(list(msg_dict.keys()) != ['type']):
+        raise InvalidFormatException()
 
 # raise an exception if not valid
 def validate_getchaintip_msg(msg_dict):
@@ -127,7 +153,8 @@ def validate_getmempool_msg(msg_dict):
 
 # raise an exception if not valid
 def validate_error_msg(msg_dict):
-    pass # TODO
+    if(list(msg_dict.keys()) != ['type', 'name', 'msg']):
+        raise InvalidFormatException()
 
 # raise an exception if not valid
 def validate_ihaveobject_msg(msg_dict):
@@ -152,7 +179,7 @@ def validate_mempool_msg(msg_dict):
 def validate_msg(msg_dict):
     msg_type = msg_dict['type']
     if msg_type == 'hello':
-        validate_hello_msg(msg_dict)
+        raise InvalidHandshakeException()
     elif msg_type == 'getpeers':
         validate_getpeers_msg(msg_dict)
     elif msg_type == 'peers':
@@ -174,7 +201,7 @@ def validate_msg(msg_dict):
     elif msg_type == 'mempool':
         validate_mempool_msg(msg_dict)
     else:
-        raise MessageException("Invalid type")
+        raise UnsupportedMsgException()
 
 
 def handle_peers_msg(msg_dict):
@@ -261,6 +288,9 @@ async def handle_queue_msg(msg_dict, writer):
 
 # how to handle a connection
 async def handle_connection(reader, writer):
+
+    HANDLE_CONNECTION_START_TIME = datetime.datetime.now().time()
+
     read_task = None
     queue_task = None
 
@@ -286,7 +316,11 @@ async def handle_connection(reader, writer):
         # Complete handshake
 
         # TODO: Validate hello message. Check this code below.
-        validate_hello_msg(parse_msg(await reader.readline()))
+        hello_msg = parse_msg(await reader.readline())
+        current_time = datetime.datetime.now().time()
+        if((datetime.datetime.combine(datetime.date.today(), current_time) - datetime.datetime.combine(datetime.date.today(), HANDLE_CONNECTION_START_TIME)).total_seconds() >= 20):
+            raise InvalidHandshakeException()
+        validate_hello_msg(hello_msg)
         await write_msg(writer, mk_getpeers_msg())
 
         msg_str = None
@@ -313,25 +347,22 @@ async def handle_connection(reader, writer):
             if read_task is not None:
                 continue
 
-            try:
-                validate_msg(parse_msg(msg_str))
-            except Exception as e:
-                print("Exception")
-                raise MessageException("closing connection")
-            # todo handle message
-            
-            # for now, close connection
+            validate_msg(parse_msg(msg_str))
+            if((parse_msg(msg_str))['type'] == "getpeers"):
+                await write_msg(writer, mk_peers_msg())
+                
+            # raise MessageException("closing connection")
 
     except asyncio.exceptions.TimeoutError:
         print("{}: Timeout".format(peer))
         try:
-            await write_msg(writer, mk_error_msg("Timeout"))
+            await write_msg(writer, mk_error_msg("Timeout", ""))
         except:
             pass
     except MessageException as e:
         print("{}: {}".format(peer, str(e)))
         try:
-            await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE))
+            await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, ""))
         except:
             pass
     except Exception as e:
