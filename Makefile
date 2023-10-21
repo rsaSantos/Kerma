@@ -1,4 +1,4 @@
-.PHONY: docker-build docker-up run build clean make-submission check-submission remove-submission remove-test
+.PHONY: docker-build docker-up run build clean make-submission check-submission remove-submission remove-test test-script
 
 run:
 	cd src && python3 main.py
@@ -13,6 +13,7 @@ build:
 run-tests:
 	# Perform a simple connection check   
 	nc -zv localhost 18018	
+	$(MAKE) test-script
  
 
 # don't touch these targets 
@@ -53,3 +54,6 @@ remove-test:
 
 remove-submission:
 	rm -rf _submission
+
+test-script:
+	python3 test_script.py
