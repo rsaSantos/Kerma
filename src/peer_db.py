@@ -2,7 +2,7 @@ from Peer import Peer
 from typing import Iterable, Optional, Set
 import csv
 
-PEER_DB_FILE = "src/peers.csv"
+PEER_DB_FILE = "peers.csv"
 
 ##################
 # Writing to DB:
@@ -14,11 +14,9 @@ def store_peers(peers: Iterable[Peer]):
     # Update the DB: get all peers and add the new ones
     all_peers = load_peers()
     all_peers = set([get_peer_db_str(peer) for peer in all_peers])
-
     new_rcvd_peers = set([get_peer_db_str(peer) for peer in peers])
 
     all_peers.update(new_rcvd_peers)
-
     with open(PEER_DB_FILE, "w") as f:
         f.write("host,port\n") # Write the header
         f.writelines([peer + "\n" for peer in all_peers])

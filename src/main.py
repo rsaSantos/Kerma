@@ -100,7 +100,7 @@ def validate_hello_msg(msg_dict):
 
     if(msg_dict['type'] != "hello"):
         raise InvalidHandshakeException()
-    if(list(msg_dict.keys()) != ['agent', 'type', 'version']):
+    if(list(msg_dict.keys()) != sorted(['agent', 'type', 'version'])):
         raise InvalidFormatException()
     if((not msg_dict['agent'].isprintable()) or (len(msg_dict['agent']) > 128)):
         raise InvalidFormatException()
@@ -126,14 +126,14 @@ def validate_peer_str(peer_str):
     host, port = peer_str.split(":")
     if(int(port) < 1 or int(port) > 65535):
         raise InvalidFormatException()
-    if((not validate_hostname(hostname)) and (not validate_ipv4addr(host))):
+    if((not validate_hostname(host)) and (not validate_ipv4addr(host))):
         raise InvalidFormatException()
 
 # raise an exception if not valid
 def validate_peers_msg(msg_dict):
-    if(list(msg_dict.keys()) != ['type', 'peers']):
+    if(list(msg_dict.keys()) != sorted(['type', 'peers'])):
         raise InvalidFormatException()
-    if(len(msg_dict['peers'] > 30)):
+    if(len(msg_dict['peers']) > 30):
         raise InvalidFormatException()
     for p in msg_dict['peers']:
         validate_peer_str(p)
@@ -153,7 +153,7 @@ def validate_getmempool_msg(msg_dict):
 
 # raise an exception if not valid
 def validate_error_msg(msg_dict):
-    if(list(msg_dict.keys()) != ['type', 'name', 'msg']):
+    if(list(msg_dict.keys()) != sorted(['type', 'name', 'msg'])):
         raise InvalidFormatException()
 
 # raise an exception if not valid
@@ -211,7 +211,6 @@ def handle_peers_msg(msg_dict):
         # Syntax: <host>:<port>
         host_str, port_str = peer_str.split(':')
         rcv_peers.add(Peer(host_str, port_str))
-
     # TODO: Now we're only saving in file, when to use memory? There is a global peers set...
     peer_db.store_peers(rcv_peers)
 

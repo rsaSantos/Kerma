@@ -461,7 +461,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         msg_dict = parse_msg(msg_str)
 
         self.assertEqual(msg_dict['type'], "peers")
-        self.assertEqual(list(msg_dict.keys()), ['peers', 'type'])
+        self.assertEqual(list(msg_dict.keys()), sorted(['peers', 'type']))
         self.assertEqual(len(msg_dict['peers']) > 30, False)
 
         writer.close()  
