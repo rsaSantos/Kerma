@@ -100,12 +100,12 @@ def validate_hello_msg(msg_dict):
 
     if(msg_dict['type'] != "hello"):
         raise InvalidHandshakeException()
-    if(list(msg_dict.keys()) != sorted(['agent', 'type', 'version'])):
-        raise InvalidFormatException()
+    if(sorted(list(msg_dict.keys())) != sorted(['agent', 'type', 'version'])):
+        raise InvalidFormatException("Expected keys: agent, type, version.")
     if((not msg_dict['agent'].isprintable()) or (len(msg_dict['agent']) > 128)):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Agent must be printable and less than 128 characters.")
     if(not re.match(r'^0\.10\.\d$', msg_dict['version'])):
-        raise InvalidFormatException()  
+        raise InvalidFormatException("Version must be of the form 0.10.x.")
 
 # returns true iff host_str is a valid hostname
 def validate_hostname(host_str):
@@ -293,6 +293,7 @@ async def handle_queue_msg(msg_dict, writer):
     #
     # Let's identify the message type and pass it to the appropriate handler
     #
+    print("Handling message: {}".format(msg_dict))
     if msg_dict['type'] == 'getpeers':
         await write_msg(writer, mk_peers_msg())
         print("Sent peers message.")
@@ -326,8 +327,8 @@ async def handshake(reader, writer):
     
     except asyncio.TimeoutError:
         raise InvalidHandshakeException("Waited too long for hello message (>20s).")
-    except InvalidFormatException:
-        raise InvalidFormatException("Incorrect format")
+    except InvalidFormatException as e:
+        raise InvalidFormatException("Incorrect format for hello message ({}): {}".format(raw_hello_future, str(e)))
     except MessageException as e:
         raise InvalidHandshakeException(str(e))
 
@@ -356,9 +357,11 @@ async def handle_connection(reader, writer):
     try:
         # Handshake the connection -> exchange hello messages
         await handshake(reader, writer)
+        print("Handshake successful with {}".format(peer))
 
         # Create task for get peers (no need to wait for it, keep going)
         asyncio.create_task(write_msg(writer, mk_getpeers_msg()))
+        print("Sending getpeers message...")
 
         msg_str = None
         while True:
@@ -420,9 +423,9 @@ async def handle_connection(reader, writer):
     except MessageException as e:
         print("{}: {}".format(peer, str(e)))
         try:
-            print("Sending error message....")
-            await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e)))
-            print("Sent error message.")
+            error_msg = mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e))
+            print("Sending error message: {}".format(error_msg))
+            await write_msg(writer, error_msg)
         except:
             pass
 
