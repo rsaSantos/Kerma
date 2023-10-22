@@ -19,7 +19,7 @@ async def write_msg(writer, msg_dict):
 
 class Test(unittest.IsolatedAsyncioTestCase):
     async def test_hello_message(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test hello message validity")
 
@@ -38,7 +38,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close() 
 
     async def test_invalid_handshake_1(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_HANDSHAKE_1")
 
@@ -63,7 +63,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close() 
 
     async def test_invalid_handshake_2(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_HANDSHAKE_2")
 
@@ -91,7 +91,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close() 
 
     async def test_invalid_handshake_3(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_HANDSHAKE_3")
 
@@ -120,7 +120,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close() 
 
     async def test_invalid_format_1(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
         
         print("Test INVALID_FORMAT_1")
 
@@ -148,7 +148,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close() 
 
     async def test_invalid_format_2(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_2")
 
@@ -178,7 +178,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close() 
 
     async def test_invalid_format_3(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_3")
 
@@ -205,7 +205,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close() 
 
     async def test_invalid_format_4(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_4")
 
@@ -231,7 +231,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close() 
 
     async def test_invalid_format_5(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_5")
 
@@ -255,7 +255,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close() 
 
     async def test_invalid_format_6(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_6")
 
@@ -282,7 +282,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close()  
 
     async def test_invalid_format_7(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_7")
 
@@ -307,7 +307,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close()
     
     async def test_invalid_format_7(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_7")
 
@@ -332,7 +332,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close()
 
     async def test_invalid_format_8(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_8")
 
@@ -357,7 +357,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close()
 
     async def test_invalid_format_9(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_9")
 
@@ -382,7 +382,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close()
 
     async def test_invalid_format_10(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_10")
 
@@ -407,7 +407,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close()
 
     async def test_getpeers_message(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test getpeers message validity")
 
@@ -434,7 +434,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         writer.close()  
 
     async def test_peers_message(self):
-        reader, writer = await asyncio.open_connection("0.0.0.0", const.PORT, limit=const.RECV_BUFFER_LIMIT)
+        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test peers message validity")
 
