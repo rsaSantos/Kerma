@@ -457,7 +457,7 @@ async def connect_to_node(peer: Peer):
         print(str(e))
         return
 
-    asyncio.create_task(handle_connection(reader, writer))
+    await handle_connection(reader, writer)
 
 
 async def listen():
@@ -475,7 +475,7 @@ async def bootstrap():
             continue
 
         print("Trying to connect to {}:{}".format(peer.host, peer.port))
-        await connect_to_node(peer)
+        asyncio.create_task(connect_to_node(peer))
 
 # connect to some peers
 def resupply_connections():
