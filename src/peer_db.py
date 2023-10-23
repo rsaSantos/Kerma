@@ -13,6 +13,10 @@ def get_peer_db_str(peer: Peer) -> str:
 def store_peers(peers: Iterable[Peer]):
     # Update the DB: get all peers and add the new ones
     all_peers = load_peers()
+
+    # TODO: Get only the first 500 peers (for now) -> FIX W/ TIMESTAMP?
+    all_peers = list(all_peers)[:500]
+
     all_peers = set([get_peer_db_str(peer) for peer in all_peers])
     new_rcvd_peers = set([get_peer_db_str(peer) for peer in peers])
 
