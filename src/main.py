@@ -457,7 +457,7 @@ async def connect_to_node(peer: Peer):
         print(str(e))
         return
 
-    await handle_connection(reader, writer)
+    asyncio.create_task(handle_connection(reader, writer))
 
 
 async def listen():
