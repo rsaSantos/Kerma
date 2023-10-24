@@ -28,7 +28,7 @@ docker-down:
 
 submission:
 	mkdir -p _submission
-	tar --exclude='./_submission' --exclude='./_test' -czf _submission/submission.tgz .
+	tar --exclude='./_submission' --exclude='./_test' --exclude='./doc' --exclude='./.git' -czf _submission/submission.tgz .
 	@echo Finished creating submission archive _submission/submission.tgz
 	@echo Run make check-submission now to check if our automated grader will be able to connect to it
 
