@@ -30,28 +30,50 @@ LISTEN_CFG = {
 
 # Add peer to your list of peers
 def add_peer(peer):
-    pass # TODO
+    # Banned peer must not be added
+    if peer.host in const.BANNED_HOSTS:
+        return
+
+    try:
+        ip = ipaddress.ip_address(peer.host)
+
+        if ip.is_loopback or ip.is_multicast: #CR : why do we care about multicast IPs?
+            return
+
+    except:
+        raise ipaddress.AddressValueError("Invalid host IP format") # CR: this I added, hope it makes sense
+        pass
 
 # Add connection if not already open
 def add_connection(peer, queue):
-    pass # TODO
+    ip, port = peer
+
+    p = Peer(ip, port) #create a new peer
+    if p in CONNECTIONS:
+        raise Exception("Connection with {} already open.".format(peer))
+
+    CONNECTIONS[p] = queue #valid keys must be hashable!
+
 
 # Delete connection
 def del_connection(peer):
-    pass # TODO
+    ip, port = peer
+    del CONNECTIONS[Peer(ip, port)]
+    pass
 
 # Make msg objects
 def mk_error_msg(error_name, error_str = ""):
     return {"type":"error","name":error_name,"msg":error_str}
 
 def mk_hello_msg():
-    return {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    return {'type':'hello','version':const.VERSION,'agent':const.AGENT}
 
 def mk_getpeers_msg():
     return {"type":"getpeers"}
 
 def mk_peers_msg():
-    peers_list = [str(const.EXTERNAL_IP + ':' + str(LISTEN_CFG['port']))]
+
+    peers_list = [str(const.EXTERNAL_IP + ':' + str(LISTEN_CFG['port']))] #CR: we always append ourselves to the peers?
     peers_list.extend(peer_db.get_shareable_peers())
     
     peers_msg = {'type':'peers', 'peers': peers_list}
@@ -81,7 +103,7 @@ def mk_getmempool_msg():
 
 # parses a message as json. returns decoded message
 def parse_msg(msg_str):
-    return json.loads(msg_str.decode())
+    return json.loads(msg_str.decode()) #CR this was done slightly differently, with a bunch of try-catch clauses instead of decoding of msg_str
 
 # Send data over the network as a message
 async def write_msg(writer, msg_dict):
@@ -91,7 +113,9 @@ async def write_msg(writer, msg_dict):
 # Check if message contains no invalid keys,
 # raises a MalformedMsgException
 def validate_allowed_keys(msg_dict, allowed_keys, msg_type):
-    pass # TODO
+    if len(set(msg_dict.keys()) - set (allowed_keys)) != 0:
+        raise MalformedMsgException("Malformed message: {} msg contains invalid keys".format(msg_type))
+#CR:
 
 
 # Validate the hello message
@@ -99,13 +123,17 @@ def validate_allowed_keys(msg_dict, allowed_keys, msg_type):
 def validate_hello_msg(msg_dict):
 
     if(msg_dict['type'] != "hello"):
-        raise InvalidHandshakeException()
+        raise InvalidHandshakeException() #ok
     if(sorted(list(msg_dict.keys())) != sorted(['agent', 'type', 'version'])):
         raise InvalidFormatException("Expected keys: agent, type, version.")
     if((not msg_dict['agent'].isprintable()) or (len(msg_dict['agent']) > 128)):
         raise InvalidFormatException("Agent must be printable and less than 128 characters.")
     if(not re.match(r'^0\.10\.\d$', msg_dict['version'])):
-        raise InvalidFormatException("Version must be of the form 0.10.x.")
+        raise InvalidFormatException("Version must be of the form 0.10.x.") #ok, what if version is not a string?
+
+    validate_allowed_keys(msg_dict, ['type, version', 'agent'], 'hello')
+
+
 
 # returns true iff host_str is a valid hostname
 def validate_hostname(host_str):
@@ -113,6 +141,9 @@ def validate_hostname(host_str):
 
 # returns true iff host_str is a valid ipv4 address
 def validate_ipv4addr(host_str):
+    if not re.match('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\.', host_str):
+        return False #CR added check on invalid IP format
+
     try:
         ipaddress.IPv4Address(host_str)
         return True
@@ -122,26 +153,37 @@ def validate_ipv4addr(host_str):
 # returns true iff peer_str is a valid peer address
 def validate_peer_str(peer_str):
     if(peer_str.count(":") != 1):
-        raise InvalidFormatException()
-    host, port = peer_str.split(":")
+        raise InvalidFormatException("String doesn't match format host:port")
+    host, port = peer_str.split(":", 1)
+    if not port.isdecimal():
+        raise InvalidFormatException("Port is not a decimal nr.")
     if(int(port) < 1 or int(port) > 65535):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid port")
     if((not validate_hostname(host)) and (not validate_ipv4addr(host))):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Peer address is neither an IPv4 nor a hostname")
 
 # raise an exception if not valid
 def validate_peers_msg(msg_dict):
     if(list(msg_dict.keys()) != sorted(['type', 'peers'])):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Missing peers")
     if(len(msg_dict['peers']) > 30):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Too many peers")
+
     for p in msg_dict['peers']:
+        if not isinstance(p, str):
+            raise InvalidFormatException("Peer is not a string") #CR added this
         validate_peer_str(p)
+    #CR: this was wrapped in an additional try-catch with two exceptions, as follows
+    '''    except ErrorInvalidFormat as e:
+                raise e
+            except Exception as e:
+                raise ErrorInvalidFormat("Message malformed: {}".format(str(e)))
+    '''
 
 # raise an exception if not valid
 def validate_getpeers_msg(msg_dict):
-    if(list(msg_dict.keys()) != ['type']):
-        raise InvalidFormatException()
+    if msg_dict['type'] != 'getpeers': #changed from if(list(msg_dict.keys()) != ['type']):
+        raise InvalidFormatException("Message is not a getpeers")
 
 # raise an exception if not valid
 def validate_getchaintip_msg(msg_dict):
@@ -210,12 +252,15 @@ def handle_peers_msg(msg_dict):
     for peer_str in peers_list:
         # Syntax: <host>:<port>
         host_str, port_str = peer_str.split(':')
+        # CR: add_peer(peer) is done here, in the solution
+        add_peer(Peer(host_str, port_str))
+        # CR: while this is not done in the solution
         rcv_peers.add(Peer(host_str, port_str))
-    # TODO: Now we're only saving in file, when to use memory? There is a global peers set...
+    # TODO: [SOLVED, see comments above] Now we're only saving in file, when to use memory? There is a global peers set...
     peer_db.store_peers(rcv_peers)
 
 def handle_error_msg(msg_dict, peer_self):
-    pass # TODO
+    print("{}: Received error of type {}: {}".format(peer_self, msg_dict['name'], msg_dict['msg'])) #CR added
 
 
 async def handle_ihaveobject_msg(msg_dict, writer):
@@ -239,7 +284,7 @@ def get_block_utxo_height(blockid):
     block = ''
     utxo = ''
     height = ''
-    return (block, utxo, height)
+    return block, utxo, height
 
 # get all transactions as a dict txid -> tx from a list of ids
 def get_block_txs(txids):
@@ -345,6 +390,8 @@ async def handle_connection(reader, writer):
         if not peer:
             raise Exception("Failed to get peername!")
 
+        add_connection(peer, queue) #CR added this
+
         print("New connection with {}".format(peer))
     except Exception as e:
         print(str(e))
@@ -394,14 +441,14 @@ async def handle_connection(reader, writer):
 
             # Handle outside this try block with other terminal-errors
             except InvalidHandshakeException as e:
-                raise e
+                raise e # CR bunch of exceptions in the solution, did we generalize it?
 
             # Here the message is invalid but we still want to continue...
             # TODO: Does this make sense? Should we have an exception threshold and close the connection?
             except MessageException as e:
                 print("{}: {}".format(peer, str(e)))
                 try:
-                    await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e)))
+                    await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e))) #we inform of the error, ok
                 except:
                     pass
                 finally:
@@ -416,11 +463,12 @@ async def handle_connection(reader, writer):
     except asyncio.exceptions.TimeoutError:
         print("{}: Timeout".format(peer))
         try:
-            await write_msg(writer, mk_error_msg("TIMEOUT")) # TODO: I don't think this is in the protocol...remove?
+            await write_msg(writer, mk_error_msg("INVALID_HANDSHAKE", "Timeout")) # TODO: I don't think this is in the protocol...remove?
         except:
             pass
 
     except MessageException as e:
+        #CR: here we can find a call to peer_db.remove_peer(peer)
         print("{}: {}".format(peer, str(e)))
         try:
             error_msg = mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e))
@@ -446,13 +494,15 @@ async def connect_to_node(peer: Peer):
     try:
         reader, writer = await asyncio.wait_for(
             asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT),
-            timeout=5
-        )
-    except asyncio.TimeoutError:
+            timeout=5)
+        '''CR this was done with:
+        reader, writer = await asyncio.open_connection(peer.host, peer.port,
+        limit=const.RECV_BUFFER_LIMIT), i think this MAY be significant'''
+    except asyncio.TimeoutError: #CR and this was a generic failure exception
         # Handle timeout error here
         print("Connection attempt timed out.")
         return
-
+    # CR here we also have an "if not peer.isBootstrap: peer_db.remove_peer(peer)
     except Exception as e:
         print(str(e))
         return
@@ -476,11 +526,40 @@ async def bootstrap():
 
         print("Trying to connect to {}:{}".format(peer.host, peer.port))
         asyncio.create_task(connect_to_node(peer))
+        '''not sure this is relevant, but this has been treated as a background operation.
+        the solution goes:
+        for peer in const.PRELOADED_PEERS:
+            add_peer(peer)
+            t = asyncio.create_task(connect_to_node(peer)
+            BACKGROUND_TASKS.add(t)
+            t.add_done_callback(BACKGROUND_TASKS.discard)'''
 
 # connect to some peers
 def resupply_connections():
-    pass # TODO
+ # TODO here they chose to select 30 random nodes. That's their criterion.
+ # below is their solution
+    cons = set(CONNECTIONS.keys())
 
+    if len(cons) >= const.LOW_CONNECTION_THRESHOLD:
+        return
+
+    npeers = const.LOW_CONNECTION_THRESHOLD - len(cons)
+    available_peers = PEERS - cons
+
+    if len(available_peers) == 0:
+        print("Not enough peers available to reconnect.")
+        return
+
+    if len(available_peers) < npeers:
+        npeers = len(available_peers)
+
+    print("Connecting to {} new peers.".format(npeers))
+
+    chosen_peers = random.sample(tuple(available_peers), npeers)
+    for p in chosen_peers:
+        t = asyncio.create_task(connect_to_node(p))
+        BACKGROUND_TASKS.add(t)
+        t.add_done_callback(BACKGROUND_TASKS.discard)
 
 async def init():
     global BLOCK_WAIT_LOCK

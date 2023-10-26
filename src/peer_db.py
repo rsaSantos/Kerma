@@ -1,6 +1,5 @@
 from Peer import Peer
-from typing import Iterable, Optional, Set
-import csv
+from typing import Iterable, Set
 
 PEER_DB_FILE = "peers.csv"
 
