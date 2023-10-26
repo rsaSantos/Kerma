@@ -45,7 +45,7 @@ def mk_error_msg(error_name, error_str = ""):
     return {"type":"error","name":error_name,"msg":error_str}
 
 def mk_hello_msg():
-    return {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    return {'type':'hello','version':const.VERSION,'agent':const.AGENT}
 
 def mk_getpeers_msg():
     return {"type":"getpeers"}
