@@ -81,7 +81,11 @@ def mk_getmempool_msg():
 
 # parses a message as json. returns decoded message
 def parse_msg(msg_str):
-    return json.loads(msg_str.decode())
+    try:
+        json_str = json.loads(msg_str.decode())
+        return json_str
+    except Exception:
+        raise InvalidFormatException("Message is not valid json.")
 
 # Send data over the network as a message
 async def write_msg(writer, msg_dict):
@@ -97,6 +101,8 @@ def validate_allowed_keys(msg_dict, allowed_keys, msg_type):
 # Validate the hello message
 # raises an exception
 def validate_hello_msg(msg_dict):
+    if('type' not in msg_dict):
+        raise InvalidFormatException("Message does not contain key 'type'.")
 
     if(msg_dict['type'] != "hello"):
         raise InvalidHandshakeException()
@@ -177,6 +183,9 @@ def validate_mempool_msg(msg_dict):
     pass # todo
         
 def validate_msg(msg_dict):
+    if 'type' not in msg_dict:
+        raise InvalidFormatException("Message does not contain key 'type'.")
+
     msg_type = msg_dict['type']
     if msg_type == 'hello':
         raise InvalidHandshakeException("Received hello message after handshake")
@@ -317,6 +326,10 @@ async def handshake(reader, writer):
     #
     await write_msg(writer, mk_hello_msg())
     #
+    # Create task for get peers (no need to wait for it, keep going)
+    asyncio.create_task(write_msg(writer, mk_getpeers_msg()))
+    print("Sending getpeers message...")
+    #
     try:
         raw_hello_future = await asyncio.wait_for(
             reader.readline(),
@@ -358,10 +371,6 @@ async def handle_connection(reader, writer):
         # Handshake the connection -> exchange hello messages
         await handshake(reader, writer)
         print("Handshake successful with {}".format(peer))
-
-        # Create task for get peers (no need to wait for it, keep going)
-        asyncio.create_task(write_msg(writer, mk_getpeers_msg()))
-        print("Sending getpeers message...")
 
         msg_str = None
         while True:
