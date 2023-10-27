@@ -16,9 +16,9 @@ import sqlite3
 import sys
 import datetime
 
-PEERS = set() # TODO: TASK 2
+PEERS = set()
 CONNECTIONS = dict()
-BACKGROUND_TASKS = set() # TODO: TASK 2
+BACKGROUND_TASKS = set()
 BLOCK_VERIFY_TASKS = dict()
 BLOCK_WAIT_LOCK = None
 TX_WAIT_LOCK = None
@@ -30,7 +30,20 @@ LISTEN_CFG = {
 
 # Add peer to your list of peers
 def add_peer(peer):
-    pass # TODO: TASK 2
+    # Do not add banned peer addresses
+    if peer.host in const.BANNED_HOSTS:
+        return
+    
+    # Do not add loopback or multicast addrs
+    try:
+        ip = ipaddress.ip_address(peer.host)
+
+        if ip.is_loopback or ip.is_multicast:
+            return
+    except ValueError:
+        raise Exception("Invalid peer address: {}".format(peer.host))
+
+    PEERS.add(peer)
 
 # Add connection if not already open
 def add_connection(peer, queue):
@@ -226,7 +239,14 @@ def handle_peers_msg(msg_dict):
     for peer_str in peers_list:
         # Syntax: <host>:<port>
         host_str, port_str = peer_str.split(':')
-        rcv_peers.add(Peer(host_str, port_str))
+        peer = Peer(host_str, port_str)
+        try:
+            add_peer(peer)
+        except Exception as e:
+            print(str(e))
+            continue
+        rcv_peers.add(peer)
+
     # TODO: Now we're only saving in file, when to use memory? There is a global peers set...
     peer_db.store_peers(rcv_peers)
 
@@ -466,10 +486,12 @@ async def connect_to_node(peer: Peer):
     except asyncio.TimeoutError:
         # Handle timeout error here
         print("Connection attempt timed out.")
+        PEERS.discard(peer) # TODO: TASK 2: TAG PEER AS DISCONNECTED IN PEERS DB
         return
 
     except Exception as e:
         print(str(e))
+        PEERS.discard(peer) # TODO: TASK 2: TAG PEER AS DISCONNECTED IN PEERS DB
         return
 
     await handle_connection(reader, writer)
@@ -485,17 +507,49 @@ async def listen():
         await server.serve_forever()
 
 async def bootstrap():
+    bootstrap_peers = []
     for peer in const.PRELOADED_PEERS:
         if str(peer.host) == str(LISTEN_CFG['address']) and str(peer.port) == str(LISTEN_CFG['port']):
             continue
 
         print("Trying to connect to {}:{}".format(peer.host, peer.port))
-        asyncio.create_task(connect_to_node(peer))
+        t = asyncio.create_task(connect_to_node(peer))
+
+        BACKGROUND_TASKS.add(t)
+        t.add_done_callback(BACKGROUND_TASKS.discard)
+
+        add_peer(peer)
+        bootstrap_peers.append(peer)
+
+    peer_db.store_peers(bootstrap_peers)
 
 # connect to some peers
 def resupply_connections():
-    pass # TODO: TASK 2
+    cons = set(CONNECTIONS.keys())
 
+    # If we have more or equal than threshold, do nothing
+    if len(cons) >= const.LOW_CONNECTION_THRESHOLD:
+        return
+    
+    neededPeers = const.LOW_CONNECTION_THRESHOLD - len(cons)
+    availablePeers = list(PEERS - cons)
+
+    if len(availablePeers) == 0:
+        print("No more peers to connect to.")
+        return
+    
+    if len(availablePeers) < neededPeers:
+        neededPeers = len(availablePeers)
+
+    print("Connecting to {} new peers...".format(neededPeers))
+
+    chosenPeers = random.sample(availablePeers, neededPeers)
+    for peer in chosenPeers:
+        print("Trying to connect to {}:{}".format(peer.host, peer.port))
+        t = asyncio.create_task(connect_to_node(peer))
+
+        BACKGROUND_TASKS.add(t)
+        t.add_done_callback(BACKGROUND_TASKS.discard)
 
 async def init():
     global BLOCK_WAIT_LOCK
@@ -503,7 +557,8 @@ async def init():
     global TX_WAIT_LOCK
     TX_WAIT_LOCK = asyncio.Condition()
 
-    # PEERS.update(peer_db.load_peers())
+    PEERS.update(peer_db.load_peers())
+    print("Loaded peers: {}".format(PEERS))
 
     bootstrap_task = asyncio.create_task(bootstrap())
     listen_task = asyncio.create_task(listen())
@@ -512,6 +567,7 @@ async def init():
     while True:
         print("Service loop reporting in.")
         print("Open connections: {}".format(set(CONNECTIONS.keys())))
+        print("Number of background tasks: {}".format(len(BACKGROUND_TASKS)))
 
         # Open more connections if necessary
         resupply_connections()

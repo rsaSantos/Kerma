@@ -30,7 +30,7 @@ GENESIS_BLOCK = {
 }
 
 
-BANNED_HOSTS = [
+BANNED_HOSTS = [ # TODO: TASK 2: Ban hosts that send invalid data ?
 ]
 
 # TODO: Uncomment the following lines to connect to the network...

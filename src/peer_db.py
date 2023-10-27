@@ -4,7 +4,7 @@ import csv
 
 PEER_DB_FILE = "peers.csv"
 
-# TODO: TASK 2: Add single peer, remove single peer
+# TODO: TASK 2: Logic on how to store/load peers. Introduce metadata: connected, last seen, etc.
 
 ##################
 # Writing to DB:
