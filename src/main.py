@@ -230,8 +230,7 @@ def validate_msg(msg_dict):
     elif msg_type == 'mempool':
         validate_mempool_msg(msg_dict)
     else:
-        return UnsupportedMsgException("Unsupported message type: {}".format(msg_type))
-
+        raise InvalidFormatException("Invalid message type: {}".format(msg_type))
 
 def handle_peers_msg(msg_dict):
     peers_list = msg_dict['peers']
@@ -337,9 +336,41 @@ async def handle_queue_msg(msg_dict, writer):
     elif msg_dict['type'] == 'peers':
         handle_peers_msg(msg_dict)
         print("Handled peers message!")
-        
-    # else:
-        # raise UnsupportedMsgException("Unsupported message type: {}".format(msg_dict['type']))
+
+    elif msg_dict['type'] == 'error':
+        handle_error_msg(msg_dict, writer)
+        print("Handled error message!")
+
+    elif msg_dict['type'] == 'ihaveobject':
+        await handle_ihaveobject_msg(msg_dict, writer)
+        print("Handled ihaveobject message!")
+
+    elif msg_dict['type'] == 'getobject':
+        await handle_getobject_msg(msg_dict, writer)
+        print("Handled getobject message!")
+
+    elif msg_dict['type'] == 'object':
+        await handle_object_msg(msg_dict, writer)
+        print("Handled object message!")
+
+    elif msg_dict['type'] == 'getchaintip':
+        await handle_getchaintip_msg(msg_dict, writer)
+        print("Handled getchaintip message!")
+
+    elif msg_dict['type'] == 'chaintip':
+        await handle_chaintip_msg(msg_dict)
+        print("Handled chaintip message!")
+
+    elif msg_dict['type'] == 'getmempool':
+        await handle_getmempool_msg(msg_dict, writer)
+        print("Handled getmempool message!")
+
+    elif msg_dict['type'] == 'mempool':
+        await handle_mempool_msg(msg_dict)
+        print("Handled mempool message!")
+
+    else:
+        raise Exception("CRITICAL ERROR: Unsupported message type after validation. Message received: {}".format(msg_dict))
 
 #
 # Send initial messages
@@ -426,9 +457,12 @@ async def handle_connection(reader, writer):
                 continue
 
             # Validate message (handle double hello messages here)
-            msg_dict = parse_msg(msg_str)
             try:
+                msg_dict = parse_msg(msg_str)
                 validate_msg(msg_dict)
+                
+                # For further message processing, create a task
+                await queue.put(msg_dict)
 
             # Handle outside this try block with other terminal-errors
             except InvalidHandshakeException as e:
@@ -444,9 +478,6 @@ async def handle_connection(reader, writer):
                     pass
                 finally:
                     continue
-            
-            # For further message processing, create a task
-            await queue.put(msg_dict)
 
     except asyncio.exceptions.TimeoutError:
         print("{}: Timeout".format(peer))
