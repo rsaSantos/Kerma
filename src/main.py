@@ -17,7 +17,7 @@ import sys
 import datetime
 
 PEERS = set() # TODO: TASK 2
-CONNECTIONS = dict() # TODO: TASK 2
+CONNECTIONS = dict()
 BACKGROUND_TASKS = set() # TODO: TASK 2
 BLOCK_VERIFY_TASKS = dict()
 BLOCK_WAIT_LOCK = None
@@ -34,11 +34,18 @@ def add_peer(peer):
 
 # Add connection if not already open
 def add_connection(peer, queue):
-    pass # TODO: TASK 2
+    ip, port = peer
+
+    p = Peer(ip, port)
+    if p in CONNECTIONS:
+        raise Exception("Connection with {} already open!".format(peer))
+
+    CONNECTIONS[p] = queue
 
 # Delete connection
 def del_connection(peer):
-    pass # TODO: TASK 2
+    ip, port = peer
+    del CONNECTIONS[Peer(ip, port)]
 
 # Make msg objects
 def mk_error_msg(error_name, error_str = ""):
@@ -357,6 +364,8 @@ async def handle_connection(reader, writer):
         peer = writer.get_extra_info('peername')
         if not peer:
             raise Exception("Failed to get peername!")
+        
+        add_connection(peer, queue)
 
         print("New connection with {}".format(peer))
     except Exception as e:
@@ -389,7 +398,7 @@ async def handle_connection(reader, writer):
             if queue_task in done:
                 queue_msg = queue_task.result()
                 queue_task = None
-                await handle_queue_msg(queue_msg, writer)
+                await handle_queue_msg(queue_msg, writer) # TODO: Can we execute tasks asynchroniously?
                 queue.task_done()
 
             # if no message was received over the network continue
@@ -418,9 +427,6 @@ async def handle_connection(reader, writer):
             
             # For further message processing, create a task
             await queue.put(msg_dict)
-            
-            
-            # ...
 
     except asyncio.exceptions.TimeoutError:
         print("{}: Timeout".format(peer))
