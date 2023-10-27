@@ -16,9 +16,9 @@ import sqlite3
 import sys
 import datetime
 
-PEERS = set()
-CONNECTIONS = dict()
-BACKGROUND_TASKS = set()
+PEERS = set() # TODO: TASK 2
+CONNECTIONS = dict() # TODO: TASK 2
+BACKGROUND_TASKS = set() # TODO: TASK 2
 BLOCK_VERIFY_TASKS = dict()
 BLOCK_WAIT_LOCK = None
 TX_WAIT_LOCK = None
@@ -30,36 +30,19 @@ LISTEN_CFG = {
 
 # Add peer to your list of peers
 def add_peer(peer):
-    # Banned peer must not be added
-    if peer.host in const.BANNED_HOSTS:
-        return
+    pass  # TODO: TASK 2
 
-    try:
-        ip = ipaddress.ip_address(peer.host)
+    # Add connection if not already open
 
-        if ip.is_loopback or ip.is_multicast: #CR : why do we care about multicast IPs?
-            return
 
-    except:
-        raise ipaddress.AddressValueError("Invalid host IP format") # CR: this I added, hope it makes sense
-        pass
-
-# Add connection if not already open
 def add_connection(peer, queue):
-    ip, port = peer
+    pass  # TODO: TASK 2
 
-    p = Peer(ip, port) #create a new peer
-    if p in CONNECTIONS:
-        raise Exception("Connection with {} already open.".format(peer))
-
-    CONNECTIONS[p] = queue #valid keys must be hashable!
+    # Delete connection
 
 
-# Delete connection
 def del_connection(peer):
-    ip, port = peer
-    del CONNECTIONS[Peer(ip, port)]
-    pass
+    pass  # TODO: TASK 2
 
 # Make msg objects
 def mk_error_msg(error_name, error_str = ""):
@@ -81,13 +64,13 @@ def mk_peers_msg():
     return peers_msg
 
 def mk_getobject_msg(objid):
-    pass # TODO
+    pass # TODO: TASK 2
 
 def mk_object_msg(obj_dict):
-    pass # TODO
+    pass # TODO: TASK 2
 
 def mk_ihaveobject_msg(objid):
-    pass # TODO
+    pass # TODO: TASK 2
 
 def mk_chaintip_msg(blockid):
     pass # TODO
@@ -536,30 +519,9 @@ async def bootstrap():
 
 # connect to some peers
 def resupply_connections():
+        pass  # TODO: TASK 2
  # TODO here they chose to select 30 random nodes. That's their criterion.
- # below is their solution
-    cons = set(CONNECTIONS.keys())
 
-    if len(cons) >= const.LOW_CONNECTION_THRESHOLD:
-        return
-
-    npeers = const.LOW_CONNECTION_THRESHOLD - len(cons)
-    available_peers = PEERS - cons
-
-    if len(available_peers) == 0:
-        print("Not enough peers available to reconnect.")
-        return
-
-    if len(available_peers) < npeers:
-        npeers = len(available_peers)
-
-    print("Connecting to {} new peers.".format(npeers))
-
-    chosen_peers = random.sample(tuple(available_peers), npeers)
-    for p in chosen_peers:
-        t = asyncio.create_task(connect_to_node(p))
-        BACKGROUND_TASKS.add(t)
-        t.add_done_callback(BACKGROUND_TASKS.discard)
 
 async def init():
     global BLOCK_WAIT_LOCK

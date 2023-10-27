@@ -6,6 +6,7 @@ PEER_DB_FILE = "peers.csv"
 ##################
 # Writing to DB:
 
+# TODO: TASK 2: Add single peer, remove single peer
 def get_peer_db_str(peer: Peer) -> str:
     return f"{peer.host},{peer.port}"
 

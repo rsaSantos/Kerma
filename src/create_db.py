@@ -8,8 +8,10 @@ def main():
     try:
         cur = con.cursor()
         # TODO - Build database
+        # TODO: TASK 2
 
         # TODO - Preload genesis block
+        # TODO: TASK 2
 
     except Exception as e:
         con.rollback()
