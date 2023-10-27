@@ -16,9 +16,9 @@ import sqlite3
 import sys
 import datetime
 
-PEERS = set()
-CONNECTIONS = dict()
-BACKGROUND_TASKS = set()
+PEERS = set() # TODO: TASK 2
+CONNECTIONS = dict() # TODO: TASK 2
+BACKGROUND_TASKS = set() # TODO: TASK 2
 BLOCK_VERIFY_TASKS = dict()
 BLOCK_WAIT_LOCK = None
 TX_WAIT_LOCK = None
@@ -30,15 +30,15 @@ LISTEN_CFG = {
 
 # Add peer to your list of peers
 def add_peer(peer):
-    pass # TODO
+    pass # TODO: TASK 2
 
 # Add connection if not already open
 def add_connection(peer, queue):
-    pass # TODO
+    pass # TODO: TASK 2
 
 # Delete connection
 def del_connection(peer):
-    pass # TODO
+    pass # TODO: TASK 2
 
 # Make msg objects
 def mk_error_msg(error_name, error_str = ""):
@@ -59,13 +59,13 @@ def mk_peers_msg():
     return peers_msg
 
 def mk_getobject_msg(objid):
-    pass # TODO
+    pass # TODO: TASK 2
 
 def mk_object_msg(obj_dict):
-    pass # TODO
+    pass # TODO: TASK 2
 
 def mk_ihaveobject_msg(objid):
-    pass # TODO
+    pass # TODO: TASK 2
 
 def mk_chaintip_msg(blockid):
     pass # TODO
@@ -164,15 +164,15 @@ def validate_error_msg(msg_dict):
 
 # raise an exception if not valid
 def validate_ihaveobject_msg(msg_dict):
-    pass # TODO
+    pass # TODO: TASK 2
 
 # raise an exception if not valid
 def validate_getobject_msg(msg_dict):
-    pass # TODO
+    pass # TODO: TASK 2
 
 # raise an exception if not valid
 def validate_object_msg(msg_dict):
-    pass # TODO
+    pass # TODO: TASK 2
 
 # raise an exception if not valid
 def validate_chaintip_msg(msg_dict):
@@ -224,15 +224,15 @@ def handle_peers_msg(msg_dict):
     peer_db.store_peers(rcv_peers)
 
 def handle_error_msg(msg_dict, peer_self):
-    pass # TODO
+    pass # TODO: TASK 2
 
 
 async def handle_ihaveobject_msg(msg_dict, writer):
-    pass # TODO
+    pass # TODO: TASK 2
 
 
 async def handle_getobject_msg(msg_dict, writer):
-    pass # TODO
+    pass # TODO: TASK 2
 
 # return a list of transactions that tx_dict references
 def gather_previous_txs(db_cur, tx_dict):
@@ -274,7 +274,7 @@ async def del_verify_block_task(task, objid):
 
 # what to do when an object message arrives
 async def handle_object_msg(msg_dict, peer_self, writer):
-    pass # TODO
+    pass # TODO: TASK 2
 
 
 # returns the chaintip blockid
@@ -488,7 +488,7 @@ async def bootstrap():
 
 # connect to some peers
 def resupply_connections():
-    pass # TODO
+    pass # TODO: TASK 2
 
 
 async def init():
