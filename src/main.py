@@ -87,15 +87,15 @@ def mk_peers_msg():
 
 
 def mk_getobject_msg(objid):
-    pass  # TODO: TASK 2
+    return {'type':'getobject','objectid':objid}  # CR
 
 
 def mk_object_msg(obj_dict):
-    pass  # TODO: TASK 2
+    return {'type':'object', 'object': obj_dict } # CR
 
 
 def mk_ihaveobject_msg(objid):
-    pass  # TODO: TASK 2
+    return {'type': 'ihaveobject', 'objid' : objid}  # CR
 
 
 def mk_chaintip_msg(blockid):
@@ -210,17 +210,20 @@ def validate_error_msg(msg_dict):
 
 # raise an exception if not valid
 def validate_ihaveobject_msg(msg_dict):
-    pass  # TODO: TASK 2
+    if list(msg_dict.keys() != sorted(['type', 'objectid'])):
+        raise InvalidFormatException("Invalid ihaveobject.") # CR
 
 
 # raise an exception if not valid
 def validate_getobject_msg(msg_dict):
-    pass  # TODO: TASK 2
+    if list(msg_dict.keys()) != sorted(['type', 'objectid']):
+        raise InvalidFormatException("Invalid getobject msg") # CR
 
 
 # raise an exception if not valid
 def validate_object_msg(msg_dict):
-    pass  # TODO: TASK 2
+    if list(msg_dict.keys()) != sorted(['type', 'object']):
+        raise InvalidFormatException('Invalid object msg') #CR
 
 
 # raise an exception if not valid
