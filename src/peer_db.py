@@ -1,12 +1,14 @@
 from Peer import Peer
-from typing import Iterable, Set
+from typing import Iterable, Optional, Set
+import csv
 
 PEER_DB_FILE = "peers.csv"
+
+# TODO: TASK 2: Logic on how to store/load peers. Introduce metadata: connected, last seen, etc.
 
 ##################
 # Writing to DB:
 
-# TODO: TASK 2: Add single peer, remove single peer
 def get_peer_db_str(peer: Peer) -> str:
     return f"{peer.host},{peer.port}"
 

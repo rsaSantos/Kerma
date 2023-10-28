@@ -5,8 +5,8 @@ EXTERNAL_IP = "35.207.97.80" # This is hardcoded...
 PORT = 18018
 ADDRESS = "0.0.0.0"
 SERVICE_LOOP_DELAY = 10
-VERSION = '0.10.0'
-AGENT = 'group04'
+VERSION = '0.10.1'
+AGENT = 'kerma-node-g4'
 LOW_CONNECTION_THRESHOLD = 3
 HELLO_MSG_TIMEOUT = 20.0
 DB_NAME = 'db.db'
@@ -30,7 +30,7 @@ GENESIS_BLOCK = {
 }
 
 
-BANNED_HOSTS = [
+BANNED_HOSTS = [ # TODO: TASK 2: Ban hosts that send invalid data ?
 ]
 
 # TODO: Uncomment the following lines to connect to the network...
