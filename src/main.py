@@ -93,7 +93,7 @@ def mk_object_msg(obj_dict):
 
 
 def mk_ihaveobject_msg(objid):
-    return {'type': 'ihaveobject', 'objid' : objid}  # CR
+    return {'type': 'ihaveobject', 'objectid' : objid}  # CR
 
 
 def mk_chaintip_msg(blockid):
