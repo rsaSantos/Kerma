@@ -1,0 +1,10 @@
+Task 2 - List of tasks
+
+- More verification checks before saving to peers.csv
+- Handle current connections storage
+    - Remove connections when exiting them on handle_connections
+    - Should we keep the connections and peers.csv synchronized?
+    - Ressuply connections:
+        - ask for more peers to current connections?
+        - try to connect to addresses in peers.csv, clean invalid/offline addresses
+        (the previous two can be done in any order I guess, we can even try to connect,)

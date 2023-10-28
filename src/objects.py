@@ -13,16 +13,16 @@ import constants as const
 # perform syntactic checks. returns true iff check succeeded
 OBJECTID_REGEX = re.compile("^[0-9a-f]{64}$")
 def validate_objectid(objid_str):
-    pass # todo
+    pass # TODO: TASK 2
 
 PUBKEY_REGEX = re.compile("^[0-9a-f]{64}$")
 def validate_pubkey(pubkey_str):
-    pass # todo
+    pass # TODO: TASK 2
 
 
 SIGNATURE_REGEX = re.compile("^[0-9a-f]{128}$")
 def validate_signature(sig_str):
-    pass # todo
+    pass # TODO: TASK 2
 
 NONCE_REGEX = re.compile("^[0-9a-f]{64}$")
 def validate_nonce(nonce_str):
@@ -35,15 +35,15 @@ def validate_target(target_str):
 
 
 def validate_transaction_input(in_dict):
-    # todo
+    # TODO: TASK 2
     return True
 
 def validate_transaction_output(out_dict):
-    # todo
+    # TODO: TASK 2
     return True
 
 def validate_transaction(trans_dict):
-    # todo
+    # TODO: TASK 2
     return True
 
 def validate_block(block_dict):
@@ -51,7 +51,7 @@ def validate_block(block_dict):
     return True
 
 def validate_object(obj_dict):
-    # todo
+    # TODO: TASK 2
     return True
 
 def get_objid(obj_dict):
@@ -63,17 +63,17 @@ def get_objid(obj_dict):
 
 # verify the signature sig in tx_dict using pubkey
 def verify_tx_signature(tx_dict, sig, pubkey):
-    # todo
+    # TODO: TASK 2
     return True
 
 class TXVerifyException(Exception):
-    pass
+    pass # TODO: TASK 2 -> move to error messages?
 
 def verify_transaction(tx_dict, input_txs):
-    pass # todo 
+    pass # TODO: TASK 2
 
 class BlockVerifyException(Exception):
-    pass
+    pass # TODO: TASK 2 -> move to error messages?
 
 # apply tx to utxo
 # returns mining fee

@@ -1,0 +1,230 @@
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Your group obtained 19 / 24 points for task 1
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+This is the output of the grading tool:
+Grading following IPs: localhost
+
+
+Grading submission 0: IP address localhost
+info: Testcase: Connecting to your node.
+info: Connecting...
+info: PASS: Successfully connected to IP address localhost on port 18018 (1 points)
+
+info: POINTS SO FAR: 1
+
+info: Testcase: Must receive "hello" message on connecting.
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: Received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+info: PASS: Your first message has type "hello" as required (1 points)
+
+info: PASS: Your hello message has version "0.10.x" as required (1 points)
+
+info: PASS: Your hello message has agent "Sending messages" (1 points)
+
+info: POINTS SO FAR: 4
+
+info: Testcase: Must receive "getpeers" message immediately after "hello" message.
+info: FAIL: We connected to your client, but you did not send us a "getpeers" message. (0 points)
+
+info: POINTS SO FAR: 4
+
+info: Disconnecting...
+info: Testcase: Must reconnect to the node.
+info: Grader successfully connected to IP address localhost on port 18018
+info: PASS: Succesfully reconnected. (1 points)
+
+info: POINTS SO FAR: 5
+
+info: Testcase: Must receive "peers" message on sending "getpeers" message.
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"type":"getpeers"}
+
+info: Sending message: {"type":"getpeers"}
+
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Grader received message: {"peers":["35.207.97.80:18018","0.0.0.0:18019","35.207.97.80:18018","35.207.97.80:18019","128.130.122.101:18018"],"type":"peers"}
+
+info: PASS: Received a well-formed peers response (1 points)
+
+info: POINTS SO FAR: 6
+
+info: Testcase: Must receive "peers" message on sending fragmented "getpeers" message.
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"type":"g
+info: Sending message: {"type":"g
+info: Starting delay
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Finished delay
+info: Sending message: etpeers"}
+
+info: Sending message: etpeers"}
+
+info: Grader received message: {"peers":["35.207.97.80:18018","0.0.0.0:18019","35.207.97.80:18018","35.207.97.80:18019","128.130.122.101:18018"],"type":"peers"}
+
+info: PASS: Received a well-formed peers message in response to a fragmented "getpeers" message (1 points)
+
+info: POINTS SO FAR: 7
+
+info: Testcase: Must send INVALID_HANDSHAKE error message and disconnect on receiving any other message before hello message.
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"type":"getpeers"}
+
+info: Sending message: {"type":"getpeers"}
+
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: Grader received message: {"msg":"","name":"INVALID_HANDSHAKE","type":"error"}
+
+info: PASS: Received an INVALID_HANDSHAKE error message. (1 points)
+
+info: PASS: Your node disconnected on receiving other message before hello message. (1 points)
+
+info: POINTS SO FAR: 9
+
+info: Testcase: Must receive "peers" message with set of peers sent earlier.
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"peers":["172.23.88.152:18017"],"type":"peers"}
+
+info: Sending message: {"peers":["172.23.88.152:18017"],"type":"peers"}
+
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Sending message: {"type":"getpeers"}
+
+info: Sending message: {"type":"getpeers"}
+
+info: Grader received message: {"peers":["35.207.97.80:18018","0.0.0.0:18019","128.130.122.101:18018","35.207.97.80:18018","172.23.88.152:18017","35.207.97.80:18019"],"type":"peers"}
+
+info: PASS: Received a well-formed peers response that includes the peer 172.23.88.152:18017 that we sent earlier. (1 points)
+
+info: POINTS SO FAR: 10
+
+info: Testcase: Must send an INVALID_FORMAT error message and disconnect on receiving an invalidly formatted hello message.
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending invalid message 0: hgjhlkjhlkj{{
+
+info: Sending message: hgjhlkjhlkj{{
+
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: FAIL: Did not receive an INVALID_FORMAT error message in time. (0 points)
+
+info: FAIL: Your node did not disconnect on receiving an invalid hello message. (0 points)
+
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending invalid message 1: {"typ":"diufygeuybhv"}
+
+info: Sending message: {"typ":"diufygeuybhv"}
+
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: FAIL: Did not receive an INVALID_FORMAT error message in time. (0 points)
+
+info: FAIL: Your node did not disconnect on receiving an invalid hello message. (0 points)
+
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending invalid message 2: {"type":"hello"}
+
+info: Sending message: {"type":"hello"}
+
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: Grader received message: {"msg":"Incorrect format for hello message (b'{\"type\":\"hello\"}\\n'): Expected keys: agent, type, version.","name":"INVALID_FORMAT","type":"error"}
+
+info: PASS: Received an INVALID_FORMAT [or INVALID_HANDSHAKE] error message. (1 points)
+
+info: PASS: Your node disconnected on receiving an invalid hello message. (1 points)
+
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending invalid message 3: {"type":"hello", "version":"jd3.x"}
+
+info: Sending message: {"type":"hello", "version":"jd3.x"}
+
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: Grader received message: {"msg":"Incorrect format for hello message (b'{\"type\":\"hello\", \"version\":\"jd3.x\"}\\n'): Expected keys: agent, type, version.","name":"INVALID_FORMAT","type":"error"}
+
+info: PASS: Received an INVALID_FORMAT [or INVALID_HANDSHAKE] error message. (1 points)
+
+info: PASS: Your node disconnected on receiving an invalid hello message. (1 points)
+
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending invalid message 4: {"type":"hello", "version":"0.8.0"}
+
+info: Sending message: {"type":"hello", "version":"0.8.0"}
+
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: Grader received message: {"msg":"Incorrect format for hello message (b'{\"type\":\"hello\", \"version\":\"0.8.0\"}\\n'): Expected keys: agent, type, version.","name":"INVALID_FORMAT","type":"error"}
+
+info: PASS: Received an INVALID_FORMAT [or INVALID_HANDSHAKE] error message. (1 points)
+
+info: PASS: Your node disconnected on receiving an invalid hello message. (1 points)
+
+info: POINTS SO FAR: 16
+
+info: Testcase: Must be able to support two parallel connections.
+info: Grader successfully connected to IP address localhost on port 18018
+info: PASS: Successfully made another connection to IP address localhost on port 18018 (1 points)
+
+info: POINTS SO FAR: 17
+
+info: Testcase: Must send an INVALID_FORMAT error message and disconnect on receiving an incomplete hello message after 30s.
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending incomplete message: {"type":"hello", "ver
+info: Sending message: {"type":"hello", "ver
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: Grader received message: {"msg":"Waited too long for hello message (>20s).","name":"INVALID_HANDSHAKE","type":"error"}
+
+info: PASS: Received an INVALID_FORMAT or INVALID_HANDSHAKE error message. (1 points)
+
+info: PASS: Your node disconnected on receiving an incomplete hello message. (1 points)
+
+info: POINTS SO FAR: 19
+
+info: Testcase: Did you node manage to find the hidden easter egg?
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader","type":"hello","version":"0.10.0"}
+
+info: Grader received message: {"agent":"Sending messages","type":"hello","version":"0.10.0"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Sending message: {"type":"getpeers"}
+
+info: Sending message: {"type":"getpeers"}
+
+info: Grader received message: {"peers":["35.207.97.80:18018","0.0.0.0:18019","128.130.122.101:18018","35.207.97.80:18018","172.23.88.152:18017","35.207.97.80:18019"],"type":"peers"}
+
+info: FAIL: Your peers message did not contain the easter egg that we hid in the network :( (0 points)
+
+info: Grading is done
+info: Achieved points: 19 / 24
+
+
+Finding the easter egg is worth one bonus point (you cannot achieve more than 24 points though)

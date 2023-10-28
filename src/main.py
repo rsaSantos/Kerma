@@ -46,7 +46,6 @@ def add_peer(peer):
 
     PEERS.add(peer)
 
-
 # Add connection if not already open
 def add_connection(peer, queue):
     ip, port = peer
@@ -63,16 +62,15 @@ def del_connection(peer):
     ip, port = peer
     del CONNECTIONS[Peer(ip, port)]
 
-
 # Make msg objects
 def mk_error_msg(error_name, error_str=""):
     return {"type": "error", "name": error_name, "msg": error_str}
 
 
 def mk_hello_msg():
-    return {'type': 'hello', 'version': const.VERSION, 'agent': const.AGENT}
+    return {'type':'hello','version':const.VERSION,'agent':const.AGENT}
 
-
+  
 def mk_getpeers_msg():
     return {"type": "getpeers"}
 
@@ -225,7 +223,6 @@ def validate_object_msg(msg_dict):
     if list(msg_dict.keys()) != sorted(['type', 'object']):
         raise InvalidFormatException('Invalid object msg') #CR
 
-
 # raise an exception if not valid
 def validate_chaintip_msg(msg_dict):
     pass  # todo
@@ -296,7 +293,6 @@ async def handle_ihaveobject_msg(msg_dict, writer):
 async def handle_getobject_msg(msg_dict, writer):
     pass  # TODO: TASK 2
 
-
 # return a list of transactions that tx_dict references
 def gather_previous_txs(db_cur, tx_dict):
     # coinbase transaction
@@ -344,6 +340,7 @@ async def del_verify_block_task(task, objid):
 # what to do when an object message arrives
 async def handle_object_msg(msg_dict, peer_self, writer):
     pass  # TODO: TASK 2
+
 
 
 # returns the chaintip blockid
@@ -428,6 +425,8 @@ async def handle_connection(reader, writer):
         peer = writer.get_extra_info('peername')
         if not peer:
             raise Exception("Failed to get peername!")
+        
+        add_connection(peer, queue)
 
         add_connection(peer, queue)
 
@@ -462,7 +461,7 @@ async def handle_connection(reader, writer):
             if queue_task in done:
                 queue_msg = queue_task.result()
                 queue_task = None
-                await handle_queue_msg(queue_msg, writer)  # TODO: Can we execute tasks asynchroniously?
+                await handle_queue_msg(queue_msg, writer) # TODO: Can we execute tasks asynchroniously?
                 queue.task_done()
 
             # if no message was received over the network continue
@@ -568,7 +567,6 @@ async def bootstrap():
 
     peer_db.store_peers(bootstrap_peers)
 
-
 # connect to some peers
 def resupply_connections():
     cons = set(CONNECTIONS.keys())
@@ -597,6 +595,8 @@ def resupply_connections():
         BACKGROUND_TASKS.add(t)
         t.add_done_callback(BACKGROUND_TASKS.discard)
 
+        BACKGROUND_TASKS.add(t)
+        t.add_done_callback(BACKGROUND_TASKS.discard)
 
 async def init():
     global BLOCK_WAIT_LOCK
