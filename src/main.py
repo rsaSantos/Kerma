@@ -152,7 +152,7 @@ def validate_hello_msg(msg_dict):
 
 # returns true iff host_str is a valid hostname
 def validate_hostname(host_str):
-    return re.match(r"^(?=.*[a-zA-Z])[a-zA-Z0-9\--_]{3,50}$", host_str) and '.' in host_str[1:-1]
+    return re.match(r"^(?=.*[a-zA-Z])[a-zA-Z0-9.\-_]{3,50}$", host_str) and '.' in host_str[1:-1]
 
 
 # returns true iff host_str is a valid ipv4 address
@@ -181,6 +181,8 @@ def validate_peers_msg(msg_dict):
         raise InvalidFormatException("Invalid peers msg: {}.".format(msg_dict))
     if (len(msg_dict['peers']) > 30):
         raise InvalidFormatException("Too many peers in peers message.")
+    for peer_str in msg_dict['peers']:
+        validate_peer_str(peer_str)
 
 # raise an exception if not valid
 def validate_getpeers_msg(msg_dict):
@@ -265,15 +267,10 @@ def handle_peers_msg(msg_dict):
     peers_list = msg_dict['peers']
     rcv_peers = set()
     for peer_str in peers_list:
-        try:
-            # Syntax: <host>:<port>
-            validate_peer_str(peer_str)
-            host_str, port_str = peer_str.split(':')
-            peer = Peer(host_str, port_str)
-            add_peer(peer)
-        except Exception as e:
-            print(str(e))
-            continue
+        # Syntax: <host>:<port>
+        host_str, port_str = peer_str.split(':')
+        peer = Peer(host_str, port_str)
+        add_peer(peer)
         rcv_peers.add(peer)
 
     peer_db.store_peers(rcv_peers)
@@ -283,11 +280,21 @@ def handle_error_msg(msg_dict, peer_self):
     print("{}: Received error of type {}: {}".format(peer_self, msg_dict['name'], msg_dict['msg']))
 
 async def handle_ihaveobject_msg(msg_dict, writer):
-    pass  # TODO: TASK 2
+    # TODO: TASK 2
+    #
+    # Get the object ID
+    # Check if we have this object
+    # If we don't have it, send a getobject message
+    #
+    pass
 
 
 async def handle_getobject_msg(msg_dict, writer):
-    pass  # TODO: TASK 2
+    # TODO: TASK 2
+    # Get the object ID
+    # Check if we have this object
+    # If we have it, send an object message
+    pass
 
 # return a list of transactions that tx_dict references
 def gather_previous_txs(db_cur, tx_dict):
@@ -335,7 +342,14 @@ async def del_verify_block_task(task, objid):
 
 # what to do when an object message arrives
 async def handle_object_msg(msg_dict, peer_self, writer):
-    pass  # TODO: TASK 2
+    # TODO: TASK 2
+    # Get object ID
+    # Check if we have this object
+    # If we don't have it, save in database and broadcast ihaveobject message
+    #
+    # The last two steps could be inside the "save_to_db" function
+    #
+    pass
 
 
 
@@ -494,32 +508,15 @@ async def handle_connection(reader, writer):
                 continue
 
             # Validate message (handle double hello messages here)
-            try:
-                msg_dict = parse_msg(msg_str)
-                validate_msg(msg_dict)
-                
-                # For further message processing, create a task
-                await queue.put(msg_dict)
-
-            # Handle outside this try block with other terminal-errors
-            except InvalidHandshakeException as e:
-                raise e
-
-            # Here the message is invalid but we still want to continue...
-            # TODO: Does this make sense? Should we have an exception threshold and close the connection?
-            except MessageException as e:
-                print("{}: {}".format(peer, str(e)))
-                try:
-                    await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e)))
-                except:
-                    pass
-                finally:
-                    continue
+            msg_dict = parse_msg(msg_str)
+            validate_msg(msg_dict)
+            
+            # For further message processing, create a task
+            await queue.put(msg_dict)
 
     except MessageException as e:
-        print("{}: {}".format(peer, str(e)))
         try:
-            error_msg = mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e))
+            error_msg = mk_error_msg(e.error_name, str(e.message))
             print("Sending error message: {}".format(error_msg))
             await write_msg(writer, error_msg)
         except:
