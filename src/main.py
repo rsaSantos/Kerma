@@ -152,7 +152,7 @@ def validate_hello_msg(msg_dict):
 
 # returns true iff host_str is a valid hostname
 def validate_hostname(host_str):
-    return re.match(r"^(?=.*[a-zA-Z])[a-zA-Z0-9.-_]{3,50}$", host_str) and '.' in host_str[1:-1]
+    return re.match(r"^(?=.*[a-zA-Z])[a-zA-Z0-9\--_]{3,50}$", host_str) and '.' in host_str[1:-1]
 
 
 # returns true iff host_str is a valid ipv4 address
@@ -167,28 +167,25 @@ def validate_ipv4addr(host_str):
 # returns true iff peer_str is a valid peer address
 def validate_peer_str(peer_str):
     if (peer_str.count(":") != 1):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid peer address (add:port): {}".format(peer_str))
     host, port = peer_str.split(":")
     if (int(port) < 1 or int(port) > 65535):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid port: {}".format(port))
     if ((not validate_hostname(host)) and (not validate_ipv4addr(host))):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid peer address: {}".format(host))
 
 
 # raise an exception if not valid
 def validate_peers_msg(msg_dict):
     if (list(msg_dict.keys()) != sorted(['type', 'peers'])):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid peers msg: {}.".format(msg_dict))
     if (len(msg_dict['peers']) > 30):
-        raise InvalidFormatException()
-    for p in msg_dict['peers']:
-        validate_peer_str(p)
-
+        raise InvalidFormatException("Too many peers in peers message.")
 
 # raise an exception if not valid
 def validate_getpeers_msg(msg_dict):
     if (list(msg_dict.keys()) != ['type']):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid getpeers msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
@@ -204,7 +201,7 @@ def validate_getmempool_msg(msg_dict):
 # raise an exception if not valid
 def validate_error_msg(msg_dict):
     if (list(msg_dict.keys()) != sorted(['type', 'name', 'msg'])):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid error msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
@@ -268,10 +265,11 @@ def handle_peers_msg(msg_dict):
     peers_list = msg_dict['peers']
     rcv_peers = set()
     for peer_str in peers_list:
-        # Syntax: <host>:<port>
-        host_str, port_str = peer_str.split(':')
-        peer = Peer(host_str, port_str)
         try:
+            # Syntax: <host>:<port>
+            validate_peer_str(peer_str)
+            host_str, port_str = peer_str.split(':')
+            peer = Peer(host_str, port_str)
             add_peer(peer)
         except Exception as e:
             print(str(e))
@@ -536,7 +534,7 @@ async def handle_connection(reader, writer):
             pass
 
     except Exception as e:
-        print("{}: {}".format(peer, str(e)))
+        print("Error not handled: {}: {}".format(peer, str(e)))
 
     finally:
         print("Closing connection with {}".format(peer))
@@ -597,6 +595,7 @@ async def bootstrap():
 
 # connect to some peers
 def resupply_connections():
+    return
     cons = set(CONNECTIONS.keys())
 
     # If we have more or equal than threshold, do nothing
