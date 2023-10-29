@@ -428,7 +428,7 @@ async def handle_connection(reader, writer):
         
         add_connection(peer, queue)
 
-        add_connection(peer, queue)
+        add_connection(peer, queue) #why twice?
 
         print("New connection with {}".format(peer))
     except Exception as e:
@@ -526,6 +526,7 @@ async def connect_to_node(peer: Peer):
             asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT),
             timeout=5
         )
+
     except asyncio.TimeoutError:
         # Handle timeout error here
         print("Connection attempt timed out.")
@@ -564,7 +565,7 @@ async def bootstrap():
 
         add_peer(peer)
         bootstrap_peers.append(peer)
-
+    print("trying to store peers!")
     peer_db.store_peers(bootstrap_peers)
 
 # connect to some peers

@@ -41,3 +41,7 @@ class Peer:
 
     def __repr__(self) -> str:
         return f"Peer: {self}"
+
+    # CR think of this function as some "Object.ToString()" in Java, that's why it's placed here
+    def to_csv(self):
+        return f"{self.host},{self.port}"
