@@ -276,7 +276,6 @@ def handle_peers_msg(msg_dict):
             continue
         rcv_peers.add(peer)
 
-    # TODO: Now we're only saving in file, when to use memory? There is a global peers set...
     peer_db.store_peers(rcv_peers)
 
 
@@ -595,7 +594,6 @@ async def bootstrap():
 
 # connect to some peers
 def resupply_connections():
-    return
     cons = set(CONNECTIONS.keys())
 
     # If we have more or equal than threshold, do nothing
