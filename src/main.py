@@ -48,6 +48,7 @@ def add_peer(peer):
 
 # Add connection if not already open
 def add_connection(peer, queue):
+    print("Adding connection with {}".format(peer))
     ip, port = peer
 
     p = Peer(ip, port)
@@ -89,7 +90,7 @@ def mk_getobject_msg(objid):
 
 
 def mk_object_msg(obj_dict):
-    return {'type':'object', 'object': obj_dict } # CR
+    return {'type':'object', 'object': obj_dict} # CR
 
 
 def mk_ihaveobject_msg(objid):
@@ -209,19 +210,19 @@ def validate_error_msg(msg_dict):
 # raise an exception if not valid
 def validate_ihaveobject_msg(msg_dict):
     if list(msg_dict.keys() != sorted(['type', 'objectid'])):
-        raise InvalidFormatException("Invalid ihaveobject.") # CR
+        raise InvalidFormatException("Invalid ihaveobject msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_getobject_msg(msg_dict):
     if list(msg_dict.keys()) != sorted(['type', 'objectid']):
-        raise InvalidFormatException("Invalid getobject msg") # CR
+        raise InvalidFormatException("Invalid getobject msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_object_msg(msg_dict):
     if list(msg_dict.keys()) != sorted(['type', 'object']):
-        raise InvalidFormatException('Invalid object msg') #CR
+        raise InvalidFormatException('Invalid object msg: {}.'.format(msg_dict))
 
 # raise an exception if not valid
 def validate_chaintip_msg(msg_dict):
@@ -282,8 +283,7 @@ def handle_peers_msg(msg_dict):
 
 
 def handle_error_msg(msg_dict, peer_self):
-    pass  # TODO: TASK 2
-
+    print("{}: Received error of type {}: {}".format(peer_self, msg_dict['name'], msg_dict['msg']))
 
 async def handle_ihaveobject_msg(msg_dict, writer):
     pass  # TODO: TASK 2
@@ -456,8 +456,6 @@ async def handle_connection(reader, writer):
         if not peer:
             raise Exception("Failed to get peername!")
         
-        add_connection(peer, queue)
-
         add_connection(peer, queue)
 
         print("New connection with {}".format(peer))
