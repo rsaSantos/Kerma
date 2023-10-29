@@ -472,7 +472,7 @@ async def handle_connection(reader, writer):
         msg_str = None
         while True:
             if read_task is None:
-                read_task = asyncio.create_task(reader.readline())  # TODO: Set timeout for readlines/readtasks...
+                read_task = asyncio.create_task(reader.readline())
             if queue_task is None:
                 queue_task = asyncio.create_task(queue.get())
 
@@ -515,13 +515,6 @@ async def handle_connection(reader, writer):
                     pass
                 finally:
                     continue
-
-    except asyncio.exceptions.TimeoutError:
-        print("{}: Timeout".format(peer))
-        try:
-            await write_msg(writer, mk_error_msg("TIMEOUT"))  # TODO: I don't think this is in the protocol...remove?
-        except:
-            pass
 
     except MessageException as e:
         print("{}: {}".format(peer, str(e)))
