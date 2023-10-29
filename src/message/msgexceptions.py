@@ -3,6 +3,10 @@ from abc import ABC, abstractproperty
 """
     Abstract class
 """
+
+# Error messages
+UNKNOWN_OBJECT_ERROR = "UNKNOWN_OBJECT"
+
 class MessageException(ABC, Exception):
     def __init__(self, message, error_name) -> None:
         self.message = message

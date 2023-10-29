@@ -6,6 +6,7 @@ from jcs import canonicalize
 import mempool
 import objects
 import peer_db
+import kermastorage
 
 import asyncio
 import ipaddress
@@ -280,21 +281,34 @@ def handle_error_msg(msg_dict, peer_self):
     print("{}: Received error of type {}: {}".format(peer_self, msg_dict['name'], msg_dict['msg']))
 
 async def handle_ihaveobject_msg(msg_dict, writer):
-    # TODO: TASK 2
+    #
     #
     # Get the object ID
-    # Check if we have this object
-    # If we don't have it, send a getobject message
-    #
-    pass
+    object_id = msg_dict['objectid']
 
+    # If we don't have it, send a getobject message
+    if not kermastorage.check_objectid_exists(object_id):
+        getobject_msg = mk_getobject_msg(object_id)
+        await write_msg(writer, getobject_msg)
+        print("Sent getobject message: {}".format(getobject_msg))
 
 async def handle_getobject_msg(msg_dict, writer):
-    # TODO: TASK 2
+    #
     # Get the object ID
-    # Check if we have this object
+    object_id = msg_dict['objectid']
+
+    # Get the object. If its None, we don't have it
+    object_dict = kermastorage.get_object(object_id)
+
     # If we have it, send an object message
-    pass
+    if object_dict is not None:
+        object_msg = mk_object_msg(object_dict)
+        await write_msg(writer, object_msg)
+        print("Sent object message: {}".format(object_msg))
+    else:
+        unknown_object_msg = mk_error_msg(UNKNOWN_OBJECT_ERROR, "Object with id {} not found.".format(object_id))
+        await write_msg(writer, unknown_object_msg)
+        print("Sent error message: {}".format(unknown_object_msg))
 
 # return a list of transactions that tx_dict references
 def gather_previous_txs(db_cur, tx_dict):
@@ -342,16 +356,19 @@ async def del_verify_block_task(task, objid):
 
 # what to do when an object message arrives
 async def handle_object_msg(msg_dict, peer_self, writer):
-    # TODO: TASK 2
+    #
     # Get object ID
-    # Check if we have this object
-    # If we don't have it, save in database and broadcast ihaveobject message
-    #
-    # The last two steps could be inside the "save_to_db" function
-    #
-    pass
+    object_dict = dict(msg_dict['object'])
+    object_id = objects.get_objid(object_dict)
 
+    # Check if we already have it
+    if kermastorage.check_objectid_exists(object_id):
+        # Save object in database.
+        kermastorage.save_object(object_id, object_dict)
 
+        # TODO: TASK 2: Gossip to all peers
+        ihaveobject_msg = mk_ihaveobject_msg(object_id)
+        # ...
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
@@ -648,5 +665,6 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
         LISTEN_CFG['address'] = sys.argv[1]
         LISTEN_CFG['port'] = sys.argv[2]
-
+    
+    kermastorage.create_db()
     main()
