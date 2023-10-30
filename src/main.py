@@ -87,16 +87,18 @@ def mk_peers_msg():
 
 
 def mk_getobject_msg(objid):
-    return {'type':'getobject','objectid':objid}  # CR
+    return {'type':'getobject','objectid':objid}
 
 
 def mk_object_msg(obj_dict):
-    return {'type':'object', 'object': obj_dict} # CR
+    return {'type':'object', 'object': obj_dict}
 
 
 def mk_ihaveobject_msg(objid):
-    return {'type': 'ihaveobject', 'objectid' : objid}  # CR
+    return {'type': 'ihaveobject', 'objectid' : objid}
 
+def mk_send_to_peer_msg(msg_to_send):
+    return {'type': 'sendtopeer', 'msg': msg_to_send}
 
 def mk_chaintip_msg(blockid):
     pass  # TODO
@@ -366,9 +368,11 @@ async def handle_object_msg(msg_dict, writer):
         # Save object in database.
         kermastorage.save_object(object_id, object_dict)
 
-        # TODO: TASK 2: Gossip to all peers
+        # Gossip to all peers
         ihaveobject_msg = mk_ihaveobject_msg(object_id)
-        # ...
+        for connection in CONNECTIONS.values():
+            send_to_peer_msg = mk_send_to_peer_msg(ihaveobject_msg)
+            await connection.put(send_to_peer_msg)
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
@@ -420,6 +424,10 @@ async def handle_queue_msg(msg_dict, writer):
     elif msg_dict['type'] == 'object':
         await handle_object_msg(msg_dict, writer)
         print("Handled object message!")
+    
+    elif msg_dict['type'] == 'sendtopeer': # INTERNAL MESSAGE
+        await write_msg(writer, msg_dict['msg'])
+        print("Sent message to peer: {}".format(msg_dict['msg']))
 
     elif msg_dict['type'] == 'getchaintip':
         await handle_getchaintip_msg(msg_dict, writer)
