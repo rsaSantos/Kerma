@@ -28,7 +28,7 @@ def store_peers(peers: Iterable[Peer]):
 
     write_to_csv(all_peers_dict)
 
-def write_to_csv(peers_dict: dict(Peer, int)):
+def write_to_csv(peers_dict: dict):
     all_peers_str = [get_peer_db_str(peer, timestamp) for peer, timestamp in peers_dict.items()]
     with open(PEER_DB_FILE, "w") as f:
         f.write("host,port,timestamp\n")
@@ -38,7 +38,7 @@ def get_peer_from_str(s: str) -> (Peer, int):
     host, port, timestamp = s.split(",")
     return Peer(host, int(port)), int(timestamp)
     
-def load_peers() -> dict(Peer, int):
+def load_peers() -> dict[Peer, int]:
     with open(PEER_DB_FILE, "r") as f:
         f.readline() # Skip the first line
         peers_dic = dict()
