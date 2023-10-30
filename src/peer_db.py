@@ -5,7 +5,7 @@ import time
 PEER_DB_FILE = "peers.csv"
 
 def get_peer_db_str(peer: Peer, timestamp: int) -> str:
-    return f"{peer.host},{peer.port},{timestamp}"
+    return f"{peer.host_str},{peer.port},{timestamp}"
 
 def update_timestamp(peer: Peer, timestamp: int = 0):
     all_peers_dict = load_peers()

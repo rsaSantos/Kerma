@@ -33,17 +33,17 @@ LISTEN_CFG = {
 # Add peer to your list of peers
 def add_peer(peer):
     # Do not add banned peer addresses
-    if peer.host in const.BANNED_HOSTS:
+    if peer.host_str in const.BANNED_HOSTS:
         return
 
     # Do not add loopback or multicast addrs
     try:
-        ip = ipaddress.ip_address(peer.host)
+        ip = ipaddress.ip_address(peer.host_str)
 
         if ip.is_loopback or ip.is_multicast:
             return
     except ValueError:
-        raise Exception("Invalid peer address: {}".format(peer.host))
+        raise Exception("Invalid peer address: {}".format(peer.host_str))
 
     PEERS.add(peer)
 
@@ -563,7 +563,7 @@ async def handle_connection(reader, writer):
 async def connect_to_node(peer: Peer):
     try:
         reader, writer = await asyncio.wait_for(
-            asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT),
+            asyncio.open_connection(peer.host_str, peer.port, limit=const.RECV_BUFFER_LIMIT),
             timeout=5
         )
         peer_db.update_timestamp(peer, time.time())
@@ -590,10 +590,11 @@ async def listen():
 async def bootstrap():
     bootstrap_peers = []
     for peer in const.PRELOADED_PEERS:
-        if str(peer.host) == str(LISTEN_CFG['address']) and str(peer.port) == str(LISTEN_CFG['port']):
+        if str(peer.host_str) == str(LISTEN_CFG['address']) and str(peer.port) == str(LISTEN_CFG['port']):
+            print("Skipping bootstrap peer {}:{}".format(peer.host_str, peer.port))
             continue
 
-        print("Trying to connect to {}:{}".format(peer.host, peer.port))
+        print("Trying to connect to {}:{}".format(peer.host_str, peer.port))
         t = asyncio.create_task(connect_to_node(peer))
 
         BACKGROUND_TASKS.add(t)
@@ -624,7 +625,7 @@ def resupply_connections():
 
     chosenPeers = random.sample(availablePeers, neededPeers)
     for peer in chosenPeers:
-        print("Trying to connect to {}:{}".format(peer.host, peer.port))
+        print("Trying to connect to {}:{}".format(peer.host_str, peer.port))
         t = asyncio.create_task(connect_to_node(peer))
 
         BACKGROUND_TASKS.add(t)
