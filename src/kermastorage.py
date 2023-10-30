@@ -32,6 +32,19 @@ def save_object(obj_id, obj_dict):
     finally:
         con.close()
 
+def get_object(obj_id):
+    con = get_connection()
+    try:
+        cur = con.cursor()
+        cur.execute("SELECT object FROM objects WHERE object_id=?", (obj_id,))
+        row = cur.fetchone()
+        if row is None:
+            return None
+        return objects.deserialize(row[0])
+    except Exception as e:
+        print("Error getting object: " + str(e))
+    finally:
+        con.close()
 
 def create_db():
     # If the database already exists, no need to create it again

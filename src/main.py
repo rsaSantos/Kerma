@@ -355,7 +355,7 @@ async def del_verify_block_task(task, objid):
 
 
 # what to do when an object message arrives
-async def handle_object_msg(msg_dict, peer_self, writer):
+async def handle_object_msg(msg_dict, writer):
     #
     # Get object ID
     object_dict = dict(msg_dict['object'])
