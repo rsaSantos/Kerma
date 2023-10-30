@@ -15,7 +15,7 @@ import random
 import re
 import sqlite3
 import sys
-import datetime
+import time
 
 PEERS = set()
 CONNECTIONS = dict()
@@ -558,15 +558,12 @@ async def connect_to_node(peer: Peer):
             asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT),
             timeout=5
         )
-    except asyncio.TimeoutError:
-        # Handle timeout error here
-        print("Connection attempt timed out.")
-        PEERS.discard(peer)  # TODO: TASK 2: TAG PEER AS DISCONNECTED IN PEERS DB
-        return
+        peer_db.update_timestamp(peer, time.time())
 
     except Exception as e:
         print(str(e))
-        PEERS.discard(peer)  # TODO: TASK 2: TAG PEER AS DISCONNECTED IN PEERS DB
+        PEERS.discard(peer)
+        peer_db.remove_peer(peer)
         return
 
     await handle_connection(reader, writer)
@@ -596,8 +593,6 @@ async def bootstrap():
 
         add_peer(peer)
         bootstrap_peers.append(peer)
-
-    peer_db.store_peers(bootstrap_peers)
 
 # connect to some peers
 def resupply_connections():
