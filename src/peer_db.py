@@ -10,7 +10,7 @@ def get_peer_db_str(peer: Peer, timestamp: int) -> str:
 def update_timestamp(peer: Peer, timestamp: int = 0):
     all_peers_dict = load_peers()
     if peer in all_peers_dict:
-        all_peers_dict[peer] = timestamp
+        all_peers_dict[peer] = int(timestamp)
         write_to_csv(all_peers_dict)
 
 def remove_peer(peer: Peer):
