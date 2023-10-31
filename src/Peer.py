@@ -4,8 +4,6 @@ import ipaddress
 host
 host_formated == host for hostname and ipv4
               == bracket wrapped IPv6 address
-              CR do we care about IPv6??
-              ugh
 """
 class Peer:
     def __init__(self, host_str, port:int):

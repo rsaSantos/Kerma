@@ -26,9 +26,13 @@ class UnexpectedMsgException(MessageException):
 # Error message representing "INVALID_FORMAT" type of the "error" message
 # Since task 1 requires only these two, it is sufficient without impleneting the rest, will be changed ...
 class InvalidFormatException(MessageException):
-    NETWORK_ERROR_MESSAGE = "INVALID_FORMAT"
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "INVALID_FORMAT"
+        super().__init__(self.message, self.error_name)
 
-# Error message representing "INVALID_HANDSHAKE" type of the "error" message
-# Since task 1 requires only these two, it is sufficient without impleneting the rest, will be changed ...
 class InvalidHandshakeException(MessageException):
-    NETWORK_ERROR_MESSAGE = "INVALID_HANDSHAKE"
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "INVALID_HANDSHAKE"
+        super().__init__(self.message, self.error_name)

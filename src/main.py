@@ -48,6 +48,7 @@ def add_peer(peer):
 
 # Add connection if not already open
 def add_connection(peer, queue):
+    print("Adding connection with {}".format(peer))
     ip, port = peer
 
     p = Peer(ip, port)
@@ -89,7 +90,7 @@ def mk_getobject_msg(objid):
 
 
 def mk_object_msg(obj_dict):
-    return {'type':'object', 'object': obj_dict } # CR
+    return {'type':'object', 'object': obj_dict} # CR
 
 
 def mk_ihaveobject_msg(objid):
@@ -151,7 +152,7 @@ def validate_hello_msg(msg_dict):
 
 # returns true iff host_str is a valid hostname
 def validate_hostname(host_str):
-    return re.match(r"^(?=.*[a-zA-Z])[a-zA-Z0-9.-_]{3,50}$", host_str) and '.' in host_str[1:-1]
+    return re.match(r"^(?=.*[a-zA-Z])[a-zA-Z0-9\--_]{3,50}$", host_str) and '.' in host_str[1:-1]
 
 
 # returns true iff host_str is a valid ipv4 address
@@ -166,28 +167,25 @@ def validate_ipv4addr(host_str):
 # returns true iff peer_str is a valid peer address
 def validate_peer_str(peer_str):
     if (peer_str.count(":") != 1):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid peer address (add:port): {}".format(peer_str))
     host, port = peer_str.split(":")
     if (int(port) < 1 or int(port) > 65535):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid port: {}".format(port))
     if ((not validate_hostname(host)) and (not validate_ipv4addr(host))):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid peer address: {}".format(host))
 
 
 # raise an exception if not valid
 def validate_peers_msg(msg_dict):
     if (list(msg_dict.keys()) != sorted(['type', 'peers'])):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid peers msg: {}.".format(msg_dict))
     if (len(msg_dict['peers']) > 30):
-        raise InvalidFormatException()
-    for p in msg_dict['peers']:
-        validate_peer_str(p)
-
+        raise InvalidFormatException("Too many peers in peers message.")
 
 # raise an exception if not valid
 def validate_getpeers_msg(msg_dict):
     if (list(msg_dict.keys()) != ['type']):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid getpeers msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
@@ -203,25 +201,25 @@ def validate_getmempool_msg(msg_dict):
 # raise an exception if not valid
 def validate_error_msg(msg_dict):
     if (list(msg_dict.keys()) != sorted(['type', 'name', 'msg'])):
-        raise InvalidFormatException()
+        raise InvalidFormatException("Invalid error msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_ihaveobject_msg(msg_dict):
     if list(msg_dict.keys() != sorted(['type', 'objectid'])):
-        raise InvalidFormatException("Invalid ihaveobject.") # CR
+        raise InvalidFormatException("Invalid ihaveobject msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_getobject_msg(msg_dict):
     if list(msg_dict.keys()) != sorted(['type', 'objectid']):
-        raise InvalidFormatException("Invalid getobject msg") # CR
+        raise InvalidFormatException("Invalid getobject msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_object_msg(msg_dict):
     if list(msg_dict.keys()) != sorted(['type', 'object']):
-        raise InvalidFormatException('Invalid object msg') #CR
+        raise InvalidFormatException('Invalid object msg: {}.'.format(msg_dict))
 
 # raise an exception if not valid
 def validate_chaintip_msg(msg_dict):
@@ -261,30 +259,28 @@ def validate_msg(msg_dict):
     elif msg_type == 'mempool':
         validate_mempool_msg(msg_dict)
     else:
-        return UnsupportedMsgException("Unsupported message type: {}".format(msg_type))
-
+        raise InvalidFormatException("Invalid message type: {}".format(msg_type))
 
 def handle_peers_msg(msg_dict):
     peers_list = msg_dict['peers']
     rcv_peers = set()
     for peer_str in peers_list:
-        # Syntax: <host>:<port>
-        host_str, port_str = peer_str.split(':')
-        peer = Peer(host_str, port_str)
         try:
+            # Syntax: <host>:<port>
+            validate_peer_str(peer_str)
+            host_str, port_str = peer_str.split(':')
+            peer = Peer(host_str, port_str)
             add_peer(peer)
         except Exception as e:
             print(str(e))
             continue
         rcv_peers.add(peer)
 
-    # TODO: Now we're only saving in file, when to use memory? There is a global peers set...
     peer_db.store_peers(rcv_peers)
 
 
 def handle_error_msg(msg_dict, peer_self):
-    pass  # TODO: TASK 2
-
+    print("{}: Received error of type {}: {}".format(peer_self, msg_dict['name'], msg_dict['msg']))
 
 async def handle_ihaveobject_msg(msg_dict, writer):
     pass  # TODO: TASK 2
@@ -378,9 +374,40 @@ async def handle_queue_msg(msg_dict, writer):
         handle_peers_msg(msg_dict)
         print("Handled peers message!")
 
-    # else:
-    # raise UnsupportedMsgException("Unsupported message type: {}".format(msg_dict['type']))
+    elif msg_dict['type'] == 'error':
+        handle_error_msg(msg_dict, writer)
+        print("Handled error message!")
 
+    elif msg_dict['type'] == 'ihaveobject':
+        await handle_ihaveobject_msg(msg_dict, writer)
+        print("Handled ihaveobject message!")
+
+    elif msg_dict['type'] == 'getobject':
+        await handle_getobject_msg(msg_dict, writer)
+        print("Handled getobject message!")
+
+    elif msg_dict['type'] == 'object':
+        await handle_object_msg(msg_dict, writer)
+        print("Handled object message!")
+
+    elif msg_dict['type'] == 'getchaintip':
+        await handle_getchaintip_msg(msg_dict, writer)
+        print("Handled getchaintip message!")
+
+    elif msg_dict['type'] == 'chaintip':
+        await handle_chaintip_msg(msg_dict)
+        print("Handled chaintip message!")
+
+    elif msg_dict['type'] == 'getmempool':
+        await handle_getmempool_msg(msg_dict, writer)
+        print("Handled getmempool message!")
+
+    elif msg_dict['type'] == 'mempool':
+        await handle_mempool_msg(msg_dict)
+        print("Handled mempool message!")
+
+    else:
+        raise Exception("CRITICAL ERROR: Unsupported message type after validation. Message received: {}".format(msg_dict))
 
 #
 # Send initial messages
@@ -428,8 +455,6 @@ async def handle_connection(reader, writer):
         
         add_connection(peer, queue)
 
-        add_connection(peer, queue) #why twice?
-
         print("New connection with {}".format(peer))
     except Exception as e:
         print(str(e))
@@ -469,9 +494,12 @@ async def handle_connection(reader, writer):
                 continue
 
             # Validate message (handle double hello messages here)
-            msg_dict = parse_msg(msg_str)
             try:
+                msg_dict = parse_msg(msg_str)
                 validate_msg(msg_dict)
+                
+                # For further message processing, create a task
+                await queue.put(msg_dict)
 
             # Handle outside this try block with other terminal-errors
             except InvalidHandshakeException as e:
@@ -487,9 +515,6 @@ async def handle_connection(reader, writer):
                     pass
                 finally:
                     continue
-
-            # For further message processing, create a task
-            await queue.put(msg_dict)
 
     except asyncio.exceptions.TimeoutError:
         print("{}: Timeout".format(peer))
@@ -508,7 +533,7 @@ async def handle_connection(reader, writer):
             pass
 
     except Exception as e:
-        print("{}: {}".format(peer, str(e)))
+        print("Error not handled: {}: {}".format(peer, str(e)))
 
     finally:
         print("Closing connection with {}".format(peer))
@@ -526,7 +551,6 @@ async def connect_to_node(peer: Peer):
             asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT),
             timeout=5
         )
-
     except asyncio.TimeoutError:
         # Handle timeout error here
         print("Connection attempt timed out.")
@@ -565,7 +589,7 @@ async def bootstrap():
 
         add_peer(peer)
         bootstrap_peers.append(peer)
-    print("trying to store peers!")
+
     peer_db.store_peers(bootstrap_peers)
 
 # connect to some peers
