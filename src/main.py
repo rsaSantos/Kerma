@@ -180,7 +180,7 @@ def validate_peer_str(peer_str):
 
 # raise an exception if not valid
 def validate_peers_msg(msg_dict):
-    if (list(msg_dict.keys()) != sorted(['type', 'peers'])):
+    if (sorted(list(msg_dict.keys())) != sorted(['type', 'peers'])):
         raise InvalidFormatException("Invalid peers msg: {}.".format(msg_dict))
     if (len(msg_dict['peers']) > 30):
         raise InvalidFormatException("Too many peers in peers message.")
@@ -205,26 +205,27 @@ def validate_getmempool_msg(msg_dict):
 
 # raise an exception if not valid
 def validate_error_msg(msg_dict):
-    if (list(msg_dict.keys()) != sorted(['type', 'name', 'msg'])):
+    if (sorted(list(msg_dict.keys())) != sorted(['type', 'name', 'msg'])):
         raise InvalidFormatException("Invalid error msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_ihaveobject_msg(msg_dict):
-    if list(msg_dict.keys() != sorted(['type', 'objectid'])):
+    if (sorted(list(msg_dict.keys())) != sorted(['type', 'objectid'])):
         raise InvalidFormatException("Invalid ihaveobject msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_getobject_msg(msg_dict):
-    if list(msg_dict.keys()) != sorted(['type', 'objectid']):
+    if sorted(list(msg_dict.keys())) != sorted(['type', 'objectid']):
         raise InvalidFormatException("Invalid getobject msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_object_msg(msg_dict):
-    if list(msg_dict.keys()) != sorted(['type', 'object']):
+    if sorted(list(msg_dict.keys())) != sorted(['type', 'object']):
         raise InvalidFormatException('Invalid object msg: {}.'.format(msg_dict))
+    
 
 # raise an exception if not valid
 def validate_chaintip_msg(msg_dict):
@@ -361,6 +362,10 @@ async def handle_object_msg(msg_dict, writer):
     #
     # Get object ID
     object_dict = dict(msg_dict['object'])
+
+    # Validate the object
+    objects.validate_object(object_dict)
+
     object_id = objects.get_objid(object_dict)
 
     # Check if we already have it

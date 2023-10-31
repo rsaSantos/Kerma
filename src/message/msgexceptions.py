@@ -41,3 +41,27 @@ class InvalidHandshakeException(MessageException):
         self.message = message
         self.error_name = "INVALID_HANDSHAKE"
         super().__init__(self.message, self.error_name)
+
+class InvalidTxConservationException(MessageException):
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "INVALID_TX_CONSERVATION"
+        super().__init__(self.message, self.error_name)
+
+class InvalidTxSignatureException(MessageException):
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "INVALID_TX_SIGNATURE"
+        super().__init__(self.message, self.error_name)
+
+class InvalidTxOutpointException(MessageException):
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "INVALID_TX_OUTPOINT"
+        super().__init__(self.message, self.error_name)
+
+class UnknownObjectException(MessageException):
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "UNKNOWN_OBJECT"
+        super().__init__(self.message, self.error_name)
