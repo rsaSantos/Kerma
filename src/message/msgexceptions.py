@@ -3,9 +3,14 @@ from abc import ABC, abstractproperty
 """
     Abstract class
 """
-class MessageException(ABC, Exception):
-    NETWORK_ERROR_MESSAGE = ""
 
+# Error messages
+UNKNOWN_OBJECT_ERROR = "UNKNOWN_OBJECT"
+
+class MessageException(ABC, Exception):
+    def __init__(self, message, error_name) -> None:
+        self.message = message
+        self.error_name = error_name
 
 class MsgParseException(MessageException):
     NETWORK_ERROR_MESSAGE = "Invalid message received"

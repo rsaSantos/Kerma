@@ -6,6 +6,7 @@ from jcs import canonicalize
 import mempool
 import objects
 import peer_db
+import kermastorage
 
 import asyncio
 import ipaddress
@@ -14,7 +15,7 @@ import random
 import re
 import sqlite3
 import sys
-import datetime
+import time
 
 PEERS = set()
 CONNECTIONS = dict()
@@ -32,17 +33,17 @@ LISTEN_CFG = {
 # Add peer to your list of peers
 def add_peer(peer):
     # Do not add banned peer addresses
-    if peer.host in const.BANNED_HOSTS:
+    if peer.host_str in const.BANNED_HOSTS:
         return
 
     # Do not add loopback or multicast addrs
     try:
-        ip = ipaddress.ip_address(peer.host)
+        ip = ipaddress.ip_address(peer.host_str)
 
         if ip.is_loopback or ip.is_multicast:
             return
     except ValueError:
-        raise Exception("Invalid peer address: {}".format(peer.host))
+        raise Exception("Invalid peer address: {}".format(peer.host_str))
 
     PEERS.add(peer)
 
@@ -86,16 +87,18 @@ def mk_peers_msg():
 
 
 def mk_getobject_msg(objid):
-    return {'type':'getobject','objectid':objid}  # CR
+    return {'type':'getobject','objectid':objid}
 
 
 def mk_object_msg(obj_dict):
-    return {'type':'object', 'object': obj_dict} # CR
+    return {'type':'object', 'object': obj_dict}
 
 
 def mk_ihaveobject_msg(objid):
-    return {'type': 'ihaveobject', 'objectid' : objid}  # CR
+    return {'type': 'ihaveobject', 'objectid' : objid}
 
+def mk_send_to_peer_msg(msg_to_send):
+    return {'type': 'sendtopeer', 'msg': msg_to_send}
 
 def mk_chaintip_msg(blockid):
     pass  # TODO
@@ -152,7 +155,7 @@ def validate_hello_msg(msg_dict):
 
 # returns true iff host_str is a valid hostname
 def validate_hostname(host_str):
-    return re.match(r"^(?=.*[a-zA-Z])[a-zA-Z0-9\--_]{3,50}$", host_str) and '.' in host_str[1:-1]
+    return re.match(r"^(?=.*[a-zA-Z])[a-zA-Z0-9.\-_]{3,50}$", host_str) and '.' in host_str[1:-1]
 
 
 # returns true iff host_str is a valid ipv4 address
@@ -181,6 +184,8 @@ def validate_peers_msg(msg_dict):
         raise InvalidFormatException("Invalid peers msg: {}.".format(msg_dict))
     if (len(msg_dict['peers']) > 30):
         raise InvalidFormatException("Too many peers in peers message.")
+    for peer_str in msg_dict['peers']:
+        validate_peer_str(peer_str)
 
 # raise an exception if not valid
 def validate_getpeers_msg(msg_dict):
@@ -265,15 +270,10 @@ def handle_peers_msg(msg_dict):
     peers_list = msg_dict['peers']
     rcv_peers = set()
     for peer_str in peers_list:
-        try:
-            # Syntax: <host>:<port>
-            validate_peer_str(peer_str)
-            host_str, port_str = peer_str.split(':')
-            peer = Peer(host_str, port_str)
-            add_peer(peer)
-        except Exception as e:
-            print(str(e))
-            continue
+        # Syntax: <host>:<port>
+        host_str, port_str = peer_str.split(':')
+        peer = Peer(host_str, port_str)
+        add_peer(peer)
         rcv_peers.add(peer)
 
     peer_db.store_peers(rcv_peers)
@@ -283,11 +283,34 @@ def handle_error_msg(msg_dict, peer_self):
     print("{}: Received error of type {}: {}".format(peer_self, msg_dict['name'], msg_dict['msg']))
 
 async def handle_ihaveobject_msg(msg_dict, writer):
-    pass  # TODO: TASK 2
+    #
+    #
+    # Get the object ID
+    object_id = msg_dict['objectid']
 
+    # If we don't have it, send a getobject message
+    if not kermastorage.check_objectid_exists(object_id):
+        getobject_msg = mk_getobject_msg(object_id)
+        await write_msg(writer, getobject_msg)
+        print("Sent getobject message: {}".format(getobject_msg))
 
 async def handle_getobject_msg(msg_dict, writer):
-    pass  # TODO: TASK 2
+    #
+    # Get the object ID
+    object_id = msg_dict['objectid']
+
+    # Get the object. If its None, we don't have it
+    object_dict = kermastorage.get_object(object_id)
+
+    # If we have it, send an object message
+    if object_dict is not None:
+        object_msg = mk_object_msg(object_dict)
+        await write_msg(writer, object_msg)
+        print("Sent object message: {}".format(object_msg))
+    else:
+        unknown_object_msg = mk_error_msg(UNKNOWN_OBJECT_ERROR, "Object with id {} not found.".format(object_id))
+        await write_msg(writer, unknown_object_msg)
+        print("Sent error message: {}".format(unknown_object_msg))
 
 # return a list of transactions that tx_dict references
 def gather_previous_txs(db_cur, tx_dict):
@@ -334,10 +357,22 @@ async def del_verify_block_task(task, objid):
 
 
 # what to do when an object message arrives
-async def handle_object_msg(msg_dict, peer_self, writer):
-    pass  # TODO: TASK 2
+async def handle_object_msg(msg_dict, writer):
+    #
+    # Get object ID
+    object_dict = dict(msg_dict['object'])
+    object_id = objects.get_objid(object_dict)
 
+    # Check if we already have it
+    if kermastorage.check_objectid_exists(object_id):
+        # Save object in database.
+        kermastorage.save_object(object_id, object_dict)
 
+        # Gossip to all peers
+        ihaveobject_msg = mk_ihaveobject_msg(object_id)
+        for connection in CONNECTIONS.values():
+            send_to_peer_msg = mk_send_to_peer_msg(ihaveobject_msg)
+            await connection.put(send_to_peer_msg)
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
@@ -389,6 +424,10 @@ async def handle_queue_msg(msg_dict, writer):
     elif msg_dict['type'] == 'object':
         await handle_object_msg(msg_dict, writer)
         print("Handled object message!")
+    
+    elif msg_dict['type'] == 'sendtopeer': # INTERNAL MESSAGE
+        await write_msg(writer, msg_dict['msg'])
+        print("Sent message to peer: {}".format(msg_dict['msg']))
 
     elif msg_dict['type'] == 'getchaintip':
         await handle_getchaintip_msg(msg_dict, writer)
@@ -472,7 +511,7 @@ async def handle_connection(reader, writer):
         msg_str = None
         while True:
             if read_task is None:
-                read_task = asyncio.create_task(reader.readline())  # TODO: Set timeout for readlines/readtasks...
+                read_task = asyncio.create_task(reader.readline())
             if queue_task is None:
                 queue_task = asyncio.create_task(queue.get())
 
@@ -494,39 +533,15 @@ async def handle_connection(reader, writer):
                 continue
 
             # Validate message (handle double hello messages here)
-            try:
-                msg_dict = parse_msg(msg_str)
-                validate_msg(msg_dict)
-                
-                # For further message processing, create a task
-                await queue.put(msg_dict)
-
-            # Handle outside this try block with other terminal-errors
-            except InvalidHandshakeException as e:
-                raise e
-
-            # Here the message is invalid but we still want to continue...
-            # TODO: Does this make sense? Should we have an exception threshold and close the connection?
-            except MessageException as e:
-                print("{}: {}".format(peer, str(e)))
-                try:
-                    await write_msg(writer, mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e)))
-                except:
-                    pass
-                finally:
-                    continue
-
-    except asyncio.exceptions.TimeoutError:
-        print("{}: Timeout".format(peer))
-        try:
-            await write_msg(writer, mk_error_msg("TIMEOUT"))  # TODO: I don't think this is in the protocol...remove?
-        except:
-            pass
+            msg_dict = parse_msg(msg_str)
+            validate_msg(msg_dict)
+            
+            # For further message processing, create a task
+            await queue.put(msg_dict)
 
     except MessageException as e:
-        print("{}: {}".format(peer, str(e)))
         try:
-            error_msg = mk_error_msg(e.NETWORK_ERROR_MESSAGE, str(e))
+            error_msg = mk_error_msg(e.error_name, str(e.message))
             print("Sending error message: {}".format(error_msg))
             await write_msg(writer, error_msg)
         except:
@@ -548,18 +563,15 @@ async def handle_connection(reader, writer):
 async def connect_to_node(peer: Peer):
     try:
         reader, writer = await asyncio.wait_for(
-            asyncio.open_connection(peer.host, peer.port, limit=const.RECV_BUFFER_LIMIT),
+            asyncio.open_connection(peer.host_str, peer.port, limit=const.RECV_BUFFER_LIMIT),
             timeout=5
         )
-    except asyncio.TimeoutError:
-        # Handle timeout error here
-        print("Connection attempt timed out.")
-        PEERS.discard(peer)  # TODO: TASK 2: TAG PEER AS DISCONNECTED IN PEERS DB
-        return
+        peer_db.update_timestamp(peer, time.time())
 
     except Exception as e:
         print(str(e))
-        PEERS.discard(peer)  # TODO: TASK 2: TAG PEER AS DISCONNECTED IN PEERS DB
+        PEERS.discard(peer)
+        peer_db.remove_peer(peer)
         return
 
     await handle_connection(reader, writer)
@@ -578,10 +590,11 @@ async def listen():
 async def bootstrap():
     bootstrap_peers = []
     for peer in const.PRELOADED_PEERS:
-        if str(peer.host) == str(LISTEN_CFG['address']) and str(peer.port) == str(LISTEN_CFG['port']):
+        if str(peer.host_str) == str(LISTEN_CFG['address']) and str(peer.port) == str(LISTEN_CFG['port']):
+            print("Skipping bootstrap peer {}:{}".format(peer.host_str, peer.port))
             continue
 
-        print("Trying to connect to {}:{}".format(peer.host, peer.port))
+        print("Trying to connect to {}:{}".format(peer.host_str, peer.port))
         t = asyncio.create_task(connect_to_node(peer))
 
         BACKGROUND_TASKS.add(t)
@@ -589,8 +602,6 @@ async def bootstrap():
 
         add_peer(peer)
         bootstrap_peers.append(peer)
-
-    peer_db.store_peers(bootstrap_peers)
 
 # connect to some peers
 def resupply_connections():
@@ -614,7 +625,7 @@ def resupply_connections():
 
     chosenPeers = random.sample(availablePeers, neededPeers)
     for peer in chosenPeers:
-        print("Trying to connect to {}:{}".format(peer.host, peer.port))
+        print("Trying to connect to {}:{}".format(peer.host_str, peer.port))
         t = asyncio.create_task(connect_to_node(peer))
 
         BACKGROUND_TASKS.add(t)
@@ -658,5 +669,6 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
         LISTEN_CFG['address'] = sys.argv[1]
         LISTEN_CFG['port'] = sys.argv[2]
-
+    
+    kermastorage.create_db()
     main()

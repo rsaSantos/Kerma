@@ -8,34 +8,22 @@ host_formated == host for hostname and ipv4
 class Peer:
     def __init__(self, host_str, port:int):
         self.port = port
-        self.isBoostrap = False # peers which are created were not hardcoded, thus isBootstrap is False
         try:
-            ip = None
             ip = ipaddress.ip_address(host_str)
-
-            self.host = ip.compressed
-
-            self.host_formatted = self.host
+            self.host_str = ip.compressed
         except:
             # not an ip, but a DNS name
-            self.host = host_str
-            self.host_formatted = host_str
-        # CR hostname is still to be validated
-        # the to-do tag in the solution is still there.
-        # I think we validated it in main.py?
-
-    def tagBootstrap(self):
-        self.isBoostrap = True
+            self.host_str = host_str
 
     def __str__(self) -> str:
-        return f"{self.host_formatted}:{self.port}"
+        return f"{self.host_str}:{self.port}"
 
     def __eq__(self, o: object) -> bool:
-        return isinstance(o, Peer) and self.host == o.host \
+        return isinstance(o, Peer) and self.host_str == o.host_str \
             and self.port == o.port
 
     def __hash__(self) -> int:
-        return (self.port, self.host).__hash__()
+        return (self.port, self.host_str).__hash__()
 
     def __repr__(self) -> str:
         return f"Peer: {self}"
