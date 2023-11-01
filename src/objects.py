@@ -9,6 +9,7 @@ import json
 import re
 
 import constants as const
+import kermastorage
 
 # perform syntactic checks. returns true iff check succeeded
 OBJECTID_REGEX = re.compile("^[0-9a-f]{64}$")
@@ -41,11 +42,18 @@ def validate_transaction_input(in_dict):
     if sorted(list(in_dict.keys())) != sorted(['sig', 'outpoint']):
         raise InvalidFormatException('Invalid transaction field inputs: {}.'.format(in_dict))
     validate_signature(in_dict['sig'])
-    if sorted(in_dict['outpoint']) != sorted(['txid', 'index']):
-        raise InvalidFormatException('Invalid transaction field outpoint: {}.'.format(in_dict))
+    if sorted(list(in_dict['outpoint'].keys())) != sorted(['txid', 'index']):
+        raise InvalidFormatException('Invalid transaction field outpoint: {}.'.format(in_dict['outpoint']))
     validate_objectid(in_dict['outpoint']['txid'])
     if(not isinstance(in_dict['outpoint']['index'], int)):
-        raise InvalidFormatException('Invalid transaction field index: {}.'.format(in_dict))
+        raise InvalidFormatException('Invalid transaction field index: {}.'.format(in_dict['outpoint']['index']))
+    if(not kermastorage.check_objectid_exists(in_dict['outpoint']['txid'])):
+        raise UnknownObjectException('Object not present in DB: {}.'.format(in_dict['outpoint']['txid']))
+    obj_dict = kermastorage.get_object(in_dict['outpoint']['txid'])
+    if(obj_dict['type'] != "transaction"):
+        raise InvalidFormatException('Wrong object referenced in the DB: {}.'.format(in_dict['outpoint']['txid']))
+    if(in_dict['outpoint']['index'] >= len(obj_dict['outputs'])):
+        raise InvalidTxOutpointException('Transaction index is out of scope: {}.'.format(in_dict['outpoint']['index']))
     return True
 
 def validate_transaction_output(out_dict):
@@ -62,11 +70,17 @@ def validate_transaction(trans_dict):
     for d in trans_dict['outputs']:
         validate_transaction_output(d)
     if('height' in trans_dict):
-        if(not isinstance(trans_dict['height'], int) or trans_dict['height'] <= 0):
+        if(not isinstance(trans_dict['height'], int) or trans_dict['height'] < 0):
             raise InvalidFormatException('Transaction key height is invalid: {}.'.format(trans_dict['height']))
     else:
+        if(len(trans_dict['inputs']) == 0):
+            raise InvalidFormatException('Transaction inputs must be non-zero: {}.'.format(trans_dict['inputs']))
         for d in trans_dict['inputs']:
             validate_transaction_input(d)
+        verify_transaction(trans_dict, trans_dict['inputs'])
+        weak_law_of_conservation(trans_dict)
+        no_double_spend(trans_dict['inputs'])
+
     return True
 
 def validate_block(block_dict):
@@ -92,16 +106,42 @@ def get_objid(obj_dict):
 
 # perform semantic checks
 
+# weak law of conservation
+def weak_law_of_conservation(trans_dict):
+    sum_of_inputs = 0
+    for i in trans_dict['inputs']:
+        sum_of_inputs += kermastorage.get_object(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['value']
+    sum_of_outputs = 0
+    for o in trans_dict['outputs']:
+        sum_of_outputs += o['value']
+    if(sum_of_inputs < sum_of_outputs):
+        raise InvalidTxConservationException('Sum of inputs is larger than sum of outputs: {}.'.format(trans_dict['inputs']))
+
+# double-spend check
+def no_double_spend(inputs_list):
+    for i in inputs_list:
+        if(inputs_list.count(i) >= 2):
+            raise InvalidTxConservationException('Double spending: {}.'.format(inputs_list))
+
 # verify the signature sig in tx_dict using pubkey
 def verify_tx_signature(tx_dict, sig, pubkey):
-    # TODO: TASK 2
-    return True
+    public_key = Ed25519PublicKey.from_public_bytes(bytes.fromhex(pubkey))
+    try:
+        public_key.verify(bytes.fromhex(sig), tx_dict.dumps().encode('utf-8'))
+        print("Signature is valid.")
+    except ed25519.InvalidSignature:
+        print("Signature is invalid.")
+        raise InvalidTxSignatureException('Invalid signature: {}.'.format(sig))
 
-class TXVerifyException(Exception):
-    pass # TODO: TASK 2 -> move to error messages?
 
 def verify_transaction(tx_dict, input_txs):
-    pass # TODO: TASK 2
+    inputs = tx_dict['inputs']
+    modified_inputs = []
+    for i in range(len(inputs)):
+        modified_inputs[i] = inputs[i]
+        modified_inputs[i]['sig'] = None
+    for i in input_txs:
+        verify_tx_signature(modified_inputs, i['sig'], kermastorage.get_object(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['pubkey'])
 
 class BlockVerifyException(Exception):
     pass # TODO: TASK 2 -> move to error messages?
