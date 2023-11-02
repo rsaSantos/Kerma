@@ -7,6 +7,7 @@ import copy
 import hashlib
 import json
 import re
+import copy
 
 import constants as const
 import kermastorage
@@ -46,7 +47,7 @@ def validate_transaction_input(in_dict):
     if sorted(list(in_dict['outpoint'].keys())) != sorted(['txid', 'index']):
         raise InvalidFormatException('Invalid transaction field outpoint: {}.'.format(in_dict['outpoint']))
     validate_objectid(in_dict['outpoint']['txid'])
-    if(not isinstance(in_dict['outpoint']['index'], int)):
+    if(not isinstance(in_dict['outpoint']['index'], int) or in_dict['outpoint']['index'] < 0):
         raise InvalidFormatException('Invalid transaction field index: {}.'.format(in_dict['outpoint']['index']))
     if(not kermastorage.check_objectid_exists(in_dict['outpoint']['txid'])):
         raise UnknownObjectException('Object not present in DB: {}.'.format(in_dict['outpoint']['txid']))
@@ -78,9 +79,9 @@ def validate_transaction(trans_dict):
             raise InvalidFormatException('Transaction inputs must be non-zero: {}.'.format(trans_dict['inputs']))
         for d in trans_dict['inputs']:
             validate_transaction_input(d)
-        verify_transaction(trans_dict, trans_dict['inputs'])
         weak_law_of_conservation(trans_dict)
         no_double_spend(trans_dict['inputs'])
+        verify_transaction(trans_dict, trans_dict['inputs'])
 
     return True
 
@@ -101,7 +102,7 @@ def validate_object(obj_dict):
     return True
 
 def get_objid(obj_dict):
-    h = hashlib.sha256()
+    h = hashlib.blake2s()
     h.update(canonicalize(obj_dict))
     return h.hexdigest()
 
@@ -116,7 +117,7 @@ def weak_law_of_conservation(trans_dict):
     for o in trans_dict['outputs']:
         sum_of_outputs += o['value']
     if(sum_of_inputs < sum_of_outputs):
-        raise InvalidTxConservationException('Sum of inputs is larger than sum of outputs: {}.'.format(trans_dict['inputs']))
+        raise InvalidTxConservationException('Sum of outputs is larger than sum of inputs: {}.'.format(trans_dict['inputs']))
 
 # double-spend check
 def no_double_spend(inputs_list):
@@ -127,22 +128,22 @@ def no_double_spend(inputs_list):
 # verify the signature sig in tx_dict using pubkey
 def verify_tx_signature(tx_dict, sig, pubkey):
     public_key = Ed25519PublicKey.from_public_bytes(bytes.fromhex(pubkey))
+    tx_dict = canonicalize(tx_dict)
+    tx_dict = json.loads(tx_dict.decode())
     try:
-        public_key.verify(bytes.fromhex(sig), tx_dict.dumps().encode('utf-8'))
+        public_key.verify(bytes.fromhex(sig), json.dumps(tx_dict).encode('utf-8'))
         print("Signature is valid.")
-    except ed25519.InvalidSignature:
+    except InvalidSignature:
         print("Signature is invalid.")
         raise InvalidTxSignatureException('Invalid signature: {}.'.format(sig))
 
 
 def verify_transaction(tx_dict, input_txs):
-    inputs = tx_dict['inputs']
-    modified_inputs = []
-    for i in range(len(inputs)):
-        modified_inputs[i] = inputs[i]
-        modified_inputs[i]['sig'] = None
+    modified_tx = copy.deepcopy(tx_dict)
+    for i in range(len(modified_tx['inputs'])):
+        modified_tx['inputs'][i]['sig'] = None
     for i in input_txs:
-        verify_tx_signature(modified_inputs, i['sig'], kermastorage.get_object(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['pubkey'])
+        verify_tx_signature(modified_tx, i['sig'], kermastorage.get_object(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['pubkey'])
 
 class BlockVerifyException(Exception):
     pass # TODO: TASK 2 -> move to error messages?
