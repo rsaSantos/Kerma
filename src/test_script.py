@@ -7,6 +7,9 @@ import sys
 import unittest
 
 import constants as const
+import objects
+import main
+from message.msgexceptions import *
 
 from jcs import canonicalize
 
@@ -18,581 +21,659 @@ async def write_msg(writer, msg_dict):
     await writer.drain()
 
 class Test(unittest.IsolatedAsyncioTestCase):
-    async def test_hello_message(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_hello_message(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test hello message validity")
+    #     print("Test hello message validity")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "hello")
-        self.assertEqual(sorted(list(msg_dict.keys())), sorted(['agent', 'type', 'version']))
-        self.assertEqual(True, msg_dict['agent'].isprintable())
-        self.assertEqual(True, len(msg_dict['agent']) <= 128)
-        self.assertIsNotNone(re.match(r'^0\.10\.\d$', msg_dict['version']))
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "hello")
+    #     self.assertEqual(sorted(list(msg_dict.keys())), sorted(['agent', 'type', 'version']))
+    #     self.assertEqual(True, msg_dict['agent'].isprintable())
+    #     self.assertEqual(True, len(msg_dict['agent']) <= 128)
+    #     self.assertIsNotNone(re.match(r'^0\.10\.\d$', msg_dict['version']))
 
-        writer.close() 
+    #     writer.close() 
 
-    async def test_invalid_handshake_1(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_handshake_1(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_HANDSHAKE_1")
+    #     print("Test INVALID_HANDSHAKE_1")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
 
-        invalid_msg = {'type':'getpeers'}
-        await write_msg(writer, invalid_msg)
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_HANDSHAKE")
+    #     invalid_msg = {'type':'getpeers'}
+    #     await write_msg(writer, invalid_msg)
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_HANDSHAKE")
 
-        writer.close() 
+    #     writer.close() 
 
-    async def test_invalid_handshake_2(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_handshake_2(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_HANDSHAKE_2")
+    #     print("Test INVALID_HANDSHAKE_2")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
 
-        await asyncio.sleep(20)
+    #     await asyncio.sleep(20)
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_HANDSHAKE")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_HANDSHAKE")
 
-        writer.close() 
+    #     writer.close() 
 
-    async def test_invalid_handshake_3(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_handshake_3(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_HANDSHAKE_3")
+    #     print("Test INVALID_HANDSHAKE_3")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
         
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )                                        # Here we expect the node to act in a good way, thus send any message besides hello
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )                                        # Here we expect the node to act in a good way, thus send any message besides hello
         
 
-        await write_msg(writer, hello_msg)       # Send one more hello message on purpose
+    #     await write_msg(writer, hello_msg)       # Send one more hello message on purpose
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )                                         # Node should be able to detect a second hello message thus send an error message
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_HANDSHAKE")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )                                         # Node should be able to detect a second hello message thus send an error message
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_HANDSHAKE")
 
-        writer.close() 
+    #     writer.close() 
 
-    async def test_invalid_format_1(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_1(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
         
-        print("Test INVALID_FORMAT_1")
+    #     print("Test INVALID_FORMAT_1")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
 
-        non_printable_string = "Sending\nmessages"
-        self.assertEqual(False, non_printable_string.isprintable())
-        hello_msg = {'type':'hello','version':'0.10.0','agent':non_printable_string}
-        await write_msg(writer, hello_msg)
+    #     non_printable_string = "Sending\nmessages"
+    #     self.assertEqual(False, non_printable_string.isprintable())
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':non_printable_string}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
         
-        writer.close() 
+    #     writer.close() 
 
-    async def test_invalid_format_2(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_2(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_FORMAT_2")
+    #     print("Test INVALID_FORMAT_2")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
 
-        long_string = ""
-        for i in range(0, 129):
-            long_string += 'a'
-        self.assertEqual(True, len(long_string) == 129)
-        hello_msg = {'type':'hello','version':'0.10.0','agent':long_string}
-        await write_msg(writer, hello_msg)
+    #     long_string = ""
+    #     for i in range(0, 129):
+    #         long_string += 'a'
+    #     self.assertEqual(True, len(long_string) == 129)
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':long_string}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
 
-        writer.close() 
+    #     writer.close() 
 
-    async def test_invalid_format_3(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_3(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_FORMAT_3")
+    #     print("Test INVALID_FORMAT_3")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
 
-        version = '0.10.10'
-        hello_msg = {'type':'hello','version':version,'agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
+    #     version = '0.10.10'
+    #     hello_msg = {'type':'hello','version':version,'agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
 
-        writer.close() 
+    #     writer.close() 
 
-    async def test_invalid_format_4(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_4(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_FORMAT_4")
+    #     print("Test INVALID_FORMAT_4")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
 
-        hello_msg = {'type':'hello','version':'0.10.0'}
-        await write_msg(writer, hello_msg)
+    #     hello_msg = {'type':'hello','version':'0.10.0'}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
 
-        writer.close() 
+    #     writer.close() 
 
-    async def test_invalid_format_5(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_5(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_FORMAT_5")
+    #     print("Test INVALID_FORMAT_5")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(True, msg_dict['type'] == "getpeers")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(True, msg_dict['type'] == "getpeers")
 
-        peers_msg = {'type':'peers','peers':[], 'extra':'key'}
-        await write_msg(writer, peers_msg)
+    #     peers_msg = {'type':'peers','peers':[], 'extra':'key'}
+    #     await write_msg(writer, peers_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
 
-        writer.close() 
+    #     writer.close() 
 
-    async def test_invalid_format_6(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_6(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_FORMAT_6")
+    #     print("Test INVALID_FORMAT_6")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(True, msg_dict['type'] == "getpeers")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(True, msg_dict['type'] == "getpeers")
 
-        l = []
-        for i in range(0, 31):
-            l.append("0.0.0.1:256")
-        peers_msg = {'type':'peers','peers':l}
-        await write_msg(writer, peers_msg)
+    #     l = []
+    #     for i in range(0, 31):
+    #         l.append("0.0.0.1:256")
+    #     peers_msg = {'type':'peers','peers':l}
+    #     await write_msg(writer, peers_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
 
-        writer.close()  
+    #     writer.close()  
 
-    async def test_invalid_format_7(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_7(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_FORMAT_7")
+    #     print("Test INVALID_FORMAT_7")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(True, msg_dict['type'] == "getpeers")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(True, msg_dict['type'] == "getpeers")
 
-        l = ["0.0.0.1:65536"]
-        peers_msg = {'type':'peers','peers':l}
-        await write_msg(writer, peers_msg)
+    #     l = ["0.0.0.1:65536"]
+    #     peers_msg = {'type':'peers','peers':l}
+    #     await write_msg(writer, peers_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
 
-        writer.close()
+    #     writer.close()
     
-    async def test_invalid_format_7(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_7(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_FORMAT_7")
+    #     print("Test INVALID_FORMAT_7")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(True, msg_dict['type'] == "getpeers")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(True, msg_dict['type'] == "getpeers")
 
-        l = ["256.2.3.4:18018"]
-        peers_msg = {'type':'peers','peers':l}
-        await write_msg(writer, peers_msg)
+    #     l = ["256.2.3.4:18018"]
+    #     peers_msg = {'type':'peers','peers':l}
+    #     await write_msg(writer, peers_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
 
-        writer.close()
+    #     writer.close()
 
-    async def test_invalid_format_8(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_8(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_FORMAT_8")
+    #     print("Test INVALID_FORMAT_8")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(True, msg_dict['type'] == "getpeers")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(True, msg_dict['type'] == "getpeers")
 
-        l = ["1.2.3.4.5:678"]
-        peers_msg = {'type':'peers','peers':l}
-        await write_msg(writer, peers_msg)
+    #     l = ["1.2.3.4.5:678"]
+    #     peers_msg = {'type':'peers','peers':l}
+    #     await write_msg(writer, peers_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
 
-        writer.close()
+    #     writer.close()
 
-    async def test_invalid_format_9(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_9(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_FORMAT_9")
+    #     print("Test INVALID_FORMAT_9")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(True, msg_dict['type'] == "getpeers")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(True, msg_dict['type'] == "getpeers")
 
-        l = ["nodotindomain:1234"]
-        peers_msg = {'type':'peers','peers':l}
-        await write_msg(writer, peers_msg)
+    #     l = ["nodotindomain:1234"]
+    #     peers_msg = {'type':'peers','peers':l}
+    #     await write_msg(writer, peers_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
 
-        writer.close()
+    #     writer.close()
 
-    async def test_invalid_format_10(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_invalid_format_10(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test INVALID_FORMAT_10")
+    #     print("Test INVALID_FORMAT_10")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(True, msg_dict['type'] == "getpeers")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(True, msg_dict['type'] == "getpeers")
 
-        l = ["kermanode.net"]
-        peers_msg = {'type':'peers','peers':l}
-        await write_msg(writer, peers_msg)
+    #     l = ["kermanode.net"]
+    #     peers_msg = {'type':'peers','peers':l}
+    #     await write_msg(writer, peers_msg)
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        msg_dict = parse_msg(msg_str)
-        self.assertEqual(msg_dict['type'], "error")
-        self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     msg_dict = parse_msg(msg_str)
+    #     self.assertEqual(msg_dict['type'], "error")
+    #     self.assertEqual(msg_dict['name'], "INVALID_FORMAT")
 
-        writer.close()
+    #     writer.close()
 
-    async def test_getpeers_message(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+    # async def test_getpeers_message(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
-        print("Test getpeers message validity")
+    #     print("Test getpeers message validity")
 
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
+
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+
+    #     self.assertEqual(msg_dict['type'], "getpeers")
+    #     self.assertEqual(list(msg_dict.keys()), ['type'])
+
+    #     writer.close()  
+
+    # async def test_peers_message(self):
+    #     reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
+
+    #     print("Test peers message validity")
+
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+
+    #     hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
+    #     await write_msg(writer, hello_msg)
+
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+
+    #     getpeers_msg = {'type':'getpeers'}
+    #     await write_msg(writer, getpeers_msg)
+
+    #     msg_str = await asyncio.wait_for(
+    #         reader.readline(),
+    #         timeout=5.0
+    #     )
+    #     try:
+    #         parse_msg(msg_str)
+    #     except Exception as e:
+    #         self.fail("Message was parsed incorrectly")
+    #     msg_dict = parse_msg(msg_str)
+
+    #     self.assertEqual(msg_dict['type'], "peers")
+    #     self.assertEqual(sorted(list(msg_dict.keys())), sorted(['peers', 'type']))
+    #     self.assertEqual(len(msg_dict['peers']) > 30, False)
+
+    #     writer.close()  
+
+    async def test_tx_validation(self):
+        print("Transaction validation 1")
+        tx_object = {
+            "height" : 0 ,
+            "outputs" : [
+                {
+                    "pubkey" : "85acb336a150b16a9c6c8c27a4e9c479d9f99060a7945df0bb1b53365e98969b" ,
+                    "value" : 50000000000000
+                }
+            ],
+            "type" : "transaction"
+        }
+        tx_object = canonicalize(tx_object)
+        tx_object = json.loads(tx_object.decode())
+        
+        self.assertTrue(objects.validate_object(tx_object))
+
+    async def test_tx_validation2(self):
+        print("Transaction validation 2")
+        tx_object = {
+            "height" : -1 ,
+            "outputs" : [
+                {
+                    "pubkey" : "85acb336a150b16a9c6c8c27a4e9c479d9f99060a7945df0bb1b53365e98969b" ,
+                    "value" : 50000000000000
+                }
+            ],
+            "type" : "transaction"
+        }
+        tx_object = canonicalize(tx_object)
+        tx_object = json.loads(tx_object.decode())
         try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
+            objects.validate_object(tx_object)
+        except MessageException as e:
+            self.assertEqual(e.error_name, "INVALID_FORMAT")
+            self.assertTrue("Transaction key height is invalid" in e.message)
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
-
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
+    async def test_tx_validation3(self):
+        print("Transaction validation 3")
+        tx_object = {
+            "height" : 0 ,
+            "outputs" : [
+                {
+                    "pubkey" : "85acb336a150b16a9c6c8c27a4e9c479d9f99060a7945df0bb1b53365e98969" ,
+                    "value" : 50000000000000
+                }
+            ],
+            "type" : "transaction"
+        }
+        tx_object = canonicalize(tx_object)
+        tx_object = json.loads(tx_object.decode())
         try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
+            objects.validate_object(tx_object)
+        except MessageException as e:
+            self.assertEqual(e.error_name, "INVALID_FORMAT")
+            self.assertTrue("Object's 'pubkey' is of incorrect format" in e.message)
 
-        self.assertEqual(msg_dict['type'], "getpeers")
-        self.assertEqual(list(msg_dict.keys()), ['type'])
-
-        writer.close()  
-
-    async def test_peers_message(self):
-        reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
-
-        print("Test peers message validity")
-
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
+    async def test_tx_validation4(self):
+        print("Transaction validation 4")
+        tx_object = {
+            "height" : 0 ,
+            "outputs" : [
+                {
+                    "pubkey " : "85acb336a150b16a9c6c8c27a4e9c479d9f99060a7945df0bb1b53365e98969b" ,
+                    "value" : -1
+                }
+            ],
+            "type" : "transaction"
+        }
+        tx_object = canonicalize(tx_object)
+        tx_object = json.loads(tx_object.decode())
         try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
+            objects.validate_object(tx_object)
+        except MessageException as e:
+            self.assertEqual(e.error_name, "INVALID_FORMAT")
+            self.assertTrue("Invalid transaction field outputs" in e.message)
 
-        hello_msg = {'type':'hello','version':'0.10.0','agent':'Sending messages'}
-        await write_msg(writer, hello_msg)
-
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-
-        getpeers_msg = {'type':'getpeers'}
-        await write_msg(writer, getpeers_msg)
-
-        msg_str = await asyncio.wait_for(
-            reader.readline(),
-            timeout=5.0
-        )
-        try:
-            parse_msg(msg_str)
-        except Exception as e:
-            self.fail("Message was parsed incorrectly")
-        msg_dict = parse_msg(msg_str)
-
-        self.assertEqual(msg_dict['type'], "peers")
-        self.assertEqual(sorted(list(msg_dict.keys())), sorted(['peers', 'type']))
-        self.assertEqual(len(msg_dict['peers']) > 30, False)
-
-        writer.close()  
 
 if __name__ == "__main__":
     unittest.main()

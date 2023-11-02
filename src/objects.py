@@ -10,6 +10,7 @@ import re
 
 import constants as const
 import kermastorage
+from message.msgexceptions import *
 
 # perform syntactic checks. returns true iff check succeeded
 OBJECTID_REGEX = re.compile("^[0-9a-f]{64}$")
@@ -65,7 +66,7 @@ def validate_transaction_output(out_dict):
     return True
 
 def validate_transaction(trans_dict):
-    if sorted(list(trans_dict.keys())) != sorted(['type', 'inputs', 'outputs']) or sorted(list(trans_dict.keys())) != sorted(['type', 'height', 'outputs']):
+    if sorted(list(trans_dict.keys())) != sorted(['type', 'inputs', 'outputs']) and sorted(list(trans_dict.keys())) != sorted(['type', 'height', 'outputs']):
         raise InvalidFormatException('Invalid transaction msg: {}.'.format(trans_dict))
     for d in trans_dict['outputs']:
         validate_transaction_output(d)
