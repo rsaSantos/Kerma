@@ -128,10 +128,8 @@ def no_double_spend(inputs_list):
 # verify the signature sig in tx_dict using pubkey
 def verify_tx_signature(tx_dict, sig, pubkey):
     public_key = Ed25519PublicKey.from_public_bytes(bytes.fromhex(pubkey))
-    tx_dict = canonicalize(tx_dict)
-    tx_dict = json.loads(tx_dict.decode())
     try:
-        public_key.verify(bytes.fromhex(sig), json.dumps(tx_dict).encode('utf-8'))
+        public_key.verify(bytes.fromhex(sig), json.dumps(tx_dict, separators=(',', ':')).encode())
         print("Signature is valid.")
     except InvalidSignature:
         print("Signature is invalid.")

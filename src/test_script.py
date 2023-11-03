@@ -1059,47 +1059,47 @@ class Test(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(e.error_name, "INVALID_TX_CONSERVATION")
             self.assertTrue("Double spending" in e.message)
 
-    # async def test_tx_validation14(self):
-    #     print("Transaction validation 14 - Assert all is correct per protocol description")
-    #     tx_object = {
-    #         "inputs": [
-    #             {
-    #                 "outpoint" :      {
-    #                     "index" : 0,
-    #                     "txid" : "d46d09138f0251edc32e28f1a744cb0b7286850e4c9c777d7e3c6e459b289347"
-    #                 },
-    #                 "sig" : "6204bbab1b736ce2133c4ea43aff3767c49c881ac80b57ba38a3bab980466644cdbacc86b1f4357cfe45e6374b963f5455f26df0a86338310df33e50c15d7f04"
-    #             }
-    #         ],
-    #         "outputs" : [
-    #             {
-    #                 "pubkey" : "b539258e808b3e3354b9776d1ff4146b52282e864f56224e7e33e7932ec72985" ,
-    #                 "value" : 10
-    #             },
-    #             {
-    #                 "pubkey" : "8dbcd2401c89c04d6e53c81c90aa0b551cc8fc47c0469217c8f5cfbae1e911f9" ,
-    #                 "value" : 49999999999990
-    #             }
-    #         ],
-    #         "type" : "transaction"
-    #     }
-    #     tx_object = canonicalize(tx_object)
-    #     tx_object = json.loads(tx_object.decode())
-    #     prev_tx_object = {
-    #             "height" : 0,
-    #             "outputs" : [
-    #                 {
-    #                     "pubkey" : "85acb336a150b16a9c6c8c27a4e9c479d9f99060a7945df0bb1b53365e98969b" ,
-    #                     "value" : 50000000000000
-    #                 }
-    #             ],
-    #             "type" : "transaction"
-    #     }
-    #     prev_tx_object = canonicalize(prev_tx_object)
-    #     prev_tx_object = json.loads(prev_tx_object.decode())
-    #     kermastorage.check_objectid_exists = MagicMock(return_value = True)
-    #     kermastorage.get_object = MagicMock(return_value = prev_tx_object)
-    #     self.assertTrue(objects.validate_object(tx_object))
+    async def test_tx_validation14(self):
+        print("Transaction validation 14 - Assert all is correct per protocol description")
+        tx_object = {
+            "inputs": [
+                {
+                    "outpoint" :      {
+                        "index" : 0,
+                        "txid" : "d46d09138f0251edc32e28f1a744cb0b7286850e4c9c777d7e3c6e459b289347"
+                    },
+                    "sig" : "6204bbab1b736ce2133c4ea43aff3767c49c881ac80b57ba38a3bab980466644cdbacc86b1f4357cfe45e6374b963f5455f26df0a86338310df33e50c15d7f04"
+                }
+            ],
+            "outputs" : [
+                {
+                    "pubkey" : "b539258e808b3e3354b9776d1ff4146b52282e864f56224e7e33e7932ec72985" ,
+                    "value" : 10
+                },
+                {
+                    "pubkey" : "8dbcd2401c89c04d6e53c81c90aa0b551cc8fc47c0469217c8f5cfbae1e911f9" ,
+                    "value" : 49999999999990
+                }
+            ],
+            "type" : "transaction"
+        }
+        tx_object = canonicalize(tx_object)
+        tx_object = json.loads(tx_object.decode())
+        prev_tx_object = {
+                "height" : 0,
+                "outputs" : [
+                    {
+                        "pubkey" : "85acb336a150b16a9c6c8c27a4e9c479d9f99060a7945df0bb1b53365e98969b" ,
+                        "value" : 50000000000000
+                    }
+                ],
+                "type" : "transaction"
+        }
+        prev_tx_object = canonicalize(prev_tx_object)
+        prev_tx_object = json.loads(prev_tx_object.decode())
+        kermastorage.check_objectid_exists = MagicMock(return_value = True)
+        kermastorage.get_object = MagicMock(return_value = prev_tx_object)
+        self.assertTrue(objects.validate_object(tx_object))
 
     
 
