@@ -1,4 +1,4 @@
-.PHONY: docker-build docker-up run build clean make-submission check-submission remove-submission remove-test test-script
+.PHONY: docker-build docker-up run build clean make-submission check-submission remove-submission remove-test test-script open-db
 
 run:
 	cd src && python3 main.py
@@ -56,4 +56,8 @@ remove-submission:
 	rm -rf _submission
 
 test-script:
-	python3 src/test_script.py
+	python3 src/test_script_task2.py
+	python3 src/test_script_task1.py
+
+open-db:
+	sqlite3 src/db.db
