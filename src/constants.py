@@ -3,7 +3,7 @@ from Peer import Peer
 EXTERNAL_IP = "35.207.97.80" # This is hardcoded...
 
 PORT = 18018
-ADDRESS = "0.0.0.0"
+ADDRESS = "127.0.0.1"
 SERVICE_LOOP_DELAY = 10
 VERSION = '0.10.1'
 AGENT = 'kerma-node-g4'
@@ -37,5 +37,5 @@ BANNED_HOSTS = [ # TODO: TASK 2: Ban hosts that send invalid data ?
 PRELOADED_PEERS = {
     Peer("128.130.122.101", 18018), # lecturers node
     #Peer("35.207.97.80", 18018),    # google cloud node
-    #Peer("0.0.0.0", 18019),         # For testing purposes
+    #Peer("127.0.0.1", 18019),         # For testing purposes
 }
