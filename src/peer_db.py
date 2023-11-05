@@ -39,15 +39,18 @@ def get_peer_from_str(s: str) -> (Peer, int):
     return Peer(host, int(port)), int(timestamp)
     
 def load_peers() -> dict[Peer, int]:
-    with open(PEER_DB_FILE, "r") as f:
-        f.readline() # Skip the first line
-        peers_dic = dict()
-        for line in f.readlines():
-            peer, timestamp = get_peer_from_str(line)
-            if peer not in peers_dic:
-                peers_dic[peer] = timestamp
+    try:
+        with open(PEER_DB_FILE, "r") as f:
+            f.readline() # Skip the first line
+            peers_dic = dict()
+            for line in f.readlines():
+                peer, timestamp = get_peer_from_str(line)
+                if peer not in peers_dic:
+                    peers_dic[peer] = timestamp
 
-        return peers_dic
+            return peers_dic
+    except FileNotFoundError:
+        return dict()
 
 def get_shareable_peers() -> Set[str]:
     all_peers_dict = load_peers()
