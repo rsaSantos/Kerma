@@ -40,7 +40,7 @@ def get_object(obj_id):
         row = cur.fetchone()
         if row is None:
             return None
-        return objects.deserialize(row[0])
+        return row[0]
     except Exception as e:
         print("Error getting object: " + str(e))
     finally:
@@ -62,7 +62,7 @@ def create_db():
         # - object_id (TEXT)
         # - object (TEXT -> JSON)
         #
-        cur.execute("CREATE TABLE objects (object_id TEXT PRIMARY KEY, object TEXT)")
+        cur.execute("CREATE TABLE objects (object_id TEXT PRIMARY KEY, object BLOB)")
 
         # Preload genesis block -> For now we are treating it as an object as well.
         genesis_block = canonicalize(const.GENESIS_BLOCK)
