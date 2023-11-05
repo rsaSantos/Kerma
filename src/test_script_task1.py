@@ -5,8 +5,13 @@ import random
 import re
 import sys
 import unittest
+from unittest.mock import MagicMock
 
+import kermastorage
 import constants as const
+import objects
+import main
+from message.msgexceptions import *
 
 from jcs import canonicalize
 
@@ -593,6 +598,7 @@ class Test(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(msg_dict['peers']) > 30, False)
 
         writer.close()  
+    
 
 if __name__ == "__main__":
     unittest.main()

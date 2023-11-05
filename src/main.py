@@ -97,9 +97,6 @@ def mk_object_msg(obj_dict):
 def mk_ihaveobject_msg(objid):
     return {'type': 'ihaveobject', 'objectid' : objid}
 
-def mk_send_to_peer_msg(msg_to_send):
-    return {'type': 'sendtopeer', 'msg': msg_to_send}
-
 def mk_chaintip_msg(blockid):
     pass  # TODO
 
@@ -180,7 +177,7 @@ def validate_peer_str(peer_str):
 
 # raise an exception if not valid
 def validate_peers_msg(msg_dict):
-    if (list(msg_dict.keys()) != sorted(['type', 'peers'])):
+    if (sorted(list(msg_dict.keys())) != sorted(['type', 'peers'])):
         raise InvalidFormatException("Invalid peers msg: {}.".format(msg_dict))
     if (len(msg_dict['peers']) > 30):
         raise InvalidFormatException("Too many peers in peers message.")
@@ -205,26 +202,27 @@ def validate_getmempool_msg(msg_dict):
 
 # raise an exception if not valid
 def validate_error_msg(msg_dict):
-    if (list(msg_dict.keys()) != sorted(['type', 'name', 'msg'])):
+    if (sorted(list(msg_dict.keys())) != sorted(['type', 'name', 'msg'])):
         raise InvalidFormatException("Invalid error msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_ihaveobject_msg(msg_dict):
-    if list(msg_dict.keys() != sorted(['type', 'objectid'])):
+    if (sorted(list(msg_dict.keys())) != sorted(['type', 'objectid'])):
         raise InvalidFormatException("Invalid ihaveobject msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_getobject_msg(msg_dict):
-    if list(msg_dict.keys()) != sorted(['type', 'objectid']):
+    if sorted(list(msg_dict.keys())) != sorted(['type', 'objectid']):
         raise InvalidFormatException("Invalid getobject msg: {}.".format(msg_dict))
 
 
 # raise an exception if not valid
 def validate_object_msg(msg_dict):
-    if list(msg_dict.keys()) != sorted(['type', 'object']):
+    if sorted(list(msg_dict.keys())) != sorted(['type', 'object']):
         raise InvalidFormatException('Invalid object msg: {}.'.format(msg_dict))
+    
 
 # raise an exception if not valid
 def validate_chaintip_msg(msg_dict):
@@ -361,6 +359,10 @@ async def handle_object_msg(msg_dict, writer):
     #
     # Get object ID
     object_dict = dict(msg_dict['object'])
+
+    # Validate the object
+    objects.validate_object(object_dict)
+
     object_id = objects.get_objid(object_dict)
 
     # Check if we already have it
@@ -371,8 +373,7 @@ async def handle_object_msg(msg_dict, writer):
         # Gossip to all peers
         ihaveobject_msg = mk_ihaveobject_msg(object_id)
         for connection in CONNECTIONS.values():
-            send_to_peer_msg = mk_send_to_peer_msg(ihaveobject_msg)
-            await connection.put(send_to_peer_msg)
+            await connection.put(ihaveobject_msg)
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
@@ -539,7 +540,7 @@ async def handle_connection(reader, writer):
             # For further message processing, create a task
             await queue.put(msg_dict)
 
-    except MessageException as e:
+    except UnknownObjectException as e:
         try:
             error_msg = mk_error_msg(e.error_name, str(e.message))
             print("Sending error message: {}".format(error_msg))
@@ -547,17 +548,33 @@ async def handle_connection(reader, writer):
         except:
             pass
 
+    except MessageException as e:
+        try:
+            error_msg = mk_error_msg(e.error_name, str(e.message))
+            print("Sending error message: {}".format(error_msg))
+            await write_msg(writer, error_msg)
+        except:
+            pass
+        finally:
+            print("Closing connection with {}".format(peer))
+            writer.close()
+            del_connection(peer)
+            if read_task is not None and not read_task.done():
+                read_task.cancel()
+            if queue_task is not None and not queue_task.done():
+                queue_task.cancel()
+
     except Exception as e:
         print("Error not handled: {}: {}".format(peer, str(e)))
 
-    finally:
-        print("Closing connection with {}".format(peer))
-        writer.close()
-        del_connection(peer)
-        if read_task is not None and not read_task.done():
-            read_task.cancel()
-        if queue_task is not None and not queue_task.done():
-            queue_task.cancel()
+    # finally:
+    #     print("Closing connection with {}".format(peer))
+    #     writer.close()
+    #     del_connection(peer)
+    #     if read_task is not None and not read_task.done():
+    #         read_task.cancel()
+    #     if queue_task is not None and not queue_task.done():
+    #         queue_task.cancel()
 
 
 async def connect_to_node(peer: Peer):
