@@ -23,8 +23,8 @@ def store_peers(peers: Iterable[Peer]):
     all_peers_dict = load_peers()
 
     for peer in peers:
-        if peer not in all_peers_dict:
-            all_peers_dict[peer] = 0
+        # CR: remove if statement "if p peer not in peers", now it always updates the value of peer to current timestamp
+        all_peers_dict[peer] = int(time.time())
 
     write_to_csv(all_peers_dict)
 
