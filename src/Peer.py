@@ -1,4 +1,5 @@
 import ipaddress
+import socket
 
 """
 host
@@ -7,13 +8,19 @@ host_formated == host for hostname and ipv4
 """
 class Peer:
     def __init__(self, host_str, port:int):
+        self.host_ip = None
         self.port = port
         try:
-            ip = ipaddress.ip_address(host_str)
-            self.host_str = ip.compressed
+            self.host_ip = ipaddress.ip_address(host_str)
+            self.host_str = self.host_ip.compressed
         except:
             # not an ip, but a DNS name
-            self.host_str = host_str
+            try:
+                self.host_str = host_str
+                ip_str = socket.gethostbyname(host_str)
+                self.host_ip = ipaddress.ip_address(ip_str)
+            except:
+                self.host_str = host_str
 
     def __str__(self) -> str:
         return f"{self.host_str}:{self.port}"

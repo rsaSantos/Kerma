@@ -37,14 +37,10 @@ def add_peer(peer):
         return
 
     # Do not add loopback or multicast addrs
-    try:
-        ip = ipaddress.ip_address(peer.host_str)
-
-        if ip.is_loopback or ip.is_multicast:
-            return
-    except ValueError:
-        raise Exception("Invalid peer address: {}".format(peer.host_str))
-
+    ip = peer.host_ip
+    if ip is None or ip.is_loopback or ip.is_multicast or ip.is_private or ip.is_reserved:
+        return
+    
     PEERS.add(peer)
 
 # Add connection if not already open
