@@ -137,7 +137,7 @@ def validate_hello_msg(msg_dict):
         raise InvalidFormatException("Message does not contain key 'type'.")
 
     if (msg_dict['type'] != "hello"):
-        raise InvalidHandshakeException()
+        raise InvalidHandshakeException("The first message needs to be of type 'hello'")
     if (sorted(list(msg_dict.keys())) != sorted(['agent', 'type', 'version'])):
         raise InvalidFormatException("Expected keys: agent, type, version.")
     if ((not msg_dict['agent'].isprintable()) or (len(msg_dict['agent']) > 128)):
@@ -475,7 +475,6 @@ async def handshake(reader, writer):
         )
         # Validate the hello message (raises an exception if not valid)
         validate_hello_msg(parse_msg(raw_hello_future))
-
     except asyncio.TimeoutError:
         raise InvalidHandshakeException("Waited too long for hello message (>20s).")
     except InvalidFormatException as e:
