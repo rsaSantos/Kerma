@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from jcs import canonicalize
+import json
 
 import objects
 import constants as const
@@ -40,7 +41,7 @@ def get_object(obj_id):
         row = cur.fetchone()
         if row is None:
             return None
-        return row[0]
+        return json.loads(row[0])
     except Exception as e:
         print("Error getting object: " + str(e))
     finally:
