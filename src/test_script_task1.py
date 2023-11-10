@@ -60,6 +60,16 @@ class Test(unittest.IsolatedAsyncioTestCase):
             self.fail("Message was parsed incorrectly")
         msg_dict = parse_msg(msg_str)
 
+        msg_str = await asyncio.wait_for(
+            reader.readline(),
+            timeout=5.0
+        )
+        try:
+            parse_msg(msg_str)
+        except Exception as e:
+            self.fail("Message was parsed incorrectly")
+        msg_dict = parse_msg(msg_str)
+
         invalid_msg = {'type':'getpeers'}
         await write_msg(writer, invalid_msg)
         msg_str = await asyncio.wait_for(
@@ -80,6 +90,16 @@ class Test(unittest.IsolatedAsyncioTestCase):
         reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_HANDSHAKE_2")
+
+        msg_str = await asyncio.wait_for(
+            reader.readline(),
+            timeout=5.0
+        )
+        try:
+            parse_msg(msg_str)
+        except Exception as e:
+            self.fail("Message was parsed incorrectly")
+        msg_dict = parse_msg(msg_str)
 
         msg_str = await asyncio.wait_for(
             reader.readline(),
@@ -165,6 +185,16 @@ class Test(unittest.IsolatedAsyncioTestCase):
             self.fail("Message was parsed incorrectly")
         msg_dict = parse_msg(msg_str)
 
+        msg_str = await asyncio.wait_for(
+            reader.readline(),
+            timeout=5.0
+        )
+        try:
+            parse_msg(msg_str)
+        except Exception as e:
+            self.fail("Message was parsed incorrectly")
+        msg_dict = parse_msg(msg_str)
+
         non_printable_string = "Sending\nmessages"
         self.assertEqual(False, non_printable_string.isprintable())
         hello_msg = {'type':'hello','version':'0.10.0','agent':non_printable_string}
@@ -188,6 +218,16 @@ class Test(unittest.IsolatedAsyncioTestCase):
         reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_2")
+
+        msg_str = await asyncio.wait_for(
+            reader.readline(),
+            timeout=5.0
+        )
+        try:
+            parse_msg(msg_str)
+        except Exception as e:
+            self.fail("Message was parsed incorrectly")
+        msg_dict = parse_msg(msg_str)
 
         msg_str = await asyncio.wait_for(
             reader.readline(),
@@ -235,6 +275,16 @@ class Test(unittest.IsolatedAsyncioTestCase):
             self.fail("Message was parsed incorrectly")
         msg_dict = parse_msg(msg_str)
 
+        msg_str = await asyncio.wait_for(
+            reader.readline(),
+            timeout=5.0
+        )
+        try:
+            parse_msg(msg_str)
+        except Exception as e:
+            self.fail("Message was parsed incorrectly")
+        msg_dict = parse_msg(msg_str)
+
         version = '0.10.10'
         hello_msg = {'type':'hello','version':version,'agent':'Sending messages'}
         await write_msg(writer, hello_msg)
@@ -257,6 +307,16 @@ class Test(unittest.IsolatedAsyncioTestCase):
         reader, writer = await asyncio.open_connection(const.EXTERNAL_IP, const.PORT, limit=const.RECV_BUFFER_LIMIT)
 
         print("Test INVALID_FORMAT_4")
+
+        msg_str = await asyncio.wait_for(
+            reader.readline(),
+            timeout=5.0
+        )
+        try:
+            parse_msg(msg_str)
+        except Exception as e:
+            self.fail("Message was parsed incorrectly")
+        msg_dict = parse_msg(msg_str)
 
         msg_str = await asyncio.wait_for(
             reader.readline(),

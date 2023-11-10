@@ -37,14 +37,10 @@ def add_peer(peer):
         return
 
     # Do not add loopback or multicast addrs
-    try:
-        ip = ipaddress.ip_address(peer.host_str)
-
-        if ip.is_loopback or ip.is_multicast:
-            return
-    except ValueError:
-        raise Exception("Invalid peer address: {}".format(peer.host_str))
-
+    ip = peer.host_ip
+    if ip is None or ip.is_loopback or ip.is_multicast or ip.is_private or ip.is_reserved:
+        return
+    
     PEERS.add(peer)
 
 # Add connection if not already open
@@ -141,7 +137,7 @@ def validate_hello_msg(msg_dict):
         raise InvalidFormatException("Message does not contain key 'type'.")
 
     if (msg_dict['type'] != "hello"):
-        raise InvalidHandshakeException()
+        raise InvalidHandshakeException("The first message needs to be of type 'hello'")
     if (sorted(list(msg_dict.keys())) != sorted(['agent', 'type', 'version'])):
         raise InvalidFormatException("Expected keys: agent, type, version.")
     if ((not msg_dict['agent'].isprintable()) or (len(msg_dict['agent']) > 128)):
@@ -271,6 +267,12 @@ def handle_peers_msg(msg_dict):
         # Syntax: <host>:<port>
         host_str, port_str = peer_str.split(':')
         peer = Peer(host_str, port_str)
+
+        # Check if we received ourselves
+        if peer.host_str == const.EXTERNAL_IP and peer.port == LISTEN_CFG['port']:
+            print("Received ourselves, skipping...")
+            continue
+
         add_peer(peer)
         rcv_peers.add(peer)
 
@@ -278,7 +280,7 @@ def handle_peers_msg(msg_dict):
 
 
 def handle_error_msg(msg_dict, peer_self):
-    print("{}: Received error of type {}: {}".format(peer_self, msg_dict['name'], msg_dict['msg']))
+    print("Received error of type {}: {}".format(msg_dict['name'], msg_dict['msg']))
 
 async def handle_ihaveobject_msg(msg_dict, writer):
     #
@@ -297,11 +299,12 @@ async def handle_getobject_msg(msg_dict, writer):
     # Get the object ID
     object_id = msg_dict['objectid']
 
-    # Get the object. If its None, we don't have it
-    object_dict = kermastorage.get_object(object_id)
+    # Get the object bytes. If its None, we don't have it
+    object_dict_bytes = kermastorage.get_object(object_id)
 
     # If we have it, send an object message
-    if object_dict is not None:
+    if object_dict_bytes is not None:
+        object_dict = json.loads(object_dict_bytes)
         object_msg = mk_object_msg(object_dict)
         await write_msg(writer, object_msg)
         print("Sent object message: {}".format(object_msg))
@@ -366,7 +369,7 @@ async def handle_object_msg(msg_dict, writer):
     object_id = objects.get_objid(object_dict)
 
     # Check if we already have it
-    if kermastorage.check_objectid_exists(object_id):
+    if not kermastorage.check_objectid_exists(object_id):
         # Save object in database.
         kermastorage.save_object(object_id, object_dict)
 
@@ -472,7 +475,6 @@ async def handshake(reader, writer):
         )
         # Validate the hello message (raises an exception if not valid)
         validate_hello_msg(parse_msg(raw_hello_future))
-
     except asyncio.TimeoutError:
         raise InvalidHandshakeException("Waited too long for hello message (>20s).")
     except InvalidFormatException as e:
@@ -502,7 +504,8 @@ async def handle_connection(reader, writer):
             writer.close()
         except:
             pass
-        return
+        finally:
+            return
 
     try:
         # Handshake the connection -> exchange hello messages
@@ -586,7 +589,7 @@ async def connect_to_node(peer: Peer):
         peer_db.update_timestamp(peer, time.time())
 
     except Exception as e:
-        print(str(e))
+        print("Failed to connect to {}:{}. Error: {}".format(peer.host_str, peer.port, str(e)))
         PEERS.discard(peer)
         peer_db.remove_peer(peer)
         return
@@ -605,7 +608,6 @@ async def listen():
 
 
 async def bootstrap():
-    bootstrap_peers = []
     for peer in const.PRELOADED_PEERS:
         if str(peer.host_str) == str(LISTEN_CFG['address']) and str(peer.port) == str(LISTEN_CFG['port']):
             print("Skipping bootstrap peer {}:{}".format(peer.host_str, peer.port))
@@ -618,7 +620,6 @@ async def bootstrap():
         t.add_done_callback(BACKGROUND_TASKS.discard)
 
         add_peer(peer)
-        bootstrap_peers.append(peer)
 
 # connect to some peers
 def resupply_connections():
@@ -644,9 +645,6 @@ def resupply_connections():
     for peer in chosenPeers:
         print("Trying to connect to {}:{}".format(peer.host_str, peer.port))
         t = asyncio.create_task(connect_to_node(peer))
-
-        BACKGROUND_TASKS.add(t)
-        t.add_done_callback(BACKGROUND_TASKS.discard)
 
         BACKGROUND_TASKS.add(t)
         t.add_done_callback(BACKGROUND_TASKS.discard)
@@ -685,7 +683,7 @@ def main():
 if __name__ == "__main__":
     if len(sys.argv) == 3:
         LISTEN_CFG['address'] = sys.argv[1]
-        LISTEN_CFG['port'] = sys.argv[2]
+        LISTEN_CFG['port'] = int(sys.argv[2])
     
     kermastorage.create_db()
     main()
