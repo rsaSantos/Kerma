@@ -1,0 +1,219 @@
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Your group obtained 12 / 18 points for task 2
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+This is the output of the grading tool:
+Grading following IPs: localhost
+
+
+Grading submission 0: IP address localhost
+info: Testcase: Grader 1 sends a valid transaction. Grader 2 must receive ihaveobject message. If Grader 2 sends a getobject message later, it must receive the transaction.
+info: Grader successfully connected to IP address localhost on port 18018
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+info: Sending a valid coinbase transaction.
+info: Sending message: {"object":{"height":0,"outputs":[{"pubkey":"f645c63c49c516c590f5beeee872f8fc8338709ce97b4844f1115c2e0e373aed","value":50000000000}],"type":"transaction"},"type":"object"}
+
+info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader 2 received message: {"type":"getpeers"}
+
+info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: FAIL: Did not receive an "ihaveobject" message with the objectid 6aa260fb82471791945be45f86baaff5c932b59a1f3beed89cadae53794cf6ad (0 points)
+
+info: Sending message: {"objectid":"6aa260fb82471791945be45f86baaff5c932b59a1f3beed89cadae53794cf6ad","type":"getobject"}
+
+info: Grader 2 received message: {"object":{"height":0,"outputs":[{"pubkey":"f645c63c49c516c590f5beeee872f8fc8338709ce97b4844f1115c2e0e373aed","value":50000000000}],"type":"transaction"},"type":"object"}
+
+info: PASS: Received the requested coinbase transaction in time (1 points)
+
+info: Sending another valid transaction.
+info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"6aa260fb82471791945be45f86baaff5c932b59a1f3beed89cadae53794cf6ad"},"sig":"5313d56e5b742ad9227a1cc34af846ac68db04c6b9e46c98fde250c89d032e76252d6fb441dd45f3b6f8290925471a7e9635c45b24dcacfb453706b21d2f9d03"}],"outputs":[{"pubkey":"f645c63c49c516c590f5beeee872f8fc8338709ce97b4844f1115c2e0e373aed","value":10}],"type":"transaction"},"type":"object"}
+
+info: FAIL: Did not receive an "ihaveobject" message with the objectid d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1 (0 points)
+
+info: Sending message: {"objectid":"d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1","type":"getobject"}
+
+info: Grader 2 received message: {"msg":"Object with id d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1 not found.","name":"UNKNOWN_OBJECT","type":"error"}
+
+info: FAIL: Did not receive the requested transaction in time. (0 points)
+
+info: POINTS SO FAR: 1
+
+info: Testcase: Must receive getobject message in response to ihaveobject message
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"objectid":"4ece522c5eb395744956b34343701e640134e9a74c81ea4f9f4473aa54b4e67e","type":"ihaveobject"}
+
+info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Grader received message: {"objectid":"4ece522c5eb395744956b34343701e640134e9a74c81ea4f9f4473aa54b4e67e","type":"getobject"}
+
+info: PASS: Received a correct 'getobject' message in time (1 points)
+
+info: POINTS SO FAR: 2
+
+info: Must receive an error message and no ihaveobject message on sending an invalid transaction
+info: Grader successfully connected to IP address localhost on port 18018
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"d48a643adf0cf794123b7c63a6986a88dafac13ec75ff990241d1eee70e6bbd1"},"sig":"e36e625f1e9ed8e5591667d3a4b8da1c7dd5ecc437a178ca2990efd6ec4a5e1f1f8a1fded6b352af99e0d1c745485156e7f9c49412570f206afed5f2d70a2c01"}],"outputs":[{"pubkey":"f645c63c49c516c590f5beeee872f8fc8338709ce97b4844f1115c2e0e373aed","value":10}],"type":"transaction"},"type":"object"}
+
+info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader 2 received message: {"type":"getpeers"}
+
+info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Grader received message: {"msg":"Object not present in DB: d48a643adf0cf794123b7c63a6986a88dafac13ec75ff990241d1eee70e6bbd1.","name":"UNKNOWN_OBJECT","type":"error"}
+
+info: PASS: Received an UNKNOWN_OBJECT error message. (1 points)
+
+info: PASS: Did not gossip an invalid transaction: 0 (1 points)
+
+info: Grader successfully connected to IP address localhost on port 18018
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1"},"sig":"1a3c9efa02c5c68cdfd071c21f79e20f72b4542fa2d375def59a6461727750ab7778298298f5679449e2c5b0bacdf2c1ca4a9d5ea8f181225859682441f23e08"}],"outputs":[{"pubkey":"f645c63c49c516c590f5beeee872f8fc8338709ce97b4844f1115c2e0e373aed"}],"type":"transaction"},"type":"object"}
+
+info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader 2 received message: {"type":"getpeers"}
+
+info: Grader received message: {"msg":"Invalid transaction field outputs: {'pubkey': 'f645c63c49c516c590f5beeee872f8fc8338709ce97b4844f1115c2e0e373aed'}.","name":"INVALID_FORMAT","type":"error"}
+
+info: PASS: Received an INVALID_FORMAT error message. (1 points)
+
+info: PASS: Did not gossip an invalid transaction: 1 (1 points)
+
+info: Grader successfully connected to IP address localhost on port 18018
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"object":{"inputs":[{"outpoint":{"index":1,"txid":"d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1"},"sig":"0bc4ad6d91e47bf0baaa640c4ca64c713260274290f3e48f036df36b4c868e4c092193034120ca9d4aa8c178aff2c3759313a311ac922c299f9ad9d077117b06"}],"outputs":[{"pubkey":"f645c63c49c516c590f5beeee872f8fc8338709ce97b4844f1115c2e0e373aed","value":10}],"type":"transaction"},"type":"object"}
+
+info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Grader 2 received message: {"type":"getpeers"}
+
+info: Grader received message: {"msg":"Object not present in DB: d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1.","name":"UNKNOWN_OBJECT","type":"error"}
+
+info: FAIL: Received an error name that was not INVALID_TX_OUTPOINT, received UNKNOWN_OBJECT instead. (0 points)
+
+info: PASS: Did not gossip an invalid transaction: 2 (1 points)
+
+info: Grader successfully connected to IP address localhost on port 18018
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1"},"sig":"88bf11d3836fad8a8d46bccefc94d8de6ccbf48e6f3637774c4cf313e63610e18378044aae771a6f65f83e357aa573bfed7acb335f442e8d3180b789f6494801"},{"outpoint":{"index":0,"txid":"d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1"},"sig":"88bf11d3836fad8a8d46bccefc94d8de6ccbf48e6f3637774c4cf313e63610e18378044aae771a6f65f83e357aa573bfed7acb335f442e8d3180b789f6494801"}],"outputs":[{"pubkey":"f645c63c49c516c590f5beeee872f8fc8338709ce97b4844f1115c2e0e373aed","value":5000000000011}],"type":"transaction"},"type":"object"}
+
+info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader 2 received message: {"type":"getpeers"}
+
+info: Grader received message: {"msg":"Object not present in DB: d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1.","name":"UNKNOWN_OBJECT","type":"error"}
+
+info: FAIL: Received an error name that was not INVALID_TX_CONSERVATION, received UNKNOWN_OBJECT instead. (0 points)
+
+info: PASS: Did not gossip an invalid transaction: 3 (1 points)
+
+info: Grader successfully connected to IP address localhost on port 18018
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1"},"sig":"0bc4ad6d91e47bf0baaa640c4ca64c713260274290f3e48f036df36b4c868e4c092193034120ca9d4aa8c178aff2c3759313a311ac922c299f9ad9d077117b06"}],"outputs":[{"pubkey":"f645c63c49c516c590f5beeee872f8fc8338709ce97b4844f1115c2e0e373aed","value":10}],"type":"transaction"},"type":"object"}
+
+info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Grader 2 received message: {"type":"getpeers"}
+
+info: Grader received message: {"msg":"Object not present in DB: d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1.","name":"UNKNOWN_OBJECT","type":"error"}
+
+info: FAIL: Received an error name that was not INVALID_TX_SIGNATURE, received UNKNOWN_OBJECT instead. (0 points)
+
+info: PASS: Did not gossip an invalid transaction: 4 (1 points)
+
+info: Grader successfully connected to IP address localhost on port 18018
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"d48a643adf0cf794123b7c63a5986a88dafac13ec75ff990241d1eee70e6bbd1"},"sig":"1a3c9efa02c5c68cdfd071c21f79e20f72b4542fa2d375def59a6461727750ab7778298298f5679449e2c5b0bacdf2c1ca4a9d5ea8f181225859682441f23e08"}],"outputs":[{"pubkey":"f645c63c49c516c590f5beeee872f8fc8338709ce97b4844f1115c2e0e373aed","value":-10}],"type":"transaction"},"type":"object"}
+
+info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader 2 received message: {"type":"getpeers"}
+
+info: Grader received message: {"msg":"Transaction key value is invalid: -10.","name":"INVALID_FORMAT","type":"error"}
+
+info: PASS: Received an INVALID_FORMAT error message. (1 points)
+
+info: PASS: Did not gossip an invalid transaction: 5 (1 points)
+
+info: POINTS SO FAR: 11
+
+info: Node must not crash when given a getobject message for a transaction you don't store
+info: Grader successfully connected to IP address localhost on port 18018
+info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+info: Sending message: {"objectid":"678c8a90b9622032c8e646fa820e3dcacc3ce4a835b88ea20f6a9d64a9a1daf9","type":"getobject"}
+
+info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+info: Grader received message: {"type":"getpeers"}
+
+info: Grader received message: {"msg":"Object with id 678c8a90b9622032c8e646fa820e3dcacc3ce4a835b88ea20f6a9d64a9a1daf9 not found.","name":"UNKNOWN_OBJECT","type":"error"}
+
+info: PASS: Your node did not crash upon receiving 'getobject' message for a transaction you don't store. (1 points)
+
+info: POINTS SO FAR: 12
+
+info: Grading is done
+info: Achieved points: 12 / 18
+
+
