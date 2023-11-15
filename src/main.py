@@ -93,9 +93,6 @@ def mk_object_msg(obj_dict):
 def mk_ihaveobject_msg(objid):
     return {'type': 'ihaveobject', 'objectid' : objid}
 
-def mk_broadcast_ihaveobject_msg(objid):
-    return {'type': 'broadcast_ihaveobject', 'objectid' : objid}
-
 def mk_chaintip_msg(blockid):
     pass  # TODO
 
@@ -252,8 +249,6 @@ def validate_msg(msg_dict):
         validate_error_msg(msg_dict)
     elif msg_type == 'ihaveobject':
         validate_ihaveobject_msg(msg_dict)
-    elif msg_type == 'broadcast_ihaveobject':
-        return True
     elif msg_type == 'getobject':
         validate_getobject_msg(msg_dict)
     elif msg_type == 'object':
@@ -372,12 +367,12 @@ async def handle_object_msg(msg_dict, writer):
 
     # Check if we already have it
     if not kermastorage.check_objectid_exists(object_id):
-        # Save object in database. If successful, broadcast to all peers
+        # Save object in database. If successful, gossip to all peers
         if kermastorage.save_object(object_id, object_dict):
             # Gossip to all peers
-            broadcast_ihaveobject_msg = mk_broadcast_ihaveobject_msg(object_id)
-            for connection in CONNECTIONS.values():
-                await connection.put(broadcast_ihaveobject_msg)
+            ihaveobject_msg = mk_ihaveobject_msg(object_id)
+            for connection_queue in CONNECTIONS.values():
+                await connection_queue.put(ihaveobject_msg)
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
@@ -399,13 +394,16 @@ async def handle_chaintip_msg(msg_dict):
 async def handle_mempool_msg(msg_dict):
     pass  # TODO
 
+async def handle_queue_msg(msg_dict, writer):
+    print("Handling queue message: {}".format(msg_dict))
+    await write_msg(writer, msg_dict)
 
 # Helper function
-async def handle_queue_msg(msg_dict, writer):
+async def handle_rcv_msg(msg_dict, writer):
     #
     # Let's identify the message type and pass it to the appropriate handler
     #
-    print("Handling message: {}".format(msg_dict))
+    print("Handling received message: {}".format(msg_dict))
     if msg_dict['type'] == 'getpeers':
         await write_msg(writer, mk_peers_msg())
         print("Sent peers message.")
@@ -421,10 +419,6 @@ async def handle_queue_msg(msg_dict, writer):
     elif msg_dict['type'] == 'ihaveobject':
         await handle_ihaveobject_msg(msg_dict, writer)
         print("Handled ihaveobject message!")
-    
-    elif msg_dict['type'] == 'broadcast_ihaveobject':
-        msg_dict['type'] = 'ihaveobject'
-        await write_msg(writer, msg_dict)
 
     elif msg_dict['type'] == 'getobject':
         await handle_getobject_msg(msg_dict, writer)
@@ -534,7 +528,7 @@ async def handle_connection(reader, writer):
             if queue_task in done:
                 queue_msg = queue_task.result()
                 queue_task = None
-                await handle_queue_msg(queue_msg, writer) # TODO: Can we execute tasks asynchroniously?
+                await handle_queue_msg(queue_msg, writer)
                 queue.task_done()
 
             # if no message was received over the network continue
@@ -545,8 +539,7 @@ async def handle_connection(reader, writer):
             msg_dict = parse_msg(msg_str)
             validate_msg(msg_dict)
             
-            # For further message processing, create a task
-            await queue.put(msg_dict)
+            await handle_rcv_msg(msg_dict, writer)
 
     except UnknownObjectException as e:
         try:
