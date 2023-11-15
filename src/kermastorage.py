@@ -117,8 +117,8 @@ def create_db():
         cur.execute("CREATE TABLE " + TABLE_TRANSACTIONS + " (transaction_id TEXT PRIMARY KEY, transaction_data BLOB)")
         # Preload genesis block
         genesis_block = canonicalize(const.GENESIS_BLOCK)
-        genesis_block_row = (const.GENESIS_BLOCK_ID, genesis_block)
-        cur.execute("INSERT INTO " + TABLE_BLOCKS + " VALUES (?,?)", genesis_block_row)
+        genesis_block_row = (const.GENESIS_BLOCK_ID, genesis_block, '[]'.encode('utf-8'))
+        cur.execute("INSERT INTO " + TABLE_BLOCKS + " VALUES (?,?,?)", genesis_block_row)
         con.commit()
 
         print("Database created successfully!")
