@@ -91,15 +91,16 @@ def validate_transaction(trans_dict):
     return True
 
 def validate_block(block_dict, all_txs_in_db=False):
+    is_not_genesis_block = block_dict['previd'] is not None
     if(all_txs_in_db):
         prev_utxo = []
-        if(not block_dict['previd'] is None):
+        if(is_not_genesis_block):
             prev_utxo = kermastorage.get_object(block_dict['previd'], "block", True)['utxo'] # This is assuming we will keep the UTXO as {"utxo": [{"txid": 0x...1, "index": 0}, {...}]}
         txs = []
         for tx in block_dict['txids']:
             txs.append(kermastorage.get_transaction(tx))
         prev_height = 0
-        if(not block_dict['previd'] is None):
+        if(is_not_genesis_block):
             prev_height = kermastorage.get_block(block_dict['previd'])['txids'][0]['height']  # We get the previous object from the DB (since its DB it respects the protocol), thus coinbase is index 0
         return verify_block(block_dict, kermastorage.get_block(block_dict['previd']), prev_utxo, prev_height, txs)  # Return the new UTXO
         
@@ -126,11 +127,11 @@ def validate_block(block_dict, all_txs_in_db=False):
             raise InvalidBlockTimestampException('Invalid block msg "created" attribute: {}.'.format(block_dict))
         else:
             raise InvalidFormatException('Invalid block msg "created" attribute: {}.'.format(block_dict))
-    if(not block_dict['miner'] is None and ((not block_dict['miner'].isprintable()) or (len(block_dict['miner']) > 128))):
+    if(block_dict['miner'] is not None and ((not block_dict['miner'].isprintable()) or (len(block_dict['miner']) > 128))):
         raise InvalidBlockTimestampException('Invalid block msg "miner" attribute: {}.'.format(block_dict))
-    if(not block_dict['note'] is None and ((not block_dict['note'].isprintable()) or (len(block_dict['note']) > 128))):
+    if(block_dict['note'] is not None and ((not block_dict['note'].isprintable()) or (len(block_dict['note']) > 128))):
         raise InvalidBlockTimestampException('Invalid block msg "note" attribute: {}.'.format(block_dict))
-    if(not block_dict['previd'] is None):
+    if(is_not_genesis_block):
         validate_objectid(block_dict['previd'])
     tx_missing = {}
     for tx in block_dict['txids']:
@@ -162,7 +163,6 @@ def validate_object(obj_dict):
         return validate_block(obj_dict)
     else:
         raise InvalidFormatException("Object has invalid key 'type'.")
-    return None
 
 def get_objid(obj_dict):
     h = hashlib.blake2s()

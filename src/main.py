@@ -368,7 +368,7 @@ async def handle_object_msg(msg_dict, writer):
     object_id = objects.get_objid(object_dict)
 
     ################ CHECKING IF WE STOPPED OBJECT VALIDATION DUE TO MISSING TRANSACTIONS ##########
-    if(not utxo_set is None and utxo_set['utxo'] is None):   # This is the case where we return a list of missing txid's from the DB
+    if(utxo_set is not None and utxo_set['utxo'] is None):   # This is the case where we return a list of missing txid's from the DB
         BLOCK_MISSING_TXS[object_id] = utxo_set['txs']
         BLOCK_PENDING_MAPPING[object_id] = object_dict
         ### GOSSIP TO ALL PEERS THAT WE ARE MISSING A TRANSACTION FOR A BLOCK TO BE CONFIRMED
