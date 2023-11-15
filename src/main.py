@@ -691,4 +691,4 @@ if __name__ == "__main__":
         LISTEN_CFG['port'] = int(sys.argv[2])
     
     kermastorage.create_db()
-    #main()
+    main()
