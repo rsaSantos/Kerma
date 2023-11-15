@@ -305,8 +305,8 @@ async def handle_getobject_msg(msg_dict, writer):
     object_id = msg_dict['objectid']
 
     # If we have it, send an object message
-    if kermastorage.check_objectid_exists(object_id):
-        object_dict = kermastorage.get_object(object_id)
+    object_dict = kermastorage.get_object(object_id)
+    if object_dict is not None:
         object_msg = mk_object_msg(object_dict)
         await write_msg(writer, object_msg)
         print("Sent object message: {}".format(object_msg))
@@ -372,13 +372,12 @@ async def handle_object_msg(msg_dict, writer):
 
     # Check if we already have it
     if not kermastorage.check_objectid_exists(object_id):
-        # Save object in database.
-        kermastorage.save_object(object_id, object_dict)
-
-        # Gossip to all peers
-        broadcast_ihaveobject_msg = mk_broadcast_ihaveobject_msg(object_id)
-        for connection in CONNECTIONS.values():
-            await connection.put(broadcast_ihaveobject_msg)
+        # Save object in database. If successful, broadcast to all peers
+        if kermastorage.save_object(object_id, object_dict):
+            # Gossip to all peers
+            broadcast_ihaveobject_msg = mk_broadcast_ihaveobject_msg(object_id)
+            for connection in CONNECTIONS.values():
+                await connection.put(broadcast_ihaveobject_msg)
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
@@ -692,4 +691,4 @@ if __name__ == "__main__":
         LISTEN_CFG['port'] = int(sys.argv[2])
     
     kermastorage.create_db()
-    main()
+    #main()
