@@ -8,6 +8,7 @@ import hashlib
 import json
 import re
 import copy
+import time
 
 import constants as const
 import kermastorage
@@ -32,12 +33,14 @@ def validate_signature(sig_str):
 
 NONCE_REGEX = re.compile("^[0-9a-f]{64}$")
 def validate_nonce(nonce_str):
-    pass # todo
+    if(not re.match(NONCE_REGEX, nonce_str)):
+        raise InvalidFormatException("Object's 'nonce' is of incorrect format.")
 
 
 TARGET_REGEX = re.compile("^[0-9a-f]{64}$")
 def validate_target(target_str):
-    pass # todo
+    if(not re.match(TARGET_REGEX, target_str)):
+        raise InvalidFormatException("Object's 'target' is of incorrect format.")
 
 
 def validate_transaction_input(in_dict):
@@ -87,21 +90,79 @@ def validate_transaction(trans_dict):
 
     return True
 
-def validate_block(block_dict):
-    # todo
-    return True
+def validate_block(block_dict, all_txs_in_db=False):
+    if(all_txs_in_db):
+        prev_utxo = []
+        if(not block_dict['previd'] is None):
+            prev_utxo = kermastorage.get_object(block_dict['previd'], "block", True)['utxo'] # This is assuming we will keep the UTXO as {"utxo": [{"txid": 0x...1, "index": 0}, {...}]}
+        txs = []
+        for tx in block_dict['txids']:
+            txs.append(kermastorage.get_transaction(tx))
+        prev_height = 0
+        if(not block_dict['previd'] is None):
+            prev_height = kermastorage.get_block(block_dict['previd'])['txids'][0]['height']  # We get the previous object from the DB (since its DB it respects the protocol), thus coinbase is index 0
+        return verify_block(block_dict, kermastorage.get_block(block_dict['previd']), prev_utxo, prev_height, txs)  # Return the new UTXO
+        
+    valid_block = False
+    if sorted(list(block_dict.keys())) == sorted(['type', 'txids', 'nonce', 'previd', 'created', 'T']):
+        valid_block = True
+    if not valid_block and sorted(list(block_dict.keys())) == sorted(['type', 'txids', 'nonce', 'previd', 'created', 'T', 'miner']):
+        valid_block = True
+    if not valid_block and sorted(list(block_dict.keys())) == sorted(['type', 'txids', 'nonce', 'previd', 'created', 'T', 'note']):
+        valid_block = True
+    if not valid_block and sorted(list(block_dict.keys())) == sorted(['type', 'txids', 'nonce', 'previd', 'created', 'T', 'miner', 'note']):
+        valid_block = True
+    if not valid_block:
+        raise InvalidFormatException('Invalid block msg: {}.'.format(block_dict))
+    validate_nonce(block_dict['nonce'])
+    validate_target(block_dict['T'])
+    if(block_dict['T'] != "00000000abc00000000000000000000000000000000000000000000000000000"):
+        raise InvalidFormatException('Invalid block msg "T" attribute: {}.'.format(block_dict))
+    prev_time = 0
+    if block_dict['T'] != None:
+        prev_time = kermastorage.get_block(block_dict['prev'])['created']
+    if(not isinstance(block_dict['created'], int) or block_dict['created'] < prev_time or block_dict['created'] > int(time.time())):
+        if(isinstance(block_dict['created'], int)):
+            raise InvalidBlockTimestampException('Invalid block msg "created" attribute: {}.'.format(block_dict))
+        else:
+            raise InvalidFormatException('Invalid block msg "created" attribute: {}.'.format(block_dict))
+    if(not block_dict['miner'] is None and ((not block_dict['miner'].isprintable()) or (len(block_dict['miner']) > 128))):
+        raise InvalidBlockTimestampException('Invalid block msg "miner" attribute: {}.'.format(block_dict))
+    if(not block_dict['note'] is None and ((not block_dict['note'].isprintable()) or (len(block_dict['note']) > 128))):
+        raise InvalidBlockTimestampException('Invalid block msg "note" attribute: {}.'.format(block_dict))
+    if(not block_dict['previd'] is None):
+        validate_objectid(block_dict['previd'])
+    tx_missing = {}
+    for tx in block_dict['txids']:
+        validate_objectid(tx)
+        if(kermastorage.get_transaction(tx) is None):
+            tx_missing[tx] = True
+        else:
+            tx_missing[tx] = False
+    if(get_objid(block_dict) >= block_dict['T']):
+        raise InvalidBlockPoWException('PoW is wrong: {}.'.format(block_dict))
+    
+    missing_tx = []
+    for tx in tx_missing.keys():
+        if(tx_missing[tx]):
+            missing_tx.append(tx)
+
+    if(len(missing_tx) == 0):
+        validate_block(block_dict, True)
+    
+    return {"utxo": None, "txs": missing_tx}
 
 def validate_object(obj_dict):
     if 'type' not in obj_dict:
         raise InvalidFormatException("Object does not contain key 'type'.")
     obj_type = obj_dict['type']
-    if(obj_type == "transaction"):
-        validate_transaction(obj_dict)
+    if(obj_type == "transaction" and validate_transaction(obj_dict)):
+        return None
     elif(obj_type == "block"):
-        validate_block(obj_dict)
+        return validate_block(obj_dict)
     else:
         raise InvalidFormatException("Object has invalid key 'type'.")
-    return True
+    return None
 
 def get_objid(obj_dict):
     h = hashlib.blake2s()
@@ -145,9 +206,6 @@ def verify_transaction(tx_dict, input_txs):
     for i in input_txs:
         verify_tx_signature(modified_tx, i['sig'], kermastorage.get_transaction(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['pubkey'])
 
-class BlockVerifyException(Exception):
-    pass # TODO: TASK 2 -> move to error messages?
-
 # apply tx to utxo
 # returns mining fee
 def update_utxo_and_calculate_fee(tx, utxo):
@@ -156,5 +214,25 @@ def update_utxo_and_calculate_fee(tx, utxo):
 
 # verify that a block is valid in the current chain state, using known transactions txs
 def verify_block(block, prev_block, prev_utxo, prev_height, txs):
-    # todo
+    new_utxo = copy.deepcopy(prev_utxo)
+    for tx in txs:
+        if(tx.has_key('inputs')):
+            num_of_occurences = 0
+            indices_to_remove = []
+            for input_tx in tx['inputs']:
+                for i in range(len(new_utxo)):
+                    if(input_tx['outpoint']['txid'] == new_utxo[i]['txid'] and input_tx['outpoint']['index'] == new_utxo[i]['index']):
+                        num_of_occurences += 1
+                        indices_to_remove.append(i)
+                        break
+            if(len(tx['inputs']) > num_of_occurences):
+                raise InvalidTxOutpointException('Transaction in block does not respect UTXO: {}.'.format(txs))
+            filtered_utxo = [(index, value) for index, value in enumerate(new_utxo) if index not in indices_to_remove]
+            append_utxo = []
+            for i in range(len(tx['outputs'])):
+                append_utxo.append({"txid": get_objid(tx), "index": i})
+            new_utxo = filtered_utxo + append_utxo
+            
+    ## VERIFY COINBASE
+            
     return 0
