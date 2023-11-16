@@ -65,3 +65,39 @@ class UnknownObjectException(MessageException):
         self.message = message
         self.error_name = "UNKNOWN_OBJECT"
         super().__init__(self.message, self.error_name)
+
+class InvalidBlockPoWException(MessageException):
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "INVALID_BLOCK_POW"
+        super().__init__(self.message, self.error_name)
+
+class InvalidBlockTimestampException(MessageException):
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "INVALID_BLOCK_TIMESTAMP"
+        super().__init__(self.message, self.error_name)
+
+class InvalidBlockCoinbaseException(MessageException):
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "INVALID_BLOCK_COINBASE"
+        super().__init__(self.message, self.error_name)
+
+class InvalidGenesisException(MessageException):
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "INVALID_GENESIS"
+        super().__init__(self.message, self.error_name)
+
+class UnfindableObjectException(MessageException):
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "UNFINDABLE_OBJECT"
+        super().__init__(self.message, self.error_name)
+
+class InvalidAncestryException(MessageException):
+    def __init__(self, message) -> None:
+        self.message = message
+        self.error_name = "INVALID_ANCESTRY"
+        super().__init__(self.message, self.error_name)
