@@ -5,43 +5,81 @@ from jcs import canonicalize
 from objects import *
 from message.msgexceptions import *
 
+
 # support snippettino
 def canon(obj):
     obj = canonicalize(obj)
     obj = json.loads(obj.decode())
     return obj
 
-# tx_object = canonicalize(tx_object)
-# tx_object = json.loads(tx_object.decode())
 
 class TestTask3(unittest.IsolatedAsyncioTestCase):
 
     #############################################
     # TESTING BLOCK VALIDATION
 
-    def test_valid_block(self):
+    # Testing support functions for evaluation
+    # These are super trivial, I will perform these tests for
+    # Both practicing and because u can never be too sure.
+    def test_validate_objectid(self):
+        valid_oid = "0000000093a2820d67495ac01ad38f74eabd8966517ab15c1cb3f2df1c71eea6"
+        invalid_oids = ["",
+                        "0000000093a2820d67495ac01ad38f74",
+                        "0000000093a2820d67495ac01ad38f74eabd8966517ab15c1cb3f2000000000000",
+                        "invalidcharacters01234567890123456789012345678901234567890123456",
+                        "invalidsymbols!?£$4567890123456789012345678901234567890123456789",
+                        "invalidcharsandsymbols,!?&34567890123456789012345678901234567890",
+                        "invalidprettymucheverything!(£$1234567890123456789012345678901234567890"
+                        ]
+        self.assertIsNone(validate_objectid(valid_oid))  # a la verga SOY GENIUS
+        for o in invalid_oids:
+            with self.subTest(o=o):
+                oid = o
+                self.assertRaises(InvalidFormatException, validate_objectid, oid)
+
+    def test_validate_pubkey(self):
+        # TODO
+        return True
+
+    def test_validate_signature(self):
+        # TODO
+        return True
+
+    def test_validate_nonce(self):
+        # TODO
+        return True
+
+    def test_validate_target(self):
+        # TODO
+        return True
+
+
+    def test_validate_block(self):
         # objectid is 0000000093a2820d67495ac01ad38f74eabd8966517ab15c1cb3f2df1c71eea6
-        print("Testing block validation 1: Valid Block")
+        print("Testing block validation:")
         valid_object = {
             "T": "00000000abc00000000000000000000000000000000000000000000000000000",
-            "created" : 1671148800,
-            "miner" : "grader",
-            "nonce" : "1000000000000000000000000000000000000000000000000000000001aaf999",
-            "note" : "This block has a coinbase transaction ",
-            "previd" : "0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2",
-            " txids" : [
+            "created": 1671148800,
+            "miner": "grader",
+            "nonce": "1000000000000000000000000000000000000000000000000000000001aaf999",
+            "note": "This block has a coinbase transaction ",
+            "previd": "0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2",
+            " txids": [
                 "6ebfb4c8e8e9b19dcf54c6ce3e1e143da1f473ea986e70c5cb8899a4671c933a"
             ],
-            "type": "block"  # space in "type " won't do, "type" is fine. help.
+            "type": "block"
         }
+
+        # TODO : define invalid blocks, each with some invalid parameter (e.g.: Target, nonce, type, missing keys...
+        # TODO : append those to a list, and run the test using SubTest. Piece a cake, go go go!!!
         valid_object = canon(valid_object)
         self.assertTrue(validate_object(valid_object))
 
-    def test_block_bad_timestamp(self):
-        # timestamps ("created" key) can be invalid?
+    def test_get_objid(self):
+        # TODO : try incorrect hash, empty value, invalid value ("_$!", idk)
         return True
 
-    def test_block_missing_keys(self):
+    def test_block_missing_keys(self):  # TODO refactor in test_validate_block!!
         print("Testing block validation 3: Missing Key")
         invalid_object = {  # missing "prev_id"
             "T": "00000000abc00000000000000000000000000000000000000000000000000000",
@@ -60,32 +98,12 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
         # unittest > subtest, otherwise use pytest
         # create a list of json blocks, for json in jsonlist assertRaise or smth. if it works, try subtest.
         # TODO try removing other keys, more keys, all keys.
-    def test_block_target(self):
-        # has to be 00000000abc00000000000000000000000000000000000000000000000000000
-        #
-        # TODO
-        return True
-
-    def test_verify_pow(self):  # good + bad ending? does it exist? where?
-        # TODO
-        return True
-
-    def test_block_txs(self):
-        # function to test: (if we have block txs in our db. if not, check if we send "getobject" msg.)
-        # TODO how?
-        return True
-
-    def test_block_indexing_with_coinbase(self):
-        # we have a bunch of txs, but the coinbase one is not at index 0.
-        # TODO
-        return True
-
 
     ############################################
     # TESTING COINBASE TXs
 
-    def test_coinbase_evaluation_valid(self):
-        print("Testing coinbase value (valid)")
+    def test_coinbase_evaluation(self):
+        print("Testing coinbase value")
         tx_object = {
             "height": 0,
             "outputs": [
@@ -97,7 +115,7 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
             "type": "transaction"
         }
         tx_object = canon(tx_object)
-        self.assertTrue(validate_object(tx_object))  # TODO change method
+        self.assertTrue(validate_object(tx_object))  # TODO change method and add invalid cases. sT may be required.
 
     def test_coinbase_index(self):
         tx_object = {
