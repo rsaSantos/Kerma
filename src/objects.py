@@ -49,9 +49,11 @@ def validate_transaction_input(in_dict):
     validate_objectid(in_dict['outpoint']['txid'])
     if(not isinstance(in_dict['outpoint']['index'], int) or in_dict['outpoint']['index'] < 0):
         raise InvalidFormatException('Invalid transaction field index: {}.'.format(in_dict['outpoint']['index']))
-    if(not kermastorage.check_objectid_exists(in_dict['outpoint']['txid'])):
+    
+    obj_dict = kermastorage.get_transaction(in_dict['outpoint']['txid'])
+    if(obj_dict is None):
         raise UnknownObjectException('Object not present in DB: {}.'.format(in_dict['outpoint']['txid']))
-    obj_dict = kermastorage.get_object(in_dict['outpoint']['txid'])
+    
     if(obj_dict['type'] != "transaction"):
         raise InvalidFormatException('Wrong object referenced in the DB: {}.'.format(in_dict['outpoint']['txid']))
     if(in_dict['outpoint']['index'] >= len(obj_dict['outputs'])):
@@ -112,7 +114,7 @@ def get_objid(obj_dict):
 def weak_law_of_conservation(trans_dict):
     sum_of_inputs = 0
     for i in trans_dict['inputs']:
-        sum_of_inputs += kermastorage.get_object(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['value']
+        sum_of_inputs += kermastorage.get_transaction(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['value']
     sum_of_outputs = 0
     for o in trans_dict['outputs']:
         sum_of_outputs += o['value']
@@ -141,7 +143,7 @@ def verify_transaction(tx_dict, input_txs):
     for i in range(len(modified_tx['inputs'])):
         modified_tx['inputs'][i]['sig'] = None
     for i in input_txs:
-        verify_tx_signature(modified_tx, i['sig'], kermastorage.get_object(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['pubkey'])
+        verify_tx_signature(modified_tx, i['sig'], kermastorage.get_transaction(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['pubkey'])
 
 class BlockVerifyException(Exception):
     pass # TODO: TASK 2 -> move to error messages?
