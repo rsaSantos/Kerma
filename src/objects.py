@@ -61,7 +61,8 @@ def validate_transaction_input(in_dict):
         raise InvalidFormatException('Wrong object referenced in the DB: {}.'.format(in_dict['outpoint']['txid']))
     if(in_dict['outpoint']['index'] >= len(obj_dict['outputs'])):
         raise InvalidTxOutpointException('Transaction index is out of scope: {}.'.format(in_dict['outpoint']['index']))
-    return True
+    
+    return (in_dict['outpoint']['txid'], obj_dict)
 
 def validate_transaction_output(out_dict):
     if sorted(list(out_dict.keys())) != sorted(['pubkey', 'value']):
@@ -82,14 +83,18 @@ def validate_transaction(trans_dict):
     else:
         if(len(trans_dict['inputs']) == 0):
             raise InvalidFormatException('Transaction inputs must be non-zero: {}.'.format(trans_dict['inputs']))
+        #
+        # To optimize DB queries, we should get all the transactions of inputs from the database.
+        # This way we can avoid querying the DB for each input for the following checks.
+        #
+        input_txs_dicts = {}
         for d in trans_dict['inputs']:
-            validate_transaction_input(d)
-        weak_law_of_conservation(trans_dict)
-        no_double_spend(trans_dict['inputs'])
-        verify_transaction(trans_dict)
+            tx_id, tx_dict = validate_transaction_input(d)
+            input_txs_dicts[tx_id] = tx_dict
 
-        # TODO: On the calls of validate_transaction_input, weak_law_of_conservation and verify_transaction:
-        # - Get all the transactions of inputs from the database and store them in a dictionary
+        weak_law_of_conservation(trans_dict, input_txs_dicts)
+        no_double_spend(trans_dict['inputs'])
+        verify_transaction(trans_dict, input_txs_dicts)
 
     return True
 
@@ -183,10 +188,14 @@ def get_objid(obj_dict):
 
 # perform semantic checks
 
-def weak_law_of_conservation(trans_dict):
+def weak_law_of_conservation(trans_dict, input_txs_dicts):
     sum_of_inputs = 0
     for i in trans_dict['inputs']:
-        tx_data = kermastorage.get_transaction_data(i['outpoint']['txid'])
+        # Check if the input transaction is in the input_txs_dicts dictionary
+        if i['outpoint']['txid'] not in input_txs_dicts:
+            raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))
+        
+        tx_data = input_txs_dicts[i['outpoint']['txid']]
         if(tx_data is None):
             raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))
         
@@ -214,7 +223,7 @@ def verify_tx_signature(tx_dict, sig, pubkey):
         print("Signature is invalid.")
         raise InvalidTxSignatureException('Invalid signature: {}.'.format(sig))
 
-def verify_transaction(tx_dict):
+def verify_transaction(tx_dict, input_txs_dicts):
     modified_tx = copy.deepcopy(tx_dict)
     input_txs = copy.deepcopy(tx_dict['inputs'])
 
@@ -222,9 +231,13 @@ def verify_transaction(tx_dict):
         modified_tx['inputs'][i]['sig'] = None
     
     for i in input_txs:
-        tx_data = kermastorage.get_transaction_data(i['outpoint']['txid'])
-        if tx_data is None:
+        if i['outpoint']['txid'] not in input_txs_dicts:
             raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))
+        
+        tx_data = input_txs_dicts[i['outpoint']['txid']]
+        if(tx_data is None):
+            raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))
+        
         verify_tx_signature(modified_tx, i['sig'], tx_data['outputs'][i['outpoint']['index']]['pubkey'])
 
 # apply tx to utxo
