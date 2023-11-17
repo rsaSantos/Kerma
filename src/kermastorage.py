@@ -3,7 +3,6 @@ import os
 from jcs import canonicalize
 import json
 
-import objects
 import constants as const
 
 BLOCK = "block"
@@ -49,7 +48,7 @@ def check_objectid_exists(obj_id):
         con.close()
 
 # Saving an object in the database. The object can be either a block or a transaction
-def save_object(obj_id, obj_dict, utxo_set = None):
+def save_object(obj_id, obj_dict, utxo_set = None, height = None):
     global TABLE_BLOCKS, TABLE_TRANSACTIONS
 
     # Decide which table to use based on the object type
@@ -62,10 +61,15 @@ def save_object(obj_id, obj_dict, utxo_set = None):
     con = get_connection()
     try:        
         cur = con.cursor()
-        if table_name == TABLE_BLOCKS:
+        if table_name == TABLE_TRANSACTIONS:
             cur.execute("INSERT INTO " + table_name + " VALUES (?,?)", (obj_id, canonicalize(obj_dict)))
-        elif table_name == TABLE_TRANSACTIONS:
-            cur.execute("INSERT INTO " + table_name + " VALUES (?,?,?)", (obj_id, canonicalize(obj_dict), utxo_set))
+        elif table_name == TABLE_BLOCKS and height is not None:
+            cur.execute("INSERT INTO " + table_name + " VALUES (?,?,?)", (obj_id, canonicalize(obj_dict), utxo_set, height))
+        else:
+            if height is None:
+                raise Exception("Height is not defined")
+            else:
+                raise Exception("Unknown object type: " + obj_dict["type"])
 
         con.commit()
         return True
@@ -81,7 +85,7 @@ def save_object(obj_id, obj_dict, utxo_set = None):
 # We can get only the data or the full row (without the object id)
 #
 # The transaction query will return: (tx_id, tx_data)
-# The block query will return: (block_id, block_data, utxo_set)
+# The block query will return: (block_id, block_data, utxo_set, height)
 #
 #
 # Returns all the columns of the block table (without block_id)
@@ -105,6 +109,13 @@ def get_utxo_set(block_id):
         return None
     else:
         return block_row[2]
+    
+def get_block_height(block_id):
+    block_row = get_object(block_id, BLOCK)
+    if block_row is None:
+        return None
+    else:
+        return block_row[3]
 
 def get_transaction_data(transaction_id):
     transaction_row = get_object(transaction_id, TRANSACTION)
@@ -127,7 +138,7 @@ def handle_row(row, return_only_data):
 
         if decoded is None:
             ret.append(None)
-        elif decoded.startswith("{"):
+        elif isinstance(decoded, str) and decoded.startswith("{"):
             ret.append(json.loads(decoded))
         else:
             ret.append(decoded)
@@ -181,12 +192,12 @@ def create_db():
         cur = con.cursor()
 
         # Build database
-        cur.execute("CREATE TABLE " + TABLE_BLOCKS + " (block_id TEXT PRIMARY KEY, block_data BLOB, utxo_set BLOB)")
-        cur.execute("CREATE TABLE " + TABLE_TRANSACTIONS + " (transaction_id TEXT PRIMARY KEY, transaction_data BLOB)")
+        cur.execute("CREATE TABLE " + TABLE_BLOCKS + " (block_id TEXT PRIMARY KEY, block_data BLOB NOT NULL, utxo_set BLOB, height INTEGER NOT NULL)")
+        cur.execute("CREATE TABLE " + TABLE_TRANSACTIONS + " (transaction_id TEXT PRIMARY KEY, transaction_data BLOB NOT NULL)")
         # Preload genesis block
         genesis_block = canonicalize(const.GENESIS_BLOCK)
-        genesis_block_row = (const.GENESIS_BLOCK_ID, genesis_block, None)
-        cur.execute("INSERT INTO " + TABLE_BLOCKS + " VALUES (?,?,?)", genesis_block_row)
+        genesis_block_row = (const.GENESIS_BLOCK_ID, genesis_block, None, 0)
+        cur.execute("INSERT INTO " + TABLE_BLOCKS + " VALUES (?,?,?,?)", genesis_block_row)
         con.commit()
 
         print("Database created successfully!")
