@@ -80,9 +80,10 @@ def save_object(obj_id, obj_dict, utxo_set = None):
 # Returns all the columns of the block table (without block_id)
 def get_block_full(block_id):
     block_row = get_object(block_id, BLOCK)
-
-
-    return get_object(block_id, BLOCK) # (block_id, block_data, utxo_set)
+    if block_row is None:
+        return None
+    else:
+        return block_row[1:]
 
 # Returns the block data
 def get_block_data(block_id):
