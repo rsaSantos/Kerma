@@ -361,15 +361,15 @@ async def handle_object_msg(msg_dict, writer):
     #
     # Get object ID
     object_dict = dict(msg_dict['object'])
-
+    #
     # Validate the object - if we are validating transactions, return value is 'None'
     utxo_set = objects.validate_object(object_dict)
-
+    #
     object_id = objects.get_objid(object_dict)
 
     ################ CHECKING IF WE STOPPED OBJECT VALIDATION DUE TO MISSING TRANSACTIONS ##########
-    if(utxo_set is not None and utxo_set['utxo'] is None):   # This is the case where we return a list of missing txid's from the DB
-        BLOCK_MISSING_TXS[object_id] = utxo_set['txs']
+    if(utxo_set is not None and 'utxo' not in utxo_set):   # This is the case where we return a list of missing txid's from the DB
+        BLOCK_MISSING_TXS[object_id] = utxo_set['missing_tx_ids']
         BLOCK_PENDING_MAPPING[object_id] = object_dict
         ### GOSSIP TO ALL PEERS THAT WE ARE MISSING A TRANSACTION FOR A BLOCK TO BE CONFIRMED
         for tx in utxo_set['txs']:
@@ -390,6 +390,8 @@ async def handle_object_msg(msg_dict, writer):
         
     ################ END THE CHECK ##########
     
+
+    # TODO: CHECK CALLS TO SAVE_OBJECT()
 
     # Check if we already have it
     if not kermastorage.check_objectid_exists(object_id):

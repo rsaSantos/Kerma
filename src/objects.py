@@ -100,20 +100,21 @@ def validate_transaction(trans_dict):
 
 def validate_block(block_dict, all_txs_in_db=False):
     is_not_genesis_block = block_dict['previd'] is not None
+    prev_block_data = None
+    prev_utxo = []
+    prev_height = 0
+    if is_not_genesis_block: # Get full prev block from DB!
+        validate_objectid(block_dict['previd'])
+    
+        prev_full_block = kermastorage.get_block_full(block_dict['previd'])
+        if prev_full_block is None:
+            raise UnknownObjectException('Object not present in DB: {}.'.format(block_dict['previd']))
+        
+        prev_block_data = prev_full_block[0]
+        prev_utxo = prev_full_block[1]
+        prev_height = prev_full_block[2]
+
     if(all_txs_in_db):
-        prev_utxo = []
-        prev_height = 0
-        prev_block_data = None
-        if(is_not_genesis_block):
-            # Get full prev block from DB
-            prev_full_block = kermastorage.get_block_full(block_dict['previd'])
-            if prev_full_block is None:
-                raise UnknownObjectException('Object not present in DB: {}.'.format(block_dict['previd']))
-
-            # Get prev UTXO and prev height from DB
-            prev_utxo = prev_full_block[1]
-            prev_height = prev_full_block[2]
-
         txs = []
         for tx in block_dict['txids']:
             txs.append(kermastorage.get_transaction_data(tx))
@@ -135,39 +136,36 @@ def validate_block(block_dict, all_txs_in_db=False):
     validate_target(block_dict['T'])
     if(block_dict['T'] != "00000000abc00000000000000000000000000000000000000000000000000000"):
         raise InvalidFormatException('Invalid block msg "T" attribute: {}.'.format(block_dict))
-    prev_time = 0
-    if block_dict['T'] != None:
-        prev_time = kermastorage.get_block_data(block_dict['prev'])['created']
+    
+    if(get_objid(block_dict) >= block_dict['T']):
+        raise InvalidBlockPoWException('PoW is wrong: {}.'.format(block_dict))
+    
+    if block_dict['created'] is None:
+        raise InvalidFormatException('Invalid block msg "created" attribute: {}.'.format(block_dict))
+    
+    prev_time = 0 if prev_block_data is None else prev_block_data['created']
     if(not isinstance(block_dict['created'], int) or block_dict['created'] < prev_time or block_dict['created'] > int(time.time())):
         if(isinstance(block_dict['created'], int)):
             raise InvalidBlockTimestampException('Invalid block msg "created" attribute: {}.'.format(block_dict))
         else:
             raise InvalidFormatException('Invalid block msg "created" attribute: {}.'.format(block_dict))
+    
     if(block_dict['miner'] is not None and ((not block_dict['miner'].isprintable()) or (len(block_dict['miner']) > 128))):
         raise InvalidBlockTimestampException('Invalid block msg "miner" attribute: {}.'.format(block_dict))
+    
     if(block_dict['note'] is not None and ((not block_dict['note'].isprintable()) or (len(block_dict['note']) > 128))):
         raise InvalidBlockTimestampException('Invalid block msg "note" attribute: {}.'.format(block_dict))
-    if(is_not_genesis_block):
-        validate_objectid(block_dict['previd'])
-    tx_missing = {}
-    for tx in block_dict['txids']:
-        validate_objectid(tx)
-        if(kermastorage.get_transaction_data(tx) is None):
-            tx_missing[tx] = True
-        else:
-            tx_missing[tx] = False
-    if(get_objid(block_dict) >= block_dict['T']):
-        raise InvalidBlockPoWException('PoW is wrong: {}.'.format(block_dict))
     
-    missing_tx = []
-    for tx in tx_missing.keys():
-        if(tx_missing[tx]):
-            missing_tx.append(tx)
+    tx_missing = []
+    for tx_id in block_dict['txids']:
+        validate_objectid(tx_id)
+        if not kermastorage.check_objectid_exists(tx_id):
+            tx_missing.append(tx_id)
 
-    if(len(missing_tx) == 0):
+    if(len(tx_missing) == 0):
         validate_block(block_dict, True)
     
-    return {"utxo": None, "txs": missing_tx}
+    return {"missing_tx_ids": tx_missing }
 
 def validate_object(obj_dict):
     if 'type' not in obj_dict:
