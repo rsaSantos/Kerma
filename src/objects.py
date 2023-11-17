@@ -80,6 +80,8 @@ def validate_transaction(trans_dict):
     if('height' in trans_dict):
         if(not isinstance(trans_dict['height'], int) or trans_dict['height'] < 0):
             raise InvalidFormatException('Transaction key height is invalid: {}.'.format(trans_dict['height']))
+        if len(trans_dict['outputs']) != 1:
+            raise InvalidFormatException('Coibase transaction can only have one output. It has {}.'.format(len(trans_dict['outputs'])))
     else:
         if(len(trans_dict['inputs']) == 0):
             raise InvalidFormatException('Transaction inputs must be non-zero: {}.'.format(trans_dict['inputs']))
@@ -245,26 +247,82 @@ def update_utxo_and_calculate_fee(tx, utxo):
     return 0
 
 # verify that a block is valid in the current chain state, using known transactions txs
-def verify_block(block, prev_block, prev_utxo, prev_height, txs):
-    new_utxo = copy.deepcopy(prev_utxo)
-    for tx in txs:
-        if(tx.has_key('inputs')):
-            num_of_occurences = 0
-            indices_to_remove = []
-            for input_tx in tx['inputs']:
-                for i in range(len(new_utxo)):
-                    if(input_tx['outpoint']['txid'] == new_utxo[i]['txid'] and input_tx['outpoint']['index'] == new_utxo[i]['index']):
-                        num_of_occurences += 1
-                        indices_to_remove.append(i)
-                        break
-            if(len(tx['inputs']) > num_of_occurences):
-                raise InvalidTxOutpointException('Transaction in block does not respect UTXO: {}.'.format(txs))
-            filtered_utxo = [(index, value) for index, value in enumerate(new_utxo) if index not in indices_to_remove]
-            append_utxo = []
-            for i in range(len(tx['outputs'])):
-                append_utxo.append({"txid": get_objid(tx), "index": i})
-            new_utxo = filtered_utxo + append_utxo
+def verify_block(block_dict, prev_block_dict, prev_utxo, prev_height, txs):
+    #
+    # Format of the UTXO set: [ { "txid": <txid>, "index": <index>, "value": <int> }, ... ]
+    #
+    new_utxo = [] if prev_utxo is None else copy.deepcopy(prev_utxo) 
+    
+    # Check if the first transaction is coinbase
+    is_first_transaction_coinbase = len(txs) > 0 and 'inputs' not in txs[0]
+    coinbase_tx = txs[0] if is_first_transaction_coinbase else None
+    coinbase_txid = get_objid(coinbase_tx) if is_first_transaction_coinbase else None
+
+    height = prev_height + 1
+    if coinbase_tx is not None and coinbase_tx['height'] != height:
+        raise InvalidBlockCoinbaseException("Coinbase transaction does not have the correct height. Block height is {}, coinbase height is {}.".format(height, coinbase_tx['height']))
+
+    # Iterate over all transactions in the block...skip coinbase if needed
+    total_fees = 0
+    for tx in txs[1:] if is_first_transaction_coinbase else txs:
+        # If the transaction is coinbase, throw an error because it should be the first transaction
+        if 'inputs' not in tx:
+            raise InvalidBlockCoinbaseException("A coinbase transaction was referenced but is not at the first position.")
+        
+        # Iterate all the inputs of the transaction...
+        sum_of_inputs = 0
+        num_of_occurences = 0
+        indices_to_remove = []
+        for input_tx in tx['inputs']:
+            # Check if it spends from the coinbase transaction
+            if(input_tx['outpoint']['txid'] == coinbase_txid):
+                raise InvalidTxOutpointException("Transaction {} spends from the coinbase transaction of the same block.".format(tx))
+
+            # For each input, check if it is in the UTXO set
+            for i in range(len(new_utxo)):
+                # If it is, schedule to remove it from the UTXO set
+                if(input_tx['outpoint']['txid'] == new_utxo[i]['txid'] and input_tx['outpoint']['index'] == new_utxo[i]['index']):
+                    num_of_occurences += 1
+                    indices_to_remove.append(i)
+                    sum_of_inputs += new_utxo[i]['value']
+                    break
+
+        if(len(tx['inputs']) != num_of_occurences):
+            raise InvalidTxOutpointException('Transaction in block does not respect UTXO: {}.'.format(txs))
+
+        # Filter the new UTXO set by not including the removed indices
+        #filtered_utxo = [{"txid": value["txid"], "index": value["index"]} for index, value in enumerate(new_utxo) if index not in indices_to_remove]
+        filtered_utxo = []
+        for index, value in enumerate(new_utxo):
+            if index not in indices_to_remove:
+                filtered_utxo.append({"txid": value["txid"], "index": value["index"], "value": value["value"]})
+
+        # Get the txid of the transaction
+        txid = get_objid(tx)
+
+        # Add the new UTXO set to the filtered UTXO set
+        append_utxo = []
+        for i in range(len(tx['outputs'])):
+            append_utxo.append({"txid": txid, "index": i, "value": tx['outputs'][i]['value']})
+
+        # The new UTXO set is the filtered UTXO set + the new UTXO set
+        new_utxo = filtered_utxo + append_utxo
+
+        # Calculate the mining fee and add it to the total fees
+        sum_of_outputs = sum([o['value'] for o in tx['outputs']])
+        fee = sum_of_inputs - sum_of_outputs
+
+        # Verify that the difference between the sum of inputs and the sum of outputs is not negative
+        if fee < 0:
+            raise InvalidTxConservationException('Sum of outputs ({}) is larger than sum of inputs ({}).'.format(sum_of_outputs, sum_of_inputs))
+        
+        # Add the fee to the total fees
+        total_fees += fee
             
-    ## VERIFY COINBASE
-            
-    return 0
+    # Verify coinbase transaction value.
+    # The value should be less than or equal to the sum of the fees and the block reward.
+    coinbase_tx_value = coinbase_tx['outputs'][0]['value'] if coinbase_tx is not None else 0
+    if coinbase_tx_value > total_fees + const.BLOCK_REWARD:
+        raise InvalidBlockCoinbaseException("Coinbase transaction value is larger than the sum of the fees and the block reward. Coinbase value is {}, sum of fees is {}, block reward is {}.".format(coinbase_tx_value, total_fees, const.BLOCK_REWARD))
+
+    return { "utxo": new_utxo, "height": height }
