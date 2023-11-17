@@ -597,26 +597,18 @@ async def handle_connection(reader, writer):
             await write_msg(writer, error_msg)
         except:
             pass
-        finally:
-            print("Closing connection with {}".format(peer))
-            writer.close()
-            del_connection(peer)
-            if read_task is not None and not read_task.done():
-                read_task.cancel()
-            if queue_task is not None and not queue_task.done():
-                queue_task.cancel()
 
     except Exception as e:
         print("Error not handled: {}: {}".format(peer, str(e)))
 
-    # finally:
-    #     print("Closing connection with {}".format(peer))
-    #     writer.close()
-    #     del_connection(peer)
-    #     if read_task is not None and not read_task.done():
-    #         read_task.cancel()
-    #     if queue_task is not None and not queue_task.done():
-    #         queue_task.cancel()
+    finally:
+        print("Closing connection with {}".format(peer))
+        writer.close()
+        del_connection(peer)
+        if read_task is not None and not read_task.done():
+            read_task.cancel()
+        if queue_task is not None and not queue_task.done():
+            queue_task.cancel()
 
 
 async def connect_to_node(peer: Peer):
