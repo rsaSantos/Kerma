@@ -58,7 +58,7 @@ def get_transaction(transaction_id):
 
 # Only use this method when only the object id is known.
 def get_object(obj_id, obj_type=None):
-    global TABLE_BLOCKS, TABLE_TRANSACTIONS
+    # global TABLE_BLOCKS, TABLE_TRANSACTIONS
 
     # Get table name based on object type.
     # If the object type is not specified, use the transaction table by default.

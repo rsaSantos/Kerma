@@ -6,16 +6,16 @@ from objects import *
 from message.msgexceptions import *
 
 VALID_BLOCK = {
-    "T": "00000000abc00000000000000000000000000000000000000000000000000000" ,
-    "created ": 1671148800,
-    "miner": "grader" ,
-    "nonce": "1000000000000000000000000000000000000000000000000000000001aaf999" ,
-    "note ": "This block has a coinbase transaction " ,
-    "previd ": "0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2" ,
-    " txids ": [
+    "T": "00000000abc00000000000000000000000000000000000000000000000000000",
+    "created": 1671148800,
+    "miner": "grader",
+    "nonce": "1000000000000000000000000000000000000000000000000000000001aaf999",
+    "note": "This block has a coinbase transaction ",
+    "previd": "0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2",
+    "txids": [
         "6ebfb4c8e8e9b19dcf54c6ce3e1e143da1f473ea986e70c5cb8899a4671c933a"
-    ] ,
-    "type ": "block"
+    ],
+    "type": "block"
 }
 
 
@@ -118,10 +118,11 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
                 tg = t
                 self.assertRaises(InvalidFormatException, validate_target, tg)
 
-    def test_validate_block(self):
-        print("Testing block validation:")
+    def test_valid_block_valid(self):
+        valid_block = canon(VALID_BLOCK)
+        self.assertEqual({"utxo": None, "txs": ['6ebfb4c8e8e9b19dcf54c6ce3e1e143da1f473ea986e70c5cb8899a4671c933a']}, validate_block(valid_block))
 
-        # objectid is 0000000093a2820d67495ac01ad38f74eabd8966517ab15c1cb3f2df1c71eea6
+    def test_validate_block_invalid(self):
 
         invalid_blocks = [{},  # empty block
 
@@ -224,15 +225,48 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
                           {
                               "miner": "grader",
                               "note": "This block has a coinbase transaction ",
+                          },
+                          # invalid T value
+                          {
+                              "T": "10000000abc00000000000000000000000000000000000000000000000000000",
+                              "created": 1671148800,
+                              "miner": "grader",
+                              "nonce": "1000000000000000000000000000000000000000000000000000000001aaf999",
+                              "note": "This block has a coinbase transaction ",
+                              "previd": "0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2",
+                              "txids": [
+                                  "6ebfb4c8e8e9b19dcf54c6ce3e1e143da1f473ea986e70c5cb8899a4671c933a"
+                              ],
+                              "type": "block"
+                          },
+
+                          # invalid nonce: not hex
+                          {
+                              "T": "00000000abc00000000000000000000000000000000000000000000000000000",
+                              "created": 1671148800,
+                              "miner": "grader",
+                              "nonce": "10000000zy000000000000000000000000000000000000000000000001aaf999",
+                              "note": "This block has a coinbase transaction ",
+                              "previd": "0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2",
+                              "txids": [
+                                  "6ebfb4c8e8e9b19dcf54c6ce3e1e143da1f473ea986e70c5cb8899a4671c933a"
+                              ],
+                              "type": "block"
+                          },
+                          # invalid nonce: too long
+                          {
+                              "T": "00000000abc00000000000000000000000000000000000000000000000000000",
+                              "created": 1671148800,
+                              "miner": "grader",
+                              "nonce": "1000000000000000000000000000000000000000000000000000000001aaf9990",
+                              "note": "This block has a coinbase transaction ",
+                              "previd": "0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2",
+                              "txids": [
+                                  "6ebfb4c8e8e9b19dcf54c6ce3e1e143da1f473ea986e70c5cb8899a4671c933a"
+                              ],
+                              "type": "block"
                           }
                           ]
-
-        valid_block = canon(VALID_BLOCK)
-        try:
-            validate_block(valid_block)      # todo this doesn't work, must investigate.
-                                             # DETAILS: raise InvalidFormatException('Invalid block msg: {}.'.format(block_dict))
-        except Exception as e:               # this block should be okay, but the validation raises such error. idk.
-            print(str(e) + "Help!!")
         for b in invalid_blocks:
             with self.subTest(b=b):
                 inv = canon(b)
@@ -251,15 +285,15 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
 
         target_block = {
             "T": "00000000abc00000000000000000000000000000000000000000000000000000",
-            "created ": 1671148800,
+            "created": 1671148800,
             "miner": "grader",
             "nonce": "1000000000000000000000000000000000000000000000000000000001aaf999",
-            "note ": "This block has a coinbase transaction ",
-            "previd ": "0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2",
-            " txids ": [
+            "note": "This block has a coinbase transaction",
+            "previd": "0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2",
+            "txids": [
                 "6ebfb4c8e8e9b19dcf54c6ce3e1e143da1f473ea986e70c5cb8899a4671c933a"
             ],
-            "type ": "block"
+            "type": "block"
         }
         target_block = canon(target_block)
         self.assertEqual(valid_id, get_objid(target_block))  # won't wooooork!
@@ -284,7 +318,6 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
         }
         tx_object = canon(tx_object)
         self.assertTrue(validate_object(tx_object))  # TODO change called method? and add invalid cases
-
 
 
 # TODO need to test UTXO, God help me on that one
