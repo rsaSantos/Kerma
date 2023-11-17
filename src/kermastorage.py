@@ -94,7 +94,7 @@ def get_block_full(block_id):
     if block_row is None:
         return None
     else:
-        return block_row[1:] # Returns: (block_data, utxo_set)
+        return block_row[1:] # Returns: (block_data, utxo_set, height)
 
 def get_block_data(block_id):
     block_row = get_object(block_id, BLOCK)

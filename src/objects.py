@@ -86,7 +86,10 @@ def validate_transaction(trans_dict):
             validate_transaction_input(d)
         weak_law_of_conservation(trans_dict)
         no_double_spend(trans_dict['inputs'])
-        verify_transaction(trans_dict, trans_dict['inputs'])
+        verify_transaction(trans_dict)
+
+        # TODO: On the calls of validate_transaction_input, weak_law_of_conservation and verify_transaction:
+        # - Get all the transactions of inputs from the database and store them in a dictionary
 
     return True
 
@@ -102,15 +105,9 @@ def validate_block(block_dict, all_txs_in_db=False):
             if prev_full_block is None:
                 raise UnknownObjectException('Object not present in DB: {}.'.format(block_dict['previd']))
 
-            # Get prev UTXO from DB
+            # Get prev UTXO and prev height from DB
             prev_utxo = prev_full_block[1]
-
-            # TODO: How to handle the height? As a DB parameter?
-            # Get height of prev block
-            prev_block_data = prev_full_block[0]
-            coinbase_tx_id = prev_block_data['txids'][0]
-            coinbase_tx = kermastorage.get_transaction_data(coinbase_tx_id)
-            prev_height = coinbase_tx['height']
+            prev_height = prev_full_block[2]
 
         txs = []
         for tx in block_dict['txids']:
@@ -170,6 +167,7 @@ def validate_block(block_dict, all_txs_in_db=False):
 def validate_object(obj_dict):
     if 'type' not in obj_dict:
         raise InvalidFormatException("Object does not contain key 'type'.")
+    
     obj_type = obj_dict['type']
     if(obj_type == "transaction" and validate_transaction(obj_dict)):
         return None
@@ -185,7 +183,6 @@ def get_objid(obj_dict):
 
 # perform semantic checks
 
-# weak law of conservation
 def weak_law_of_conservation(trans_dict):
     sum_of_inputs = 0
     for i in trans_dict['inputs']:
@@ -217,11 +214,13 @@ def verify_tx_signature(tx_dict, sig, pubkey):
         print("Signature is invalid.")
         raise InvalidTxSignatureException('Invalid signature: {}.'.format(sig))
 
-
-def verify_transaction(tx_dict, input_txs):
+def verify_transaction(tx_dict):
     modified_tx = copy.deepcopy(tx_dict)
-    for i in range(len(modified_tx['inputs'])):
+    input_txs = copy.deepcopy(tx_dict['inputs'])
+
+    for i in range(len(input_txs)):
         modified_tx['inputs'][i]['sig'] = None
+    
     for i in input_txs:
         tx_data = kermastorage.get_transaction_data(i['outpoint']['txid'])
         if tx_data is None:
