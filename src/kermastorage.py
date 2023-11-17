@@ -77,36 +77,41 @@ def save_object(obj_id, obj_dict, utxo_set = None):
     finally:
         con.close()
 
+# The following methods are used to get the data of a block or a transaction
+# We can get only the data or the full row (without the object id)
+#
+# The transaction query will return: (tx_id, tx_data)
+# The block query will return: (block_id, block_data, utxo_set)
+#
+#
 # Returns all the columns of the block table (without block_id)
 def get_block_full(block_id):
     block_row = get_object(block_id, BLOCK)
     if block_row is None:
         return None
     else:
-        return block_row[1:]
+        return block_row[1:] # Returns: (block_data, utxo_set)
 
-# Returns the block data
 def get_block_data(block_id):
     block_row = get_object(block_id, BLOCK)
     if block_row is None:
         return None
     else:
-        return block_row[1] # (block_id, block_data, utxo_set)
+        return block_row[1]
 
-# Returns the utxo set
 def get_utxo_set(block_id):
     block_row = get_object(block_id, BLOCK)
     if block_row is None:
         return None
     else:
-        return block_row[2] # (block_id, block_data, utxo_set)
+        return block_row[2]
 
 def get_transaction_data(transaction_id):
     transaction_row = get_object(transaction_id, TRANSACTION)
     if transaction_row is None:
         return None
     else:
-        return transaction_row[1] # (tx_id, tx_data)
+        return transaction_row[1]
 
 def handle_row(row, return_only_data):
     # If the row is empty, return None

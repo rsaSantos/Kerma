@@ -53,7 +53,7 @@ def validate_transaction_input(in_dict):
     if(not isinstance(in_dict['outpoint']['index'], int) or in_dict['outpoint']['index'] < 0):
         raise InvalidFormatException('Invalid transaction field index: {}.'.format(in_dict['outpoint']['index']))
     
-    obj_dict = kermastorage.get_transaction(in_dict['outpoint']['txid'])
+    obj_dict = kermastorage.get_transaction_data(in_dict['outpoint']['txid'])
     if(obj_dict is None):
         raise UnknownObjectException('Object not present in DB: {}.'.format(in_dict['outpoint']['txid']))
     
@@ -94,15 +94,29 @@ def validate_block(block_dict, all_txs_in_db=False):
     is_not_genesis_block = block_dict['previd'] is not None
     if(all_txs_in_db):
         prev_utxo = []
+        prev_height = 0
+        prev_block_data = None
         if(is_not_genesis_block):
-            prev_utxo = kermastorage.get_object(block_dict['previd'], "block", True)['utxo'] # This is assuming we will keep the UTXO as {"utxo": [{"txid": 0x...1, "index": 0}, {...}]}
+            # Get full prev block from DB
+            prev_full_block = kermastorage.get_block_full(block_dict['previd'])
+            if prev_full_block is None:
+                raise UnknownObjectException('Object not present in DB: {}.'.format(block_dict['previd']))
+
+            # Get prev UTXO from DB
+            prev_utxo = prev_full_block[1]
+
+            # TODO: How to handle the height? As a DB parameter?
+            # Get height of prev block
+            prev_block_data = prev_full_block[0]
+            coinbase_tx_id = prev_block_data['txids'][0]
+            coinbase_tx = kermastorage.get_transaction_data(coinbase_tx_id)
+            prev_height = coinbase_tx['height']
+
         txs = []
         for tx in block_dict['txids']:
-            txs.append(kermastorage.get_transaction(tx))
-        prev_height = 0
-        if(is_not_genesis_block):
-            prev_height = kermastorage.get_block(block_dict['previd'])['txids'][0]['height']  # We get the previous object from the DB (since its DB it respects the protocol), thus coinbase is index 0
-        return verify_block(block_dict, kermastorage.get_block(block_dict['previd']), prev_utxo, prev_height, txs)  # Return the new UTXO
+            txs.append(kermastorage.get_transaction_data(tx))
+
+        return verify_block(block_dict, prev_block_data, prev_utxo, prev_height, txs)  # Return the new UTXO
         
     valid_block = False
     if sorted(list(block_dict.keys())) == sorted(['type', 'txids', 'nonce', 'previd', 'created', 'T']):
@@ -121,7 +135,7 @@ def validate_block(block_dict, all_txs_in_db=False):
         raise InvalidFormatException('Invalid block msg "T" attribute: {}.'.format(block_dict))
     prev_time = 0
     if block_dict['T'] != None:
-        prev_time = kermastorage.get_block(block_dict['prev'])['created']
+        prev_time = kermastorage.get_block_data(block_dict['prev'])['created']
     if(not isinstance(block_dict['created'], int) or block_dict['created'] < prev_time or block_dict['created'] > int(time.time())):
         if(isinstance(block_dict['created'], int)):
             raise InvalidBlockTimestampException('Invalid block msg "created" attribute: {}.'.format(block_dict))
@@ -136,7 +150,7 @@ def validate_block(block_dict, all_txs_in_db=False):
     tx_missing = {}
     for tx in block_dict['txids']:
         validate_objectid(tx)
-        if(kermastorage.get_transaction(tx) is None):
+        if(kermastorage.get_transaction_data(tx) is None):
             tx_missing[tx] = True
         else:
             tx_missing[tx] = False
@@ -175,7 +189,12 @@ def get_objid(obj_dict):
 def weak_law_of_conservation(trans_dict):
     sum_of_inputs = 0
     for i in trans_dict['inputs']:
-        sum_of_inputs += kermastorage.get_transaction(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['value']
+        tx_data = kermastorage.get_transaction_data(i['outpoint']['txid'])
+        if(tx_data is None):
+            raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))
+        
+        sum_of_inputs += tx_data['outputs'][i['outpoint']['index']]['value']
+
     sum_of_outputs = 0
     for o in trans_dict['outputs']:
         sum_of_outputs += o['value']
@@ -204,7 +223,10 @@ def verify_transaction(tx_dict, input_txs):
     for i in range(len(modified_tx['inputs'])):
         modified_tx['inputs'][i]['sig'] = None
     for i in input_txs:
-        verify_tx_signature(modified_tx, i['sig'], kermastorage.get_transaction(i['outpoint']['txid'])['outputs'][i['outpoint']['index']]['pubkey'])
+        tx_data = kermastorage.get_transaction_data(i['outpoint']['txid'])
+        if tx_data is None:
+            raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))
+        verify_tx_signature(modified_tx, i['sig'], tx_data['outputs'][i['outpoint']['index']]['pubkey'])
 
 # apply tx to utxo
 # returns mining fee
