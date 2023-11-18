@@ -17,6 +17,7 @@ import sqlite3
 import sys
 import time
 
+BLOCK_MISSING_TXS = dict()
 PEERS = set()
 CONNECTIONS = dict()
 BACKGROUND_TASKS = set()
@@ -359,20 +360,67 @@ async def handle_object_msg(msg_dict, writer):
     #
     # Get object ID
     object_dict = dict(msg_dict['object'])
-
-    # Validate the object
-    objects.validate_object(object_dict)
-
+    #
+    # Validate the object - if we are validating transactions, return value is 'None'
+    block_validation_set = objects.validate_object(object_dict)
+    #
     object_id = objects.get_objid(object_dict)
 
-    # Check if we already have it
-    if not kermastorage.check_objectid_exists(object_id):
-        # Save object in database. If successful, gossip to all peers
-        if kermastorage.save_object(object_id, object_dict):
-            # Gossip to all peers
-            ihaveobject_msg = mk_ihaveobject_msg(object_id)
+    # Structure that will hold accepted blocks
+    accepted_blocks = dict()
+
+    # Check if object is a transaction (block_validation_set is None) or a block
+    if block_validation_set is None:
+        blocks_validate_again = dict()
+        # Iterate the missing tx ids and check if this is one of them
+        for block_id, (block_dict, missing_txs) in BLOCK_MISSING_TXS.items():
+            if(object_id in missing_txs):
+                missing_txs.remove(object_id)
+            
+            # If we have all the transactions, validate the block
+            if(len(missing_txs) == 0):
+                blocks_validate_again[block_id] = block_dict
+        
+        # Revalidate the blocks that we have all the transactions for
+        for block_id, block in blocks_validate_again.items():
+            accepted_blocks[block_id] = objects.validate_block(block, True)
+
+    # We received a block but we are missing transactions
+    elif 'utxo' not in block_validation_set:
+        # Add the block dict and missing transactions to the pending block structure
+        missing_txs = block_validation_set['missing_tx_ids']
+        BLOCK_MISSING_TXS[object_id] = (object_dict, missing_txs)
+
+        # Ask all peers for the missing transactions
+        for txid in missing_txs:
+            getobject_msg = mk_getobject_msg(txid)
             for connection_queue in CONNECTIONS.values():
-                await connection_queue.put(ihaveobject_msg)
+                await connection_queue.put(getobject_msg)
+
+    # We received a block and we have all the transactions.
+    else:
+        accepted_blocks[object_id] = block_validation_set
+    
+    # Store the accepted blocks and propagate them to all peers
+    for block_id, block_validation_set in accepted_blocks.items():
+        # Check if we already have it...
+        if not kermastorage.check_objectid_exists(block_id):
+            
+            # Get the utxo and height from the validation set
+            if 'utxo' not in block_validation_set:
+                raise Exception("CRITICAL ERROR: Block validation set does not contain utxo set.")
+            if 'height' not in block_validation_set:
+                raise Exception("CRITICAL ERROR: Block validation set does not contain height.")
+            
+            pending_utxo = block_validation_set['utxo']
+            height = block_validation_set['height']
+
+            # Save object in database. If successful, gossip to all peers
+            if kermastorage.save_object(block_id, blocks_validate_again[block_id], pending_utxo, height):
+                # Gossip to all peers
+                ihaveobject_msg = mk_ihaveobject_msg(block_id)
+                for connection_queue in CONNECTIONS.values():
+                    await connection_queue.put(ihaveobject_msg)
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
@@ -556,26 +604,18 @@ async def handle_connection(reader, writer):
             await write_msg(writer, error_msg)
         except:
             pass
-        finally:
-            print("Closing connection with {}".format(peer))
-            writer.close()
-            del_connection(peer)
-            if read_task is not None and not read_task.done():
-                read_task.cancel()
-            if queue_task is not None and not queue_task.done():
-                queue_task.cancel()
 
     except Exception as e:
         print("Error not handled: {}: {}".format(peer, str(e)))
 
-    # finally:
-    #     print("Closing connection with {}".format(peer))
-    #     writer.close()
-    #     del_connection(peer)
-    #     if read_task is not None and not read_task.done():
-    #         read_task.cancel()
-    #     if queue_task is not None and not queue_task.done():
-    #         queue_task.cancel()
+    finally:
+        print("Closing connection with {}".format(peer))
+        writer.close()
+        del_connection(peer)
+        if read_task is not None and not read_task.done():
+            read_task.cancel()
+        if queue_task is not None and not queue_task.done():
+            queue_task.cancel()
 
 
 async def connect_to_node(peer: Peer):
