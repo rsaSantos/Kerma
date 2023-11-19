@@ -376,7 +376,7 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
                 inv = canon(b)
                 self.assertRaises(e, validate_block, inv)  # self.assertraises "e" from zip :D
 
-    # test hash function of block b
+    # test hash of block b
     def test_get_objid(self):
         print("Testing get_objid (hash of a block)")
         valid_id = "0000000093a2820d67495ac01ad38f74eabd8966517ab15c1cb3f2df1c71eea6"
@@ -406,28 +406,210 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
                 self.assertNotEqual(b, get_objid(target_block))
 
     def test_verify_block(self):
-        # call None, None, prev_utxo, prev_height, txs
-        # TODO top priority!
 
-        """ if coinbase_tx is not None and coinbase_tx['height'] != height:
-            raise InvalidBlockCoinbaseException("Coinbase transaction does not have the correct height.
-            Block height is {}, coinbase height is {}.".format(height, coinbase_tx['height']))
-        """
+        # coinbase is in the right position, but has wrong height
+        invalid_tx_list1 = [
+            {
+                "type": " transaction ",
+                "height": 4,
+                "outputs": [
+                    {
+                        "pubkey": "3f0bc71a375b574e4bda3ddf502fe1afd99aa020bf6049adfe525d9ad18ff33f",
+                        "value": 50000000000000
+                    }
+                ]
+            },
+            {
+                "type": " transaction ",
+                "inputs": [
+                    {
+                        "outpoint": {
+                            "txid": "f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                            "index": 0
+                        },
+                        "sig": "3869a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "pubkey": "077a2683d776a71139fd4db4d00c16703ba0753fc8bdc4bd6fc56614e659cde3",
+                        "value": 5000000000
+                    }
+                ]
+            }
+        ]
+        prev_utxo = [{"txid": "f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                      "index": 0, "value": 5000000000}]
 
-        """ Iterate over all transactions in the block...skip coinbase if needed
-            total_fees = 0
-            for tx in txs[1:] if is_first_transaction_coinbase else txs:
-                If the transaction is coinbase, throw an error because it should be the first transaction
-                if 'inputs' not in tx:
-                raise InvalidBlockCoinbaseException("A coinbase transaction was referenced but is not at the first position.")"""
+        self.assertRaises(InvalidBlockCoinbaseException, verify_block, None, None, prev_utxo, 6, invalid_tx_list1)
+        self.assertRaises(InvalidBlockCoinbaseException, verify_block, None, None, prev_utxo, 2, invalid_tx_list1)
 
-        """        if i['outpoint']['txid'] not in input_txs_dicts:
-            raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))"""
+        # coinbase has wrong index
+        invalid_tx_list2 = [
+            {
+                "type": " transaction ",
+                "inputs": [
+                    {
+                        "outpoint": {
+                            "txid": "f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                            "index": 0
+                        },
+                        "sig": "3869a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "pubkey": "077a2683d776a71139fd4db4d00c16703ba0753fc8bdc4bd6fc56614e659cde3",
+                        "value": 5000000000
+                    }
+                ]
+            },
+            {
+                "type": " transaction ",
+                "height": 1,
+                "outputs": [
+                    {
+                        "pubkey": "3f0bc71a375b574e4bda3ddf502fe1afd99aa020bf6049adfe525d9ad18ff33f",
+                        "value": 50000000000000
+                    }
+                ]
+            }
+        ]
 
-        """tx_data = input_txs_dicts[i['outpoint']['txid']]
-        if(tx_data is None):
-            raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))"""
-        pass
+        self.assertRaises(InvalidBlockCoinbaseException, verify_block, None, None, prev_utxo, 1, invalid_tx_list2)
+
+        # transaction spends from coinbase of the same block
+        invalid_tx_list3 = [
+            {
+                "type": " transaction ",
+                "height": 2,
+                "outputs": [
+                    {
+                        "pubkey": "3f0bc71a375b574e4bda3ddf502fe1afd99aa020bf6049adfe525d9ad18ff33f",
+                        "value": 50000000000000
+                    }
+                ]
+            },
+            {
+                "type": " transaction ",
+                "inputs": [
+                    {
+                        "outpoint": {
+                            "txid": "9d613a9e2d54cbc23148fdcb29fbc9adb9c0719135a9b8114fd8c6127bf6f8a3", # = get_objid(coinbase up here)
+                            "index": 0
+                        },
+                        "sig": "3869a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "pubkey": "077a2683d776a71139fd4db4d00c16703ba0753fc8bdc4bd6fc56614e659cde3",
+                        "value": 5000000000
+                    }
+                ]
+            }
+        ]
+        prev_utxo = [{"txid": "f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                      "index": 0, "value": 5000000000}]
+        self.assertRaises(InvalidTxOutpointException, verify_block, None, None, prev_utxo, 1, invalid_tx_list3)
+
+        # sum of outputs is larger than sum of inputs
+        invalid_tx_list4 = [
+            {
+                "type": " transaction ",
+                "height": 4,
+                "outputs": [
+                    {
+                        "pubkey": "3f0bc71a375b574e4bda3ddf502fe1afd99aa020bf6049adfe525d9ad18ff33f",
+                        "value": 60000000000000
+                    }
+                ]
+            },
+            {
+                "type": " transaction ",
+                "inputs": [
+                    {
+                        "outpoint": {
+                            "txid": "f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                            "index": 0
+                        },
+                        "sig": "3869a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "pubkey": "077a2683d776a71139fd4db4d00c16703ba0753fc8bdc4bd6fc56614e659cde3",
+                        "value": 60000000000000
+                    }
+                ]
+            }
+        ]
+        self.assertRaises(InvalidTxConservationException, verify_block, None, None, prev_utxo, 3, invalid_tx_list4)
+
+        # output exceeds sum of transaction fees + block reward 50000000000000
+        invalid_tx_list5 = [
+            {
+                "type": " transaction ",
+                "height": 4,
+                "outputs": [
+                    {
+                        "pubkey": "3f0bc71a375b574e4bda3ddf502fe1afd99aa020bf6049adfe525d9ad18ff33f",
+                        "value": 50000000000000
+                    }
+                ]
+            },
+            {
+                "type": " transaction ",
+                "inputs": [
+                    {
+                        "outpoint": {
+                            "txid": "f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                            "index": 0
+                        },
+                        "sig": "3869a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "pubkey": "077a2683d776a71139fd4db4d00c16703ba0753fc8bdc4bd6fc56614e659cde3",
+                        "value": 1200000000000000
+                    }
+                ]
+            }
+        ]
+        self.assertRaises(InvalidTxConservationException, verify_block, None, None, prev_utxo, 3, invalid_tx_list5)
+
+        # UTXO should not be respected (there's one extra output)
+        invalid_tx_list6 = [
+           {
+                "type": " transaction ",
+                "inputs": [
+                    {
+                        "outpoint": {
+                            "txid": "f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                            "index": 0
+                        },
+                        "sig": "3869a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
+                    },
+                    {
+                        "outpoint": {
+                            "txid": "a71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                            "index": 1
+                        },
+                        "sig": "0000012a9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "pubkey": "077a2683d776a71139fd4db4d00c16703ba0753fc8bdc4bd6fc56614e659cde3",
+                        "value": 50000000000000
+                    }
+                ]
+            }
+        ]
+
+        self.assertRaises(InvalidTxOutpointException, verify_block, None, None, prev_utxo, 3, invalid_tx_list6)
+
 
     # valid transaction handling has changed, task2 test for valid transaction fails, understandably so.
     def test_validate_transaction(self):
@@ -452,6 +634,35 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
             ]
         }
 
-    def test_verify_transaction(self):
-        # TODO
-        pass
+
+'''{
+"type ":" transaction " ,
+"inputs ":[
+{
+"outpoint":{
+" txid ":"f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196" ,
+"index":0
+},
+"sig":"3869a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7
+da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
+}
+] ,
+"outputs ":[
+{
+"pubkey":"077a2683d776a71139fd4db4d00c16703ba0753fc8bdc4bd6fc56614e659cde3" ,
+"value":5100000000
+}
+]
+}'''
+
+''' COINBASE TX
+{
+"type ":" transaction " ,
+"height ":1 ,
+"outputs ":[
+{
+"pubkey":"3f0bc71a375b574e4bda3ddf502fe1afd99aa020bf6049adfe525d9ad18ff33f" ,
+"value":50000000000000
+}
+]
+}'''
