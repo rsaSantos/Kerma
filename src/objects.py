@@ -115,12 +115,10 @@ def validate_block(block_dict, all_txs_in_db=False):
         prev_block_data = prev_full_block[0]
         prev_utxo = prev_full_block[1]
         prev_height = prev_full_block[2]
-
     if(all_txs_in_db):
         txs = []
         for tx in block_dict['txids']:
             txs.append(kermastorage.get_transaction_data(tx))
-
         return verify_block(block_dict, prev_block_data, prev_utxo, prev_height, txs)  # Return the new UTXO
         
     valid_block = False
@@ -261,6 +259,9 @@ def verify_block(block_dict, prev_block_dict, prev_utxo, prev_height, txs):
     height = prev_height + 1
     if coinbase_tx is not None and coinbase_tx['height'] != height:
         raise InvalidBlockCoinbaseException("Coinbase transaction does not have the correct height. Block height is {}, coinbase height is {}.".format(height, coinbase_tx['height']))
+
+    if coinbase_tx is not None:
+        new_utxo.append((coinbase_txid, 0, coinbase_tx['outputs'][0]['value']))
 
     # Iterate over all transactions in the block...skip coinbase if needed
     total_fees = 0

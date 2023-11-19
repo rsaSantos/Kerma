@@ -20,7 +20,7 @@ CHECK_TRANSACTION_EXISTS_QUERY = "SELECT COUNT(*) FROM " + TABLE_TRANSACTIONS + 
 def get_object_table_name(obj_type):
     if obj_type == BLOCK:
         return TABLE_BLOCKS
-    if obj_type == BLOCK:
+    if obj_type == TRANSACTION:
         return TABLE_TRANSACTIONS
     return None
 
@@ -64,7 +64,7 @@ def save_object(obj_id, obj_dict, utxo_set = None, height = None):
         if table_name == TABLE_TRANSACTIONS:
             cur.execute("INSERT INTO " + table_name + " VALUES (?,?)", (obj_id, canonicalize(obj_dict)))
         elif table_name == TABLE_BLOCKS and height is not None:
-            cur.execute("INSERT INTO " + table_name + " VALUES (?,?,?)", (obj_id, canonicalize(obj_dict), utxo_set, height))
+            cur.execute("INSERT INTO " + table_name + " VALUES (?,?,?,?)", (obj_id, canonicalize(obj_dict), canonicalize(utxo_set), height))
         else:
             if height is None:
                 raise Exception("Height is not defined")

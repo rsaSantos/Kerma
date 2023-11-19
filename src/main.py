@@ -371,6 +371,15 @@ async def handle_object_msg(msg_dict, writer):
 
     # Check if object is a transaction (block_validation_set is None) or a block
     if block_validation_set is None:
+        # Save the tx in DB
+        if not kermastorage.check_objectid_exists(object_id):
+            # Save object in database. If successful, gossip to all peers
+            if kermastorage.save_object(object_id, object_dict):
+                # Gossip to all peers
+                ihaveobject_msg = mk_ihaveobject_msg(object_id)
+                for connection_queue in CONNECTIONS.values():
+                    await connection_queue.put(ihaveobject_msg)
+        
         blocks_validate_again = dict()
         # Iterate the missing tx ids and check if this is one of them
         for block_id, (block_dict, missing_txs) in BLOCK_MISSING_TXS.items():
@@ -383,7 +392,8 @@ async def handle_object_msg(msg_dict, writer):
         
         # Revalidate the blocks that we have all the transactions for
         for block_id, block in blocks_validate_again.items():
-            accepted_blocks[block_id] = objects.validate_block(block, True)
+            utxo = objects.validate_block(block, True)
+            accepted_blocks[block_id] = utxo
 
     # We received a block but we are missing transactions
     elif 'utxo' not in block_validation_set:
