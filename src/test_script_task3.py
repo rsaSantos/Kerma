@@ -123,7 +123,7 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
         genesis = canon(const.GENESIS_BLOCK)
         validate_block(genesis)
         self.assertEqual({'missing_tx_ids': []}, validate_block(genesis))
-        valid_block = canon(VALID_BLOCK)
+        valid_block = canon(VALID_BLOCK)  # todo note: this is what fails due to wrong PoW. Well, all things fail because of wrong PoW now, but here is where my only failure was before the "great PoW tragedy" of 9 P.M.
         self.assertEqual({'missing_tx_ids': ['6ebfb4c8e8e9b19dcf54c6ce3e1e143da1f473ea986e70c5cb8899a4671c933a']}, validate_block(valid_block))
 
     # what I want to do here is: I have a list of invalid blocks, and a list that corresponds to the exceptions
@@ -495,7 +495,7 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
                 "inputs": [
                     {
                         "outpoint": {
-                            "txid": "9d613a9e2d54cbc23148fdcb29fbc9adb9c0719135a9b8114fd8c6127bf6f8a3", # = get_objid(coinbase up here)
+                            "txid": "9d613a9e2d54cbc23148fdcb29fbc9adb9c0719135a9b8114fd8c6127bf6f8a3",  # = get_objid(coinbase up here)
                             "index": 0
                         },
                         "sig": "3869a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
@@ -577,11 +577,13 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
                 ]
             }
         ]
+        prev_utxo = [{"txid": "f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                      "index": 0, "value": 5000000000}]
         self.assertRaises(InvalidTxConservationException, verify_block, None, None, prev_utxo, 3, invalid_tx_list5)
 
         # UTXO should not be respected (there's one extra output)
         invalid_tx_list6 = [
-           {
+            {
                 "type": " transaction ",
                 "inputs": [
                     {
@@ -610,59 +612,34 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
 
         self.assertRaises(InvalidTxOutpointException, verify_block, None, None, prev_utxo, 3, invalid_tx_list6)
 
-
-    # valid transaction handling has changed, task2 test for valid transaction fails, understandably so.
-    def test_validate_transaction(self):
-        # TODO adapt test to new implementation majbe
-        # this should be a transaction that spends from VALID_TRANS
-        sample_subsequent_trans = {
+    # happy path, alles gut
+    def test_verify_block_valid(self):
+        tx = {
             "type": " transaction ",
             "inputs": [
                 {
                     "outpoint": {
-                        "txid": "46fcd5d9bbc4f12f90e3cb46a8058bdb1c7068ab813085b66dee3f8254d6838b",  # should correspond to VALID_TRANS txid
-                        "index": 0
+                            "txid": "f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                            "index": 0
                     },
-                    "sig": "0000a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
+                    "sig": "3869a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
                 }
             ],
             "outputs": [
                 {
                     "pubkey": "077a2683d776a71139fd4db4d00c16703ba0753fc8bdc4bd6fc56614e659cde3",
                     "value": 5000000000
-                }
-            ]
+                }]
         }
+        tx = canon(tx)
+        valid_tx_list = [tx]
+        prev_utxo = [{"txid": "f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196",
+                      "index": 0, "value": 5000000000}]
+        self.assertEqual({"utxo": [{"txid": "32720c42e1fa909f529df4b06fee4cfb2876a0aee22ac425949034ee93e2f29e", "index": 0, "value": 5000000000}], "height": 1},
+                         verify_block(None, None, prev_utxo, 0, valid_tx_list))
+        # return {"utxo": new_utxo, "height": height}
 
-
-'''{
-"type ":" transaction " ,
-"inputs ":[
-{
-"outpoint":{
-" txid ":"f71408bf847d7dd15824574a7cd4afdfaaa2866286910675cd3fc371507aa196" ,
-"index":0
-},
-"sig":"3869a9ea9e7ed926a7c8b30fb71f6ed151a132b03fd5dae764f015c98271000e7
-da322dbcfc97af7931c23c0fae060e102446ccff0f54ec00f9978f3a69a6f0f"
-}
-] ,
-"outputs ":[
-{
-"pubkey":"077a2683d776a71139fd4db4d00c16703ba0753fc8bdc4bd6fc56614e659cde3" ,
-"value":5100000000
-}
-]
-}'''
-
-''' COINBASE TX
-{
-"type ":" transaction " ,
-"height ":1 ,
-"outputs ":[
-{
-"pubkey":"3f0bc71a375b574e4bda3ddf502fe1afd99aa020bf6049adfe525d9ad18ff33f" ,
-"value":50000000000000
-}
-]
-}'''
+    # valid transaction handling has changed, task2 test for valid transaction fails, understandably so.
+    def test_validate_transaction(self):
+        # TODO adapt test to new implementation majbe
+        pass
