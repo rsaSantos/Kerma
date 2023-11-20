@@ -102,6 +102,10 @@ def validate_transaction(trans_dict):
 
 def validate_block(block_dict, all_txs_in_db=False):
     is_not_genesis_block = block_dict['previd'] is not None
+    block_id = get_objid(block_dict)
+    if not is_not_genesis_block and block_id != const.GENESIS_BLOCK_ID:
+        raise InvalidGenesisException('Invalid genesis block: {}.'.format(block_dict))
+
     prev_block_data = None
     prev_utxo = []
     prev_height = 0
@@ -137,7 +141,7 @@ def validate_block(block_dict, all_txs_in_db=False):
     if(block_dict['T'] != "00000000abc00000000000000000000000000000000000000000000000000000"):
         raise InvalidFormatException('Invalid block msg "T" attribute: {}.'.format(block_dict))
     
-    if(get_objid(block_dict) >= block_dict['T']):
+    if(block_id >= block_dict['T']):
         raise InvalidBlockPoWException('PoW is wrong: {}.'.format(block_dict))
     
     if block_dict['created'] is None:
