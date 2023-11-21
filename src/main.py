@@ -378,7 +378,7 @@ async def handle_object_validation_failure(objid):
             del BLOCK_MISSING_TXS[block_id]
 
 async def handle_unfindable_object(objid):
-    asyncio.sleep(const.UNFINDABLE_OBJECT_DELAY)
+    await asyncio.sleep(const.UNFINDABLE_OBJECT_DELAY)
     if objid in BLOCK_MISSING_TXS:
         _, missing_txs, writer = BLOCK_MISSING_TXS[objid]
         if len(missing_txs) > 0:
