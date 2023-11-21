@@ -643,3 +643,6 @@ class TestTask3(unittest.IsolatedAsyncioTestCase):
     def test_validate_transaction(self):
         # TODO adapt test to new implementation majbe
         pass
+
+if __name__ == "__main__":
+    unittest.main()
