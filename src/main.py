@@ -377,6 +377,20 @@ async def handle_object_validation_failure(objid):
         if block_id in BLOCK_MISSING_TXS:
             del BLOCK_MISSING_TXS[block_id]
 
+async def handle_unfindable_object(objid):
+    asyncio.sleep(const.UNFINDABLE_OBJECT_DELAY)
+    if objid in BLOCK_MISSING_TXS:
+        _, missing_txs, writer = BLOCK_MISSING_TXS[objid]
+        if len(missing_txs) > 0:
+            unfidable_error_msg = mk_error_msg('UNFINDABLE_OBJECT', "Dependencies of object with id {} not found in time.".format(objid))
+            try:
+                await write_msg(writer, unfidable_error_msg)
+                print("Sent error message: {}".format(unfidable_error_msg))
+            except:
+                pass
+
+        del BLOCK_MISSING_TXS[objid]
+
 # what to do when an object message arrives
 async def handle_object_msg(msg_dict, writer):
     #
@@ -431,6 +445,9 @@ async def handle_object_msg(msg_dict, writer):
         # Add the block dict and missing transactions to the pending block structure
         missing_txs = block_validation_set['missing_tx_ids']
         BLOCK_MISSING_TXS[object_id] = (object_dict, missing_txs, writer)
+
+        # Launch task to prevent the object to be in the pending state forever
+        asyncio.create_task(handle_unfindable_object(object_id))
 
         # Ask all peers for the missing transactions
         for txid in missing_txs:

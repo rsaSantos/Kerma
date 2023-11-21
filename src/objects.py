@@ -119,11 +119,12 @@ def validate_block(block_dict, all_txs_in_db=False):
         prev_block_data = prev_full_block[0]
         prev_utxo = prev_full_block[1]
         prev_height = prev_full_block[2]
+
     if(all_txs_in_db):
         txs = []
         for tx in block_dict['txids']:
             txs.append(kermastorage.get_transaction_data(tx))
-        return verify_block(block_dict, prev_block_data, prev_utxo, prev_height, txs)  # Return the new UTXO
+        return verify_block(prev_utxo, prev_height, txs)  # Return the new UTXO
         
     valid_block = False
     if sorted(list(block_dict.keys())) == sorted(['type', 'txids', 'nonce', 'previd', 'created', 'T']):
@@ -249,7 +250,7 @@ def update_utxo_and_calculate_fee(tx, utxo):
     return 0
 
 # verify that a block is valid in the current chain state, using known transactions txs
-def verify_block(block_dict, prev_block_dict, prev_utxo, prev_height, txs):
+def verify_block(prev_utxo, prev_height, txs):
     #
     # Format of the UTXO set: [ { "txid": <txid>, "index": <index>, "value": <int> }, ... ]
     #
