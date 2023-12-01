@@ -102,6 +102,10 @@ def validate_transaction(trans_dict):
 
 def validate_block(block_dict, all_txs_in_db=False):
     is_not_genesis_block = block_dict['previd'] is not None
+    block_id = get_objid(block_dict)
+    if not is_not_genesis_block and block_id != const.GENESIS_BLOCK_ID:
+        raise InvalidGenesisException('Invalid genesis block: {}.'.format(block_dict))
+
     prev_block_data = None
     prev_utxo = []
     prev_height = 0
@@ -120,8 +124,7 @@ def validate_block(block_dict, all_txs_in_db=False):
         txs = []
         for tx in block_dict['txids']:
             txs.append(kermastorage.get_transaction_data(tx))
-
-        return verify_block(block_dict, prev_block_data, prev_utxo, prev_height, txs)  # Return the new UTXO
+        return verify_block(prev_utxo, prev_height, txs)  # Return the new UTXO
         
     valid_block = False
     if sorted(list(block_dict.keys())) == sorted(['type', 'txids', 'nonce', 'previd', 'created', 'T']):
@@ -139,7 +142,7 @@ def validate_block(block_dict, all_txs_in_db=False):
     if(block_dict['T'] != "00000000abc00000000000000000000000000000000000000000000000000000"):
         raise InvalidFormatException('Invalid block msg "T" attribute: {}.'.format(block_dict))
     
-    if(get_objid(block_dict) >= block_dict['T']):
+    if(block_id >= block_dict['T']):
         raise InvalidBlockPoWException('PoW is wrong: {}.'.format(block_dict))
     
     if block_dict['created'] is None:
@@ -247,7 +250,7 @@ def update_utxo_and_calculate_fee(tx, utxo):
     return 0
 
 # verify that a block is valid in the current chain state, using known transactions txs
-def verify_block(block_dict, prev_block_dict, prev_utxo, prev_height, txs):
+def verify_block(prev_utxo, prev_height, txs):
     #
     # Format of the UTXO set: [ { "txid": <txid>, "index": <index>, "value": <int> }, ... ]
     #
@@ -261,6 +264,9 @@ def verify_block(block_dict, prev_block_dict, prev_utxo, prev_height, txs):
     height = prev_height + 1
     if coinbase_tx is not None and coinbase_tx['height'] != height:
         raise InvalidBlockCoinbaseException("Coinbase transaction does not have the correct height. Block height is {}, coinbase height is {}.".format(height, coinbase_tx['height']))
+
+    if coinbase_tx is not None:
+        new_utxo.append((coinbase_txid, 0, coinbase_tx['outputs'][0]['value']))
 
     # Iterate over all transactions in the block...skip coinbase if needed
     total_fees = 0

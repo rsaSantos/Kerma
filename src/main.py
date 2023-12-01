@@ -354,6 +354,42 @@ def add_verify_block_task(objid, block, queue):
 async def del_verify_block_task(task, objid):
     pass  # TODO
 
+# when an object validation fails, send fail messages to all other dependencies
+async def handle_object_validation_failure(objid):
+    #
+    # Check the entire structure of BLOCK_MISSING_TXS
+    block_ids_to_remove = []
+    for block_id, (_, missing_txs, writer) in BLOCK_MISSING_TXS.items():
+        # If the object is in the missing txs, send an INVALID_ANCESTRY!
+        if objid in missing_txs:
+            # Careful here, the write might be closed already!
+            try:
+                block_ids_to_remove.append(block_id)
+
+                error_msg = mk_error_msg('INVALID_ANCESTRY_ERROR', "Object with id {} failed validation.".format(block_id))
+                await write_msg(writer, error_msg)
+                print("Sent error message: {}".format(error_msg))
+            except:
+                pass
+
+    # Remove the blocks that we sent the error message for
+    for block_id in block_ids_to_remove:
+        if block_id in BLOCK_MISSING_TXS:
+            del BLOCK_MISSING_TXS[block_id]
+
+async def handle_unfindable_object(objid):
+    await asyncio.sleep(const.UNFINDABLE_OBJECT_DELAY)
+    if objid in BLOCK_MISSING_TXS:
+        _, missing_txs, writer = BLOCK_MISSING_TXS[objid]
+        if len(missing_txs) > 0:
+            unfidable_error_msg = mk_error_msg('UNFINDABLE_OBJECT', "Dependencies of object with id {} not found in time.".format(objid))
+            try:
+                await write_msg(writer, unfidable_error_msg)
+                print("Sent error message: {}".format(unfidable_error_msg))
+            except:
+                pass
+
+        del BLOCK_MISSING_TXS[objid]
 
 # what to do when an object message arrives
 async def handle_object_msg(msg_dict, writer):
@@ -362,7 +398,16 @@ async def handle_object_msg(msg_dict, writer):
     object_dict = dict(msg_dict['object'])
     #
     # Validate the object - if we are validating transactions, return value is 'None'
-    block_validation_set = objects.validate_object(object_dict)
+    block_validation_set = None
+    try:
+        block_validation_set = objects.validate_object(object_dict)
+    except Exception as e:
+        try:
+            object_id = objects.get_objid(object_dict)
+            if isinstance(object_dict, dict) and 'type' in object_dict and object_dict['type'] == 'transaction':
+                await handle_object_validation_failure(object_id)
+        finally:
+            raise e
     #
     object_id = objects.get_objid(object_dict)
 
@@ -371,9 +416,18 @@ async def handle_object_msg(msg_dict, writer):
 
     # Check if object is a transaction (block_validation_set is None) or a block
     if block_validation_set is None:
+        # Save the tx in DB
+        if not kermastorage.check_objectid_exists(object_id):
+            # Save object in database. If successful, gossip to all peers
+            if kermastorage.save_object(object_id, object_dict):
+                # Gossip to all peers
+                ihaveobject_msg = mk_ihaveobject_msg(object_id)
+                for connection_queue in CONNECTIONS.values():
+                    await connection_queue.put(ihaveobject_msg)
+        
         blocks_validate_again = dict()
         # Iterate the missing tx ids and check if this is one of them
-        for block_id, (block_dict, missing_txs) in BLOCK_MISSING_TXS.items():
+        for block_id, (block_dict, missing_txs, _) in BLOCK_MISSING_TXS.items():
             if(object_id in missing_txs):
                 missing_txs.remove(object_id)
             
@@ -383,13 +437,17 @@ async def handle_object_msg(msg_dict, writer):
         
         # Revalidate the blocks that we have all the transactions for
         for block_id, block in blocks_validate_again.items():
-            accepted_blocks[block_id] = objects.validate_block(block, True)
+            utxo = objects.validate_block(block, True)
+            accepted_blocks[block_id] = utxo
 
     # We received a block but we are missing transactions
     elif 'utxo' not in block_validation_set:
         # Add the block dict and missing transactions to the pending block structure
         missing_txs = block_validation_set['missing_tx_ids']
-        BLOCK_MISSING_TXS[object_id] = (object_dict, missing_txs)
+        BLOCK_MISSING_TXS[object_id] = (object_dict, missing_txs, writer)
+
+        # Launch task to prevent the object to be in the pending state forever
+        asyncio.create_task(handle_unfindable_object(object_id))
 
         # Ask all peers for the missing transactions
         for txid in missing_txs:
