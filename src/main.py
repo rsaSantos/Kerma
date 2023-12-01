@@ -95,7 +95,7 @@ def mk_ihaveobject_msg(objid):
     return {'type': 'ihaveobject', 'objectid' : objid}
 
 def mk_chaintip_msg(blockid):
-    pass  # TODO
+    return {'type': 'chaintip', 'blockid': blockid}
 
 
 def mk_mempool_msg(txids):
@@ -103,7 +103,7 @@ def mk_mempool_msg(txids):
 
 
 def mk_getchaintip_msg():
-    pass  # TODO
+    return {'type': 'getchaintip'}  # no params here
 
 
 def mk_getmempool_msg():
@@ -223,6 +223,8 @@ def validate_object_msg(msg_dict):
 
 # raise an exception if not valid
 def validate_chaintip_msg(msg_dict):
+    if sorted(list(msg_dict.keys())) != sorted(['type', 'objectid']):
+        raise InvalidFormatException('Invalid chaintip msg: {}'.format(msg_dict))
     pass  # todo
 
 
