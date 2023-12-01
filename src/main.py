@@ -223,10 +223,10 @@ def validate_object_msg(msg_dict):
 
 # raise an exception if not valid
 def validate_chaintip_msg(msg_dict):
-    if sorted(list(msg_dict.keys())) != sorted(['type', 'objectid']):
+    if sorted(list(msg_dict.keys())) != sorted(['type', 'blockid']):
         raise InvalidFormatException('Invalid chaintip msg: {}'.format(msg_dict))
-    pass  # todo
-
+    if not isinstance(msg_dict['blockid'], str):
+        raise InvalidFormatException('Invalid objectid format: {}'.format(msg_dict))
 
 # raise an exception if not valid
 def validate_mempool_msg(msg_dict):
@@ -394,6 +394,7 @@ async def handle_unfindable_object(objid):
         del BLOCK_MISSING_TXS[objid]
 
 # what to do when an object message arrives
+# todo must add update longest chain in here?
 async def handle_object_msg(msg_dict, writer):
     #
     # Get object ID
@@ -484,11 +485,13 @@ async def handle_object_msg(msg_dict, writer):
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
-    pass  # TODO
-
+    #  Implement the longest chain rule, i.e. keep track of the longest chain
+    #  of valid blocks that you have. Here?
+    blockid = '' # TODO
+    return blockid
 
 async def handle_getchaintip_msg(msg_dict, writer):
-    pass  # TODO
+    await write_msg(writer, mk_chaintip_msg(get_chaintip_blockid()))  # is this it?
 
 
 async def handle_getmempool_msg(msg_dict, writer):
@@ -496,7 +499,29 @@ async def handle_getmempool_msg(msg_dict, writer):
 
 
 async def handle_chaintip_msg(msg_dict):
-    pass  # TODO
+    blockid = msg_dict['blockid']
+
+    if not blockid < const.BLOCK_TARGET:  # should check for valid PoW todo add constant 0000abc000
+        # TODO check2: Should the objectid already show that the object is invalid because of invalid PoW:
+        # todo: send a INVALID_BLOCK_POW error and disconnect.
+        pass
+
+    if kermastorage.check_objectid_exists(blockid):
+        if True:
+            # TODO check1: Should you know this object already and it is not a block, send an
+            #  INVALID_FORMAT error and disconnect.
+
+            pass
+    else:
+
+        # TODO: if objectid is unknown, request it from all peers.
+        #  (and therefore trigger validation of whole chain?)
+        pass
+
+    # TODO if all goes well: update your longest chain if required.
+    #  However, you should never remove valid objects
+    #  from your database, even if they no longer belong to the longest chain.
+    pass
 
 
 async def handle_mempool_msg(msg_dict):
