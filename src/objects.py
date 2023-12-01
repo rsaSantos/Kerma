@@ -221,9 +221,7 @@ def verify_tx_signature(tx_dict, sig, pubkey):
     public_key = Ed25519PublicKey.from_public_bytes(bytes.fromhex(pubkey))
     try:
         public_key.verify(bytes.fromhex(sig), json.dumps(tx_dict, separators=(',', ':')).encode())
-        print("Signature is valid.")
     except InvalidSignature:
-        print("Signature is invalid.")
         raise InvalidTxSignatureException('Invalid signature: {}.'.format(sig))
 
 def verify_transaction(tx_dict, input_txs_dicts):
@@ -254,7 +252,7 @@ def verify_block(prev_utxo, prev_height, txs):
     #
     # Format of the UTXO set: [ { "txid": <txid>, "index": <index>, "value": <int> }, ... ]
     #
-    new_utxo = [] if prev_utxo is None else copy.deepcopy(prev_utxo) 
+    new_utxo = [] if prev_utxo is None else copy.deepcopy(prev_utxo)
     
     # Check if the first transaction is coinbase
     is_first_transaction_coinbase = len(txs) > 0 and 'inputs' not in txs[0]
@@ -266,7 +264,7 @@ def verify_block(prev_utxo, prev_height, txs):
         raise InvalidBlockCoinbaseException("Coinbase transaction does not have the correct height. Block height is {}, coinbase height is {}.".format(height, coinbase_tx['height']))
 
     if coinbase_tx is not None:
-        new_utxo.append((coinbase_txid, 0, coinbase_tx['outputs'][0]['value']))
+        new_utxo.append({"txid": coinbase_txid, "index": 0, "value": coinbase_tx['outputs'][0]['value']})
 
     # Iterate over all transactions in the block...skip coinbase if needed
     total_fees = 0
@@ -297,7 +295,6 @@ def verify_block(prev_utxo, prev_height, txs):
             raise InvalidTxOutpointException('Transaction in block does not respect UTXO: {}.'.format(txs))
 
         # Filter the new UTXO set by not including the removed indices
-        #filtered_utxo = [{"txid": value["txid"], "index": value["index"]} for index, value in enumerate(new_utxo) if index not in indices_to_remove]
         filtered_utxo = []
         for index, value in enumerate(new_utxo):
             if index not in indices_to_remove:

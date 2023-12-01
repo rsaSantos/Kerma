@@ -94,6 +94,11 @@ def get_block_full(block_id):
     if block_row is None:
         return None
     else:
+        # Conver the utxo_set to a list of dictionaries
+        utxo_set = block_row[2]
+        if utxo_set is not None:
+            utxo_set = json.loads(utxo_set)
+        block_row[2] = utxo_set
         return block_row[1:] # Returns: (block_data, utxo_set, height)
 
 def get_block_data(block_id):
