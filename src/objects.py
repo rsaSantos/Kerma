@@ -55,7 +55,7 @@ def validate_transaction_input(in_dict):
     
     obj_dict = kermastorage.get_transaction_data(in_dict['outpoint']['txid'])
     if(obj_dict is None):
-        raise UnknownObjectException('Object not present in DB: {}.'.format(in_dict['outpoint']['txid']))
+        return (in_dict['outpoint']['txid'], None) # Return None if the transaction is not in the DB
     
     if(obj_dict['type'] != "transaction"):
         raise InvalidFormatException('Wrong object referenced in the DB: {}.'.format(in_dict['outpoint']['txid']))
@@ -86,26 +86,32 @@ def validate_transaction(trans_dict):
         if(len(trans_dict['inputs']) == 0):
             raise InvalidFormatException('Transaction inputs must be non-zero: {}.'.format(trans_dict['inputs']))
         #
+        no_double_spend(trans_dict['inputs'])
+        #
         # To optimize DB queries, we should get all the transactions of inputs from the database.
         # This way we can avoid querying the DB for each input for the following checks.
         #
         input_txs_dicts = {}
+        missing_txs = []
         for d in trans_dict['inputs']:
             tx_id, tx_dict = validate_transaction_input(d)
-            input_txs_dicts[tx_id] = tx_dict
+            if tx_dict is None:
+                missing_txs.append(tx_id)
+            else:
+                input_txs_dicts[tx_id] = tx_dict
 
+        
+        if len(missing_txs) > 0:
+            return { "missing_objects": missing_txs }
+        
         weak_law_of_conservation(trans_dict, input_txs_dicts)
-        no_double_spend(trans_dict['inputs'])
         verify_transaction(trans_dict, input_txs_dicts)
 
-    return True
+    return {}
 
-def validate_block(block_dict, all_txs_in_db=False):
+def validate_block_step_2(block_dict):
     is_not_genesis_block = block_dict['previd'] is not None
-    block_id = get_objid(block_dict)
-    if not is_not_genesis_block and block_id != const.GENESIS_BLOCK_ID:
-        raise InvalidGenesisException('Invalid genesis block: {}.'.format(block_dict))
-
+    
     prev_block_data = None
     prev_utxo = []
     prev_height = 0
@@ -114,18 +120,31 @@ def validate_block(block_dict, all_txs_in_db=False):
     
         prev_full_block = kermastorage.get_block_full(block_dict['previd'])
         if prev_full_block is None:
-            raise UnknownObjectException('Object not present in DB: {}.'.format(block_dict['previd']))
+            raise Exception("Logic error: validate_block_step_2 was called with the previous block not in the DB.")
         
         prev_block_data = prev_full_block[0]
         prev_utxo = prev_full_block[1]
         prev_height = prev_full_block[2]
 
-    if(all_txs_in_db):
-        txs = []
-        for tx in block_dict['txids']:
-            txs.append(kermastorage.get_transaction_data(tx))
-        return verify_block(prev_utxo, prev_height, txs)  # Return the new UTXO
-        
+    prev_time = 0 if prev_block_data is None else prev_block_data['created']
+    if(not isinstance(block_dict['created'], int) or block_dict['created'] < prev_time or block_dict['created'] > int(time.time())):
+        if(isinstance(block_dict['created'], int)):
+            raise InvalidBlockTimestampException('Invalid block msg "created" attribute: {}.'.format(block_dict))
+        else:
+            raise InvalidFormatException('Invalid block msg "created" attribute: {}.'.format(block_dict))
+    
+    txs = []
+    for tx in block_dict['txids']:
+        txs.append(kermastorage.get_transaction_data(tx))
+
+    return verify_block(prev_utxo, prev_height, txs)  # Return the new UTXO
+
+def validate_block_step_1(block_dict):
+    is_not_genesis_block = block_dict['previd'] is not None
+    block_id = get_objid(block_dict)
+    if not is_not_genesis_block and block_id != const.GENESIS_BLOCK_ID:
+        raise InvalidGenesisException('Invalid genesis block: {}.'.format(block_dict))
+
     valid_block = False
     if sorted(list(block_dict.keys())) == sorted(['type', 'txids', 'nonce', 'previd', 'created', 'T']):
         valid_block = True
@@ -142,18 +161,12 @@ def validate_block(block_dict, all_txs_in_db=False):
     if(block_dict['T'] != "00000000abc00000000000000000000000000000000000000000000000000000"):
         raise InvalidFormatException('Invalid block msg "T" attribute: {}.'.format(block_dict))
     
-    if(block_id >= block_dict['T']):
+    # Check PoW: use T from genesis since its static difficulty
+    if(block_id >= const.GENESIS_BLOCK['T']):
         raise InvalidBlockPoWException('PoW is wrong: {}.'.format(block_dict))
     
     if block_dict['created'] is None:
         raise InvalidFormatException('Invalid block msg "created" attribute: {}.'.format(block_dict))
-    
-    prev_time = 0 if prev_block_data is None else prev_block_data['created']
-    if(not isinstance(block_dict['created'], int) or block_dict['created'] < prev_time or block_dict['created'] > int(time.time())):
-        if(isinstance(block_dict['created'], int)):
-            raise InvalidBlockTimestampException('Invalid block msg "created" attribute: {}.'.format(block_dict))
-        else:
-            raise InvalidFormatException('Invalid block msg "created" attribute: {}.'.format(block_dict))
     
     if(block_dict['miner'] is not None and ((not block_dict['miner'].isprintable()) or (len(block_dict['miner']) > 128))):
         raise InvalidBlockTimestampException('Invalid block msg "miner" attribute: {}.'.format(block_dict))
@@ -167,20 +180,43 @@ def validate_block(block_dict, all_txs_in_db=False):
         if not kermastorage.check_objectid_exists(tx_id):
             tx_missing.append(tx_id)
 
-    if(len(tx_missing) == 0):
-        validate_block(block_dict, True)
+    # Return dictionary may include missing transactions or missing previous block
+    return_dict = {}
+
+    # Check if the previous block is in the DB
+    if is_not_genesis_block: # Get full prev block from DB!
+        prev_block_id = block_dict['previd']
+        validate_objectid(prev_block_id)
+
+        # Check PoW of previous block
+        if(prev_block_id >= const.GENESIS_BLOCK['T']):
+            raise InvalidAncestryException("PoW of previous block ({}) is wrong.".format(prev_block_id))
     
-    return {"missing_tx_ids": tx_missing }
+        prev_full_block = kermastorage.get_block_full(prev_block_id)
+        if prev_full_block is None:
+            return_dict["missing_objects"] = [prev_block_id]
+
+    # If there are no missing transactions and the previous block is in the DB, then we can proceed to step 2
+    if len(tx_missing) == 0 and "missing_objects" not in return_dict:
+        return validate_block_step_2(block_dict)
+    elif len(tx_missing) == 0:
+        return return_dict
+    else:
+        if "missing_objects" in return_dict:
+            return_dict["missing_objects"] += tx_missing
+        else:
+            return_dict["missing_objects"] = tx_missing
+        return return_dict
 
 def validate_object(obj_dict):
     if 'type' not in obj_dict:
         raise InvalidFormatException("Object does not contain key 'type'.")
     
     obj_type = obj_dict['type']
-    if(obj_type == "transaction" and validate_transaction(obj_dict)):
-        return None
+    if(obj_type == "transaction"):
+        return validate_transaction(obj_dict)
     elif(obj_type == "block"):
-        return validate_block(obj_dict)
+        return validate_block_step_1(obj_dict)
     else:
         raise InvalidFormatException("Object has invalid key 'type'.")
 
@@ -196,11 +232,11 @@ def weak_law_of_conservation(trans_dict, input_txs_dicts):
     for i in trans_dict['inputs']:
         # Check if the input transaction is in the input_txs_dicts dictionary
         if i['outpoint']['txid'] not in input_txs_dicts:
-            raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))
+            raise Exception("Logic error: weak_law_of_conservation was called with a transaction not in the DB.")
         
         tx_data = input_txs_dicts[i['outpoint']['txid']]
         if(tx_data is None):
-            raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))
+            raise Exception("Logic error: weak_law_of_conservation was called with a None transaction.")
         
         sum_of_inputs += tx_data['outputs'][i['outpoint']['index']]['value']
 
@@ -233,19 +269,14 @@ def verify_transaction(tx_dict, input_txs_dicts):
     
     for i in input_txs:
         if i['outpoint']['txid'] not in input_txs_dicts:
-            raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))
+            raise Exception("Logic error: verify_transaction was called with a transaction not in the DB.")
         
         tx_data = input_txs_dicts[i['outpoint']['txid']]
         if(tx_data is None):
-            raise UnknownObjectException('Object not present in DB: {}.'.format(i['outpoint']['txid']))
+            raise Exception("Logic error: verify_transaction was called with a None transaction.")
         
         verify_tx_signature(modified_tx, i['sig'], tx_data['outputs'][i['outpoint']['index']]['pubkey'])
 
-# apply tx to utxo
-# returns mining fee
-def update_utxo_and_calculate_fee(tx, utxo):
-    # todo
-    return 0
 
 # verify that a block is valid in the current chain state, using known transactions txs
 def verify_block(prev_utxo, prev_height, txs):
