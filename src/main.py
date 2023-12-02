@@ -24,6 +24,7 @@ BACKGROUND_TASKS = set()
 BLOCK_VERIFY_TASKS = dict()
 BLOCK_WAIT_LOCK = None
 TX_WAIT_LOCK = None
+LONGEST_CHAIN = []  # CR
 MEMPOOL = mempool.Mempool(const.GENESIS_BLOCK_ID, {})
 LISTEN_CFG = {
     "address": const.ADDRESS,
@@ -394,7 +395,7 @@ async def handle_unfindable_object(objid):
         del BLOCK_MISSING_TXS[objid]
 
 # what to do when an object message arrives
-# todo must add update longest chain in here?
+# todo must call update_longest_chain() inside here
 async def handle_object_msg(msg_dict, writer):
     #
     # Get object ID
@@ -485,9 +486,8 @@ async def handle_object_msg(msg_dict, writer):
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
-    #  Implement the longest chain rule, i.e. keep track of the longest chain
-    #  of valid blocks that you have. Here?
-    blockid = '' # TODO
+    # TODO depends on implementation of LONGEST_CHAIN and update_longest_chain()
+    blockid = ""
     return blockid
 
 async def handle_getchaintip_msg(msg_dict, writer):
@@ -498,30 +498,44 @@ async def handle_getmempool_msg(msg_dict, writer):
     pass  # TODO
 
 
-async def handle_chaintip_msg(msg_dict):
+async def handle_chaintip_msg(msg_dict, writer):
     blockid = msg_dict['blockid']
 
-    if not blockid < const.BLOCK_TARGET:  # should check for valid PoW todo add constant 0000abc000
-        # TODO check2: Should the objectid already show that the object is invalid because of invalid PoW:
-        # todo: send a INVALID_BLOCK_POW error and disconnect.
-        pass
-
+    # this should check whether the object with id 'blockid' is in the db
     if kermastorage.check_objectid_exists(blockid):
-        if True:
-            # TODO check1: Should you know this object already and it is not a block, send an
-            #  INVALID_FORMAT error and disconnect.
+        blockid = kermastorage.get_object(blockid)
+        # if we do know the object, but it's not a block, send an Invalid_Format error
+        if not blockid['type'] == 'block':
+            error_msg = mk_error_msg('INVALID_FORMAT', "Chaintip object is not a block: {}".format(blockid))
+            await write_msg(writer, error_msg)
+            # CR I'm not sure whether this is the proper way to disconnect from the peer?
+            print("Closing connection...")
+            writer.close()
 
-            pass
+        # check for valid PoW
+        elif not blockid < const.BLOCK_TARGET:
+            error_msg = mk_error_msg('INVALID_BLOCK_POW', "Chaintip block has invalid PoW: {}".format(blockid))
+            await write_msg(writer, error_msg)
+
+            print("Closing connection...")
+            writer.close()
+
+        else:
+            # happy scenario: update your longest chain if required.
+            update_longest_chain(blockid)
+            # However, you should never remove valid objects
+            # from your database, even if they no longer belong to the longest chain. (duh?)
+
     else:
-
-        # TODO: if objectid is unknown, request it from all peers.
-        #  (and therefore trigger validation of whole chain?)
+        # request block with blockid from all peers.
+        getobject_msg = mk_getobject_msg(blockid)
+        for connection_queue in CONNECTIONS.values():
+            await connection_queue.put(getobject_msg)
+        #  todo "trigger validation of whole chain"?
         pass
 
-    # TODO if all goes well: update your longest chain if required.
-    #  However, you should never remove valid objects
-    #  from your database, even if they no longer belong to the longest chain.
-    pass
+def update_longest_chain(blockid):
+    pass  # TODO CR I am unsure whether to have this here or in objects.py, but I'm thinking here.
 
 
 async def handle_mempool_msg(msg_dict):
@@ -599,6 +613,8 @@ async def handshake(reader, writer):
     # Create task for get peers (no need to wait for it, keep going)
     asyncio.create_task(write_msg(writer, mk_getpeers_msg()))
     print("Sending getpeers message...")
+    asyncio.create_task(write_msg(writer, mk_getchaintip_msg()))  # CR hopefully this fits here
+    print("Sending getchaintip message...")
     #
     try:
         raw_hello_future = await asyncio.wait_for(
