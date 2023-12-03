@@ -396,7 +396,6 @@ async def handle_unfindable_object(objid):
         del BLOCK_MISSING_TXS[objid]
 
 # what to do when an object message arrives
-# todo must call update_longest_chain() inside here
 async def handle_object_msg(msg_dict, writer):
     #
     # Get object ID
@@ -487,11 +486,8 @@ async def handle_object_msg(msg_dict, writer):
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
-    con = kermastorage.get_connection()
-    cur = con.cursor()
-    cur.execute("SELECT block_id FROM " + kermastorage.TABLE_BLOCKS + " WHERE height = (SELECT MAX(height) FROM " + kermastorage.TABLE_BLOCKS + ")")
-    chaintip = cur.fetchone()
-    return chaintip[0]
+    return kermastorage.get_longest_chaintip()
+
 
 async def handle_getchaintip_msg(msg_dict, writer):
     await write_msg(writer, mk_chaintip_msg(get_chaintip_blockid()))  # is this it?

@@ -122,6 +122,13 @@ def get_block_height(block_id):
     else:
         return block_row[3]
 
+def get_longest_chaintip():
+    con = get_connection()
+    cur = con.cursor()
+    cur.execute("SELECT block_id FROM " + TABLE_BLOCKS + " WHERE height = (SELECT MAX(height) FROM " + TABLE_BLOCKS + ")")
+    chaintip = cur.fetchone()
+    return chaintip[0]
+
 def get_transaction_data(transaction_id):
     transaction_row = get_object(transaction_id, TRANSACTION)
     if transaction_row is None:
