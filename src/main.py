@@ -487,9 +487,11 @@ async def handle_object_msg(msg_dict, writer):
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
-    # TODO depends on implementation of LONGEST_CHAIN and update_longest_chain()
-    blockid = ""
-    return blockid
+    con = kermastorage.get_connection()
+    cur = con.cursor()
+    cur.execute("SELECT block_id FROM " + kermastorage.TABLE_BLOCKS + " WHERE height = (SELECT MAX(height) FROM " + kermastorage.TABLE_BLOCKS + ")")
+    chaintip = cur.fetchone()
+    return chaintip[0]
 
 async def handle_getchaintip_msg(msg_dict, writer):
     await write_msg(writer, mk_chaintip_msg(get_chaintip_blockid()))  # is this it?
