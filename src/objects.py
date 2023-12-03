@@ -162,7 +162,7 @@ def validate_block_step_1(block_dict):
         raise InvalidFormatException('Invalid block msg "T" attribute: {}.'.format(block_dict))
     
     # Check PoW: use T from genesis since its static difficulty
-    if(block_id >= const.GENESIS_BLOCK['T']):
+    if(block_id >= const.BLOCK_TARGET):
         raise InvalidBlockPoWException('PoW is wrong: {}.'.format(block_dict))
     
     if block_dict['created'] is None:
@@ -189,7 +189,7 @@ def validate_block_step_1(block_dict):
         validate_objectid(prev_block_id)
 
         # Check PoW of previous block
-        if(prev_block_id >= const.GENESIS_BLOCK['T']):
+        if(prev_block_id >= const.BLOCK_TARGET):
             raise InvalidAncestryException("PoW of previous block ({}) is wrong.".format(prev_block_id))
     
         prev_full_block = kermastorage.get_block_full(prev_block_id)
