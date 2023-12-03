@@ -317,7 +317,7 @@ async def handle_object_validation_failure(failed_objid):
             try:
                 base_obj_id_to_remove.append(base_obj_id)
 
-                error_msg = mk_error_msg('INVALID_ANCESTRY_ERROR', "Object with id {} failed validation.".format(base_obj_id))
+                error_msg = mk_error_msg('INVALID_ANCESTRY', "Object with id {} failed validation.".format(base_obj_id))
                 await write_msg(writer, error_msg)
                 print("Sent error message: {}".format(error_msg))
             except:
@@ -329,7 +329,7 @@ async def handle_object_validation_failure(failed_objid):
             try:
                 base_obj_id_to_remove.append(base_obj_id)
 
-                error_msg = mk_error_msg('INVALID_ANCESTRY_ERROR', "Object with id {} failed validation.".format(base_obj_id))
+                error_msg = mk_error_msg('INVALID_ANCESTRY', "Object with id {} failed validation.".format(base_obj_id))
                 await write_msg(writer, error_msg)
                 print("Sent error message: {}".format(error_msg))
             except:
@@ -373,7 +373,7 @@ async def save_and_gossip_object(object_id, object_dict, object_validation_set):
             return False
     return True
 
-async def get_objects_to_validate(trigger_obj_id):
+def get_objects_to_validate(trigger_obj_id):
     objects_to_validate = []
     for objid, (_, pending_validation_objects, _) in PENDING_VALIDATION_OBJECTS.items():
         if trigger_obj_id in pending_validation_objects:
