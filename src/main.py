@@ -97,7 +97,7 @@ def mk_ihaveobject_msg(objid):
     return {'type': 'ihaveobject', 'objectid' : objid}
 
 def mk_chaintip_msg(blockid):
-    pass  # TODO
+    return {'type': 'chaintip', 'blockid': blockid}
 
 
 def mk_mempool_msg(txids):
@@ -105,7 +105,7 @@ def mk_mempool_msg(txids):
 
 
 def mk_getchaintip_msg():
-    pass  # TODO
+    return {'type': 'getchaintip'}
 
 
 def mk_getmempool_msg():
@@ -168,7 +168,6 @@ def validate_peer_str(peer_str):
         raise InvalidFormatException("Invalid peer address: {}".format(host))
 
 
-# raise an exception if not valid
 def validate_peers_msg(msg_dict):
     if (sorted(list(msg_dict.keys())) != sorted(['type', 'peers'])):
         raise InvalidFormatException("Invalid peers msg: {}.".format(msg_dict))
@@ -177,54 +176,50 @@ def validate_peers_msg(msg_dict):
     for peer_str in msg_dict['peers']:
         validate_peer_str(peer_str)
 
-# raise an exception if not valid
+
 def validate_getpeers_msg(msg_dict):
     if (list(msg_dict.keys()) != ['type']):
         raise InvalidFormatException("Invalid getpeers msg: {}.".format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_getchaintip_msg(msg_dict):
-    pass  # TODO
+    if (list(msg_dict.keys()) != ['type']):
+        raise InvalidFormatException("Invalid getchaintip msg: {}.".format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_getmempool_msg(msg_dict):
     pass  # TODO
 
 
-# raise an exception if not valid
 def validate_error_msg(msg_dict):
     if (sorted(list(msg_dict.keys())) != sorted(['type', 'name', 'msg'])):
         raise InvalidFormatException("Invalid error msg: {}.".format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_ihaveobject_msg(msg_dict):
     if (sorted(list(msg_dict.keys())) != sorted(['type', 'objectid'])):
         raise InvalidFormatException("Invalid ihaveobject msg: {}.".format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_getobject_msg(msg_dict):
     if sorted(list(msg_dict.keys())) != sorted(['type', 'objectid']):
         raise InvalidFormatException("Invalid getobject msg: {}.".format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_object_msg(msg_dict):
     if sorted(list(msg_dict.keys())) != sorted(['type', 'object']):
         raise InvalidFormatException('Invalid object msg: {}.'.format(msg_dict))
     
 
-# raise an exception if not valid
 def validate_chaintip_msg(msg_dict):
-    pass  # todo
+    if sorted(list(msg_dict.keys())) != sorted(['type', 'blockid']):
+        raise InvalidFormatException('Invalid chaintip msg: {}'.format(msg_dict))
+    if not isinstance(msg_dict['blockid'], str):
+        raise InvalidFormatException('Invalid objectid format: {}'.format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_mempool_msg(msg_dict):
-    pass  # todo
+    pass  # TODO
 
 
 def validate_msg(msg_dict):
@@ -521,11 +516,17 @@ async def handle_object_msg(msg_dict, writer):
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
-    pass  # TODO
+    return kermastorage.get_chaintip_blockid()
 
 
 async def handle_getchaintip_msg(msg_dict, writer):
-    pass  # TODO
+    chain_tip_blockid = get_chaintip_blockid()
+    if chain_tip_blockid is None:
+        raise Exception("CRITICAL ERROR: Chain tip blockid is None.")
+    
+    chaintip_msg = mk_chaintip_msg(chain_tip_blockid)
+    await write_msg(writer, chaintip_msg)
+    print("Sent chaintip message: {}".format(chaintip_msg))
 
 
 async def handle_getmempool_msg(msg_dict, writer):
@@ -533,7 +534,43 @@ async def handle_getmempool_msg(msg_dict, writer):
 
 
 async def handle_chaintip_msg(msg_dict):
-    pass  # TODO
+    #
+    block_id = msg_dict['blockid']
+
+    # Check PoW
+    if block_id >= const.BLOCK_TARGET:
+        raise InvalidBlockPoWException('PoW is wrong for chaintip object message with block id: {}.'.format(block_id))
+    #
+    # If we have the object...
+    exists, object_type = kermastorage.check_objectid_exists(block_id, True)
+    if exists:
+        if object_type != kermastorage.BLOCK:
+            raise InvalidFormatException("Object with id {}, received in chaintip msg, is not a block.".format(block_id))
+
+        # Get the block and its height
+        rcv_block_dict, _, rcv_height = kermastorage.get_block_full(block_id)
+
+        # Get our current chaintip height
+        curr_chaintip_height = kermastorage.get_chaintip_height()
+
+        # TODO: Well, I am not sure what to do...
+        if rcv_height == curr_chaintip_height:
+            # If its the same height, should be the same block?
+            pass
+        elif rcv_height < curr_chaintip_height:
+            # If its lower height than ours, should we send a chaintip message?
+            pass
+        else:
+            # If its higher height than ours, and its already on our database, what does this mean?
+            pass
+
+
+    # If we don't have the block, send a getobject message
+    else:
+        getobject_msg = mk_getobject_msg(block_id)
+        for connection_queue in CONNECTIONS.values():
+            await connection_queue.put(getobject_msg)
+        print("Sent getobject message: {}".format(getobject_msg))
 
 
 async def handle_mempool_msg(msg_dict):
