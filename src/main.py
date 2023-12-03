@@ -16,6 +16,7 @@ import re
 import sqlite3
 import sys
 import time
+import copy
 
 MISSING_OBJECTS = dict()
 PENDING_VALIDATION_OBJECTS = dict()
@@ -444,15 +445,15 @@ async def recursive_validation(object_id):
                     del PENDING_VALIDATION_OBJECTS[object_to_save]
                 if object_to_save in objects_to_validate:
                     objects_to_validate.remove(object_to_save)
-                
                 # Get new objects that can be validated and extend the list
-                objects_to_validate.extend(get_objects_to_validate(object_to_save))
-        
+                new_objects = get_objects_to_validate(object_to_save)
+                unique_objects = [obj for obj in new_objects if obj not in objects_to_validate]
+                objects_to_validate += unique_objects
+                
         # Starting another round of recursive validation
         if len(objects_to_validate) > 0:
             print("Starting another round of recursive validation for {} objects.".format(len(objects_to_validate)))
-
-
+            
 # what to do when an object message arrives
 async def handle_object_msg(msg_dict, writer):
     #
@@ -490,9 +491,11 @@ async def handle_object_msg(msg_dict, writer):
     if 'missing_objects' in object_validation_set:
         # Save missing objects in missing objects dict
         MISSING_OBJECTS[object_id] = (object_dict, object_validation_set['missing_objects'], writer)
+        
+        obj_validation_set_2 = copy.deepcopy(object_validation_set['missing_objects'])
 
         # Save object in pending validation objects dict
-        PENDING_VALIDATION_OBJECTS[object_id] = (object_dict, object_validation_set['missing_objects'], writer)
+        PENDING_VALIDATION_OBJECTS[object_id] = (object_dict, obj_validation_set_2, writer)
 
         # Ask all peers for the missing objects
         for objid in object_validation_set['missing_objects']:
