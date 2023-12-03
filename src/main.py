@@ -24,7 +24,6 @@ BACKGROUND_TASKS = set()
 BLOCK_VERIFY_TASKS = dict()
 BLOCK_WAIT_LOCK = None
 TX_WAIT_LOCK = None
-LONGEST_CHAIN = []  # CR
 MEMPOOL = mempool.Mempool(const.GENESIS_BLOCK_ID, {})
 LISTEN_CFG = {
     "address": const.ADDRESS,
@@ -190,7 +189,9 @@ def validate_getpeers_msg(msg_dict):
 
 # raise an exception if not valid
 def validate_getchaintip_msg(msg_dict):
-    pass  # TODO
+    if (list(msg_dict.keys()) != ['type']):
+        raise InvalidFormatException("Invalid error msg: {}.".format(msg_dict))
+    pass
 
 
 # raise an exception if not valid
@@ -521,8 +522,8 @@ async def handle_chaintip_msg(msg_dict, writer):
             writer.close()
 
         else:
+            pass # todo
             # happy scenario: update your longest chain if required.
-            update_longest_chain(blockid)
             # However, you should never remove valid objects
             # from your database, even if they no longer belong to the longest chain. (duh?)
 
@@ -533,10 +534,6 @@ async def handle_chaintip_msg(msg_dict, writer):
             await connection_queue.put(getobject_msg)
         #  todo "trigger validation of whole chain"?
         pass
-
-def update_longest_chain(blockid):
-    pass  # TODO CR I am unsure whether to have this here or in objects.py, but I'm thinking here.
-
 
 async def handle_mempool_msg(msg_dict):
     pass  # TODO
