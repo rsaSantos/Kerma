@@ -392,6 +392,9 @@ def get_objects_to_validate(trigger_obj_id):
 # Also, for each new object that is validated, we will try to validate all objects that were waiting for it to be validated
 # This is done recursively until there are no more objects to validate
 async def recursive_validation(object_id):
+
+    await asyncio.sleep(0.01) # Dumb, but it works...
+
     print("Starting recursive validation for object with id {}.".format(object_id))
     # Now, since we received, validated and saved the object, we can check other pending objects
     # If this object was a dependency of other objects, they might be ready to be validated now
@@ -486,8 +489,7 @@ async def handle_object_msg(msg_dict, writer):
         object_validation_set = objects.validate_object(object_dict)
     except Exception as e:
         try:
-            if isinstance(object_dict, dict) and 'type' in object_dict and object_dict['type'] == 'transaction':
-                await handle_object_validation_failure(object_id)
+            await handle_object_validation_failure(object_id)
         finally:
             raise e
     
