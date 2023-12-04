@@ -338,11 +338,17 @@ async def handle_object_validation_failure(failed_objid):
         if base_obj_id in PENDING_VALIDATION_OBJECTS:
             del PENDING_VALIDATION_OBJECTS[base_obj_id]
 
+    if failed_objid in MISSING_OBJECTS.keys():
+        del MISSING_OBJECTS[failed_objid]
+    if failed_objid in PENDING_VALIDATION_OBJECTS.keys():
+        del PENDING_VALIDATION_OBJECTS[failed_objid]
+
 async def handle_unfindable_object(objid):
     await asyncio.sleep(const.UNFINDABLE_OBJECT_DELAY)
     if objid in MISSING_OBJECTS:
         _, missing_obj_list, writer = MISSING_OBJECTS[objid]
         if len(missing_obj_list) > 0:
+
             unfidable_error_msg = mk_error_msg('UNFINDABLE_OBJECT', "Dependencies of object with id {} not found in time.".format(objid))
             try:
                 await write_msg(writer, unfidable_error_msg)
@@ -416,6 +422,19 @@ async def recursive_validation(object_id):
                         print("Logic error: still missing dependencies for block validation. No exception is thrown but validation is compromised.")
                         continue
                     validated_objects.append((object_to_validate, object_validation_set))
+
+            except Exception as e:
+                try:
+                    await handle_object_validation_failure(object_to_validate)
+                    objects_to_validate.remove(object_to_validate)
+                finally:
+                    if isinstance(e, MessageException):
+                        error_msg = mk_error_msg(e.error_name, str(e.message))
+                        try:
+                            await write_msg(writer, error_msg)
+                            print("Sent error message: {}".format(error_msg))
+                        except:
+                            pass
 
             except Exception as e:
                 try:
