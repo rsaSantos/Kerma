@@ -12,6 +12,7 @@ TABLE_BLOCKS = "blocks"
 TABLE_TRANSACTIONS = "transactions"
 
 GET_BLOCK_QUERY = "SELECT * FROM " + TABLE_BLOCKS + " WHERE block_id=?"
+GET_BLOCK_HIGHEST_QUERY = "SELECT * FROM " + TABLE_BLOCKS + " ORDER BY height DESC LIMIT 1"
 CHECK_BLOCK_EXISTS_QUERY = "SELECT COUNT(*) FROM " + TABLE_BLOCKS + " WHERE block_id=?"
 
 GET_TRANSACTION_QUERY = "SELECT * FROM " + TABLE_TRANSACTIONS + " WHERE transaction_id=?"
@@ -27,20 +28,53 @@ def get_object_table_name(obj_type):
 def get_connection():
     return sqlite3.connect(const.DB_NAME)
 
+def get_chaintip_blockid():
+    #
+    chaintip_full = get_chaintip_full()
+    if chaintip_full is None:
+        return None
+    else:
+        return chaintip_full[0]
+
+def get_chaintip_height():
+    #
+    chaintip_full = get_chaintip_full()
+    if chaintip_full is None:
+        return None
+    else:
+        return chaintip_full[3]
+
+def get_chaintip_full():
+    #
+    con = get_connection()
+    try:
+        cur = con.cursor()
+        cur.execute(GET_BLOCK_HIGHEST_QUERY)
+        row = cur.fetchone()
+        return handle_row(row, False)
+    except Exception as e:
+        print("Error getting chaintip: " + str(e))
+        return None
+    finally:
+        con.close()
+
 # Reduce the usage of this method if we want to get the object anyway!
-def check_objectid_exists(obj_id):
+def check_objectid_exists(obj_id, get_type = False):
     global TABLE_BLOCKS, TABLE_TRANSACTIONS
 
     con = get_connection()
+    type_of_object = TRANSACTION
     try:
         cur = con.cursor()
         cur.execute(CHECK_TRANSACTION_EXISTS_QUERY, (obj_id,))
         row = cur.fetchone()
         if row[0] == 0:
+            type_of_object = BLOCK
             cur.execute(CHECK_BLOCK_EXISTS_QUERY, (obj_id,))
             row = cur.fetchone()
         
-        return row[0] > 0    
+        ret = row[0] > 0
+        return (ret, type_of_object) if get_type else ret
     except Exception as e:
         print("Error checking object id: " + str(e))
         return False
@@ -94,6 +128,11 @@ def get_block_full(block_id):
     if block_row is None:
         return None
     else:
+        # Conver the utxo_set to a list of dictionaries
+        utxo_set = block_row[2]
+        if utxo_set is not None:
+            utxo_set = json.loads(utxo_set)
+        block_row[2] = utxo_set
         return block_row[1:] # Returns: (block_data, utxo_set, height)
 
 def get_block_data(block_id):
