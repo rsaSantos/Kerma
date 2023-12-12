@@ -16,8 +16,10 @@ import re
 import sqlite3
 import sys
 import time
+import copy
 
-BLOCK_MISSING_TXS = dict()
+MISSING_OBJECTS = dict()
+PENDING_VALIDATION_OBJECTS = dict()
 PEERS = set()
 CONNECTIONS = dict()
 BACKGROUND_TASKS = set()
@@ -103,7 +105,7 @@ def mk_mempool_msg(txids):
 
 
 def mk_getchaintip_msg():
-    return {'type': 'getchaintip'}  # no params here
+    return {'type': 'getchaintip'}
 
 
 def mk_getmempool_msg():
@@ -123,12 +125,6 @@ def parse_msg(msg_str):
 async def write_msg(writer, msg_dict):
     writer.write(b''.join([canonicalize(msg_dict), b'\n']))
     await writer.drain()
-
-
-# Check if message contains no invalid keys,
-# raises a MalformedMsgException
-def validate_allowed_keys(msg_dict, allowed_keys, msg_type):
-    pass  # TODO
 
 
 # Validate the hello message
@@ -172,7 +168,6 @@ def validate_peer_str(peer_str):
         raise InvalidFormatException("Invalid peer address: {}".format(host))
 
 
-# raise an exception if not valid
 def validate_peers_msg(msg_dict):
     if (sorted(list(msg_dict.keys())) != sorted(['type', 'peers'])):
         raise InvalidFormatException("Invalid peers msg: {}.".format(msg_dict))
@@ -181,58 +176,50 @@ def validate_peers_msg(msg_dict):
     for peer_str in msg_dict['peers']:
         validate_peer_str(peer_str)
 
-# raise an exception if not valid
+
 def validate_getpeers_msg(msg_dict):
     if (list(msg_dict.keys()) != ['type']):
         raise InvalidFormatException("Invalid getpeers msg: {}.".format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_getchaintip_msg(msg_dict):
     if (list(msg_dict.keys()) != ['type']):
-        raise InvalidFormatException("Invalid error msg: {}.".format(msg_dict))
-    pass
+        raise InvalidFormatException("Invalid getchaintip msg: {}.".format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_getmempool_msg(msg_dict):
     pass  # TODO
 
 
-# raise an exception if not valid
 def validate_error_msg(msg_dict):
     if (sorted(list(msg_dict.keys())) != sorted(['type', 'name', 'msg'])):
         raise InvalidFormatException("Invalid error msg: {}.".format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_ihaveobject_msg(msg_dict):
     if (sorted(list(msg_dict.keys())) != sorted(['type', 'objectid'])):
         raise InvalidFormatException("Invalid ihaveobject msg: {}.".format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_getobject_msg(msg_dict):
     if sorted(list(msg_dict.keys())) != sorted(['type', 'objectid']):
         raise InvalidFormatException("Invalid getobject msg: {}.".format(msg_dict))
 
 
-# raise an exception if not valid
 def validate_object_msg(msg_dict):
     if sorted(list(msg_dict.keys())) != sorted(['type', 'object']):
         raise InvalidFormatException('Invalid object msg: {}.'.format(msg_dict))
     
 
-# raise an exception if not valid
 def validate_chaintip_msg(msg_dict):
     if sorted(list(msg_dict.keys())) != sorted(['type', 'blockid']):
         raise InvalidFormatException('Invalid chaintip msg: {}'.format(msg_dict))
     if not isinstance(msg_dict['blockid'], str):
         raise InvalidFormatException('Invalid objectid format: {}'.format(msg_dict))
 
-# raise an exception if not valid
+
 def validate_mempool_msg(msg_dict):
-    pass  # todo
+    pass  # TODO
 
 
 def validate_msg(msg_dict):
@@ -315,223 +302,297 @@ async def handle_getobject_msg(msg_dict, writer):
         await write_msg(writer, unknown_object_msg)
         print("Sent error message: {}".format(unknown_object_msg))
 
-# return a list of transactions that tx_dict references
-def gather_previous_txs(db_cur, tx_dict):
-    # coinbase transaction
-    if 'height' in tx_dict:
-        return {}
-
-    pass  # TODO
-
-
-# get the block, the current utxo and block height
-def get_block_utxo_height(blockid):
-    # TODO
-    block = ''
-    utxo = ''
-    height = ''
-    return (block, utxo, height)
-
-
-# get all transactions as a dict txid -> tx from a list of ids
-def get_block_txs(txids):
-    pass  # TODO
-
-
-# Stores for a block its utxoset and height
-def store_block_utxo_height(block, utxo, height: int):
-    pass  # TODO
-
-
-# runs a task to verify a block
-# raises blockverifyexception
-async def verify_block_task(block_dict):
-    pass  # TODO
-
-
-# adds a block verify task to queue and starting it
-def add_verify_block_task(objid, block, queue):
-    pass  # TODO
-
-
-# abort a block verify task
-async def del_verify_block_task(task, objid):
-    pass  # TODO
-
 # when an object validation fails, send fail messages to all other dependencies
-async def handle_object_validation_failure(objid):
+async def handle_object_validation_failure(failed_objid):
     #
-    # Check the entire structure of BLOCK_MISSING_TXS
-    block_ids_to_remove = []
-    for block_id, (_, missing_txs, writer) in BLOCK_MISSING_TXS.items():
+    # Check the entire structure of missing objects
+    base_obj_id_to_remove = []
+    for base_obj_id, (_, missing_objects_list, writer) in MISSING_OBJECTS.items():
         # If the object is in the missing txs, send an INVALID_ANCESTRY!
-        if objid in missing_txs:
-            # Careful here, the write might be closed already!
+        if failed_objid in missing_objects_list:
             try:
-                block_ids_to_remove.append(block_id)
+                base_obj_id_to_remove.append(base_obj_id)
 
-                error_msg = mk_error_msg('INVALID_ANCESTRY_ERROR', "Object with id {} failed validation.".format(block_id))
+                error_msg = mk_error_msg('INVALID_ANCESTRY', "Object with id {} failed validation.".format(base_obj_id))
+                await write_msg(writer, error_msg)
+                print("Sent error message: {}".format(error_msg))
+            except:
+                pass
+
+    for base_obj_id, (_, pending_validation_objects, writer) in PENDING_VALIDATION_OBJECTS.items():
+        # If the object is in the missing txs, send an INVALID_ANCESTRY! (but don't send the message twice)
+        if failed_objid in pending_validation_objects and base_obj_id not in base_obj_id_to_remove:
+            try:
+                base_obj_id_to_remove.append(base_obj_id)
+
+                error_msg = mk_error_msg('INVALID_ANCESTRY', "Object with id {} failed validation.".format(base_obj_id))
                 await write_msg(writer, error_msg)
                 print("Sent error message: {}".format(error_msg))
             except:
                 pass
 
     # Remove the blocks that we sent the error message for
-    for block_id in block_ids_to_remove:
-        if block_id in BLOCK_MISSING_TXS:
-            del BLOCK_MISSING_TXS[block_id]
+    for base_obj_id in base_obj_id_to_remove:
+        if base_obj_id in MISSING_OBJECTS:
+            del MISSING_OBJECTS[base_obj_id]
+        if base_obj_id in PENDING_VALIDATION_OBJECTS:
+            del PENDING_VALIDATION_OBJECTS[base_obj_id]
+
+    if failed_objid in MISSING_OBJECTS.keys():
+        del MISSING_OBJECTS[failed_objid]
+    if failed_objid in PENDING_VALIDATION_OBJECTS.keys():
+        del PENDING_VALIDATION_OBJECTS[failed_objid]
 
 async def handle_unfindable_object(objid):
     await asyncio.sleep(const.UNFINDABLE_OBJECT_DELAY)
-    if objid in BLOCK_MISSING_TXS:
-        _, missing_txs, writer = BLOCK_MISSING_TXS[objid]
-        if len(missing_txs) > 0:
+    if objid in MISSING_OBJECTS:
+        _, missing_obj_list, writer = MISSING_OBJECTS[objid]
+        if len(missing_obj_list) > 0:
+
             unfidable_error_msg = mk_error_msg('UNFINDABLE_OBJECT', "Dependencies of object with id {} not found in time.".format(objid))
             try:
                 await write_msg(writer, unfidable_error_msg)
                 print("Sent error message: {}".format(unfidable_error_msg))
             except:
                 pass
+            finally:
+                del MISSING_OBJECTS[objid]
+                if objid in PENDING_VALIDATION_OBJECTS:
+                    del PENDING_VALIDATION_OBJECTS[objid]
 
-        del BLOCK_MISSING_TXS[objid]
+async def save_and_gossip_object(object_id, object_dict, object_validation_set):
+    if not kermastorage.check_objectid_exists(object_id):
+        # Save object in database. If successful, gossip to all peers
+        utxo = None if 'utxo' not in object_validation_set else object_validation_set['utxo']
+        height = None if 'height' not in object_validation_set else object_validation_set['height']
+        #
+        if kermastorage.save_object(object_id, object_dict, utxo, height):
+            # Gossip to all peers
+            ihaveobject_msg = mk_ihaveobject_msg(object_id)
+            for connection_queue in CONNECTIONS.values():
+                await connection_queue.put(ihaveobject_msg)
+        else:
+            return False
+    return True
 
+def get_objects_to_validate(trigger_obj_id):
+    objects_to_validate = []
+    for objid, (_, pending_validation_objects, _) in PENDING_VALIDATION_OBJECTS.items():
+        if trigger_obj_id in pending_validation_objects:
+            pending_validation_objects.remove(trigger_obj_id)
+
+        # We can validate this object since all its dependencies are validated!
+        if len(pending_validation_objects) == 0:
+            objects_to_validate.append(objid)
+    
+    return objects_to_validate
+
+# This function is called when a new object is validated and saved in the database
+# We will try to validate all objects that were waiting for this object to be validated
+# Also, for each new object that is validated, we will try to validate all objects that were waiting for it to be validated
+# This is done recursively until there are no more objects to validate
+async def recursive_validation(object_id):
+
+    await asyncio.sleep(0.01) # Dumb, but it works...
+
+    print("Starting recursive validation for object with id {}.".format(object_id))
+    # Now, since we received, validated and saved the object, we can check other pending objects
+    # If this object was a dependency of other objects, they might be ready to be validated now
+    objects_to_validate = get_objects_to_validate(object_id)
+    #
+    # Now, validate each object and, for every validated object, update the objects to validate list.
+    while len(objects_to_validate) > 0:
+        #
+        # Validate the objects in list...
+        validated_objects = []
+        for object_to_validate in objects_to_validate:
+            if not object_to_validate in PENDING_VALIDATION_OBJECTS:
+                continue # This object was already validated and saved in the database. Skip it.
+            
+            object_dict, _, writer = PENDING_VALIDATION_OBJECTS[object_to_validate]
+            try:
+                print("Recursive validation of object with id {}.".format(object_to_validate))
+                if object_dict['type'] == 'transaction':
+                    object_validation_set = objects.validate_transaction(object_dict)
+                    if not object_validation_set: # Return dictionary is empty, transaction is valid!
+                        validated_objects.append((object_to_validate, {}))
+                        continue
+
+
+                elif object_dict['type'] == 'block':
+                    object_validation_set = objects.validate_block_step_2(object_dict)
+                    if 'utxo' not in object_validation_set or 'height' not in object_validation_set:
+                        print("Logic error: still missing dependencies for block validation. No exception is thrown but validation is compromised.")
+                        continue
+                    validated_objects.append((object_to_validate, object_validation_set))
+
+            except Exception as e:
+                try:
+                    await handle_object_validation_failure(object_to_validate)
+                    objects_to_validate.remove(object_to_validate)
+                finally:
+                    if isinstance(e, MessageException):
+                        error_msg = mk_error_msg(e.error_name, str(e.message))
+                        try:
+                            await write_msg(writer, error_msg)
+                            print("Sent error message: {}".format(error_msg))
+                        except:
+                            pass
+
+            except Exception as e:
+                try:
+                    await handle_object_validation_failure(object_id)
+                finally:
+                    if isinstance(e, MessageException):
+                        error_msg = mk_error_msg(e.error_name, str(e.message))
+                        try:
+                            await write_msg(writer, error_msg)
+                            print("Sent error message: {}".format(error_msg))
+                        except:
+                            pass
+        
+        # Now, save and gossip all validated objects
+        for object_to_save, object_validation_set in validated_objects:
+            if not await save_and_gossip_object(object_to_save, object_dict, object_validation_set):
+                print("Error in saving and gossip object. No error is thrown but validation is compromised.")
+            else:
+                print("Object with id {} was recursively validated and saved in the database.".format(object_to_save))
+                # All went fine, remove the object from all lists
+                if object_to_save in PENDING_VALIDATION_OBJECTS:
+                    del PENDING_VALIDATION_OBJECTS[object_to_save]
+                if object_to_save in objects_to_validate:
+                    objects_to_validate.remove(object_to_save)
+                # Get new objects that can be validated and extend the list
+                new_objects = get_objects_to_validate(object_to_save)
+                unique_objects = [obj for obj in new_objects if obj not in objects_to_validate]
+                objects_to_validate += unique_objects
+                
+        # Starting another round of recursive validation
+        if len(objects_to_validate) > 0:
+            print("Starting another round of recursive validation for {} objects.".format(len(objects_to_validate)))
+            
 # what to do when an object message arrives
 async def handle_object_msg(msg_dict, writer):
     #
-    # Get object ID
+    # Get object dict.
     object_dict = dict(msg_dict['object'])
     #
-    # Validate the object - if we are validating transactions, return value is 'None'
-    block_validation_set = None
+    # Before everything, if we have the object in the database, do nothing
+    object_id = objects.get_objid(object_dict)
+    if kermastorage.check_objectid_exists(object_id):
+        print("Object with id {} already exists in database.".format(object_id))
+        return
+    
+    #
+    object_validation_set = None
     try:
-        block_validation_set = objects.validate_object(object_dict)
+        object_validation_set = objects.validate_object(object_dict)
     except Exception as e:
         try:
-            object_id = objects.get_objid(object_dict)
-            if isinstance(object_dict, dict) and 'type' in object_dict and object_dict['type'] == 'transaction':
-                await handle_object_validation_failure(object_id)
+            await handle_object_validation_failure(object_id)
         finally:
             raise e
-    #
-    object_id = objects.get_objid(object_dict)
+    
+    # Sanity check
+    if object_validation_set is None or not isinstance(object_validation_set, dict):
+        raise Exception("CRITICAL ERROR: Object validation set is None or not a dictionary.")
+    
+    # First of all, let's remove the object from the missing objects dict.
+    # This is done because we received the object, so it is not missing anymore, even if it has missing dependencies...
+    for _, (_, missing_objects_list, _) in MISSING_OBJECTS.items():
+        if object_id in missing_objects_list:
+            missing_objects_list.remove(object_id)
 
-    # Structure that will hold accepted blocks
-    accepted_blocks = dict()
-
-    # Check if object is a transaction (block_validation_set is None) or a block
-    if block_validation_set is None:
-        # Save the tx in DB
-        if not kermastorage.check_objectid_exists(object_id):
-            # Save object in database. If successful, gossip to all peers
-            if kermastorage.save_object(object_id, object_dict):
-                # Gossip to all peers
-                ihaveobject_msg = mk_ihaveobject_msg(object_id)
-                for connection_queue in CONNECTIONS.values():
-                    await connection_queue.put(ihaveobject_msg)
+    # Check if there are missing dependencies
+    if 'missing_objects' in object_validation_set:
+        # Save missing objects in missing objects dict
+        MISSING_OBJECTS[object_id] = (object_dict, object_validation_set['missing_objects'], writer)
         
-        blocks_validate_again = dict()
-        # Iterate the missing tx ids and check if this is one of them
-        for block_id, (block_dict, missing_txs, _) in BLOCK_MISSING_TXS.items():
-            if(object_id in missing_txs):
-                missing_txs.remove(object_id)
-            
-            # If we have all the transactions, validate the block
-            if(len(missing_txs) == 0):
-                blocks_validate_again[block_id] = block_dict
-        
-        # Revalidate the blocks that we have all the transactions for
-        for block_id, block in blocks_validate_again.items():
-            utxo = objects.validate_block(block, True)
-            accepted_blocks[block_id] = utxo
+        obj_validation_set_2 = copy.deepcopy(object_validation_set['missing_objects'])
 
-    # We received a block but we are missing transactions
-    elif 'utxo' not in block_validation_set:
-        # Add the block dict and missing transactions to the pending block structure
-        missing_txs = block_validation_set['missing_tx_ids']
-        BLOCK_MISSING_TXS[object_id] = (object_dict, missing_txs, writer)
+        # Save object in pending validation objects dict
+        PENDING_VALIDATION_OBJECTS[object_id] = (object_dict, obj_validation_set_2, writer)
+
+        # Ask all peers for the missing objects
+        for objid in object_validation_set['missing_objects']:
+            getobject_msg = mk_getobject_msg(objid)
+            for connection_queue in CONNECTIONS.values():
+                await connection_queue.put(getobject_msg)
 
         # Launch task to prevent the object to be in the pending state forever
         asyncio.create_task(handle_unfindable_object(object_id))
 
-        # Ask all peers for the missing transactions
-        for txid in missing_txs:
-            getobject_msg = mk_getobject_msg(txid)
-            for connection_queue in CONNECTIONS.values():
-                await connection_queue.put(getobject_msg)
-
-    # We received a block and we have all the transactions.
     else:
-        accepted_blocks[object_id] = block_validation_set
-    
-    # Store the accepted blocks and propagate them to all peers
-    for block_id, block_validation_set in accepted_blocks.items():
-        # Check if we already have it...
-        if not kermastorage.check_objectid_exists(block_id):
-            
-            # Get the utxo and height from the validation set
-            if 'utxo' not in block_validation_set:
-                raise Exception("CRITICAL ERROR: Block validation set does not contain utxo set.")
-            if 'height' not in block_validation_set:
-                raise Exception("CRITICAL ERROR: Block validation set does not contain height.")
-            
-            pending_utxo = block_validation_set['utxo']
-            height = block_validation_set['height']
+        # This object is no longer pending for validation...
+        if object_id in PENDING_VALIDATION_OBJECTS:
+            del PENDING_VALIDATION_OBJECTS[object_id]
+        
+        # All dependencies are satisfied, save the object in the database and gossip it
+        if not await save_and_gossip_object(object_id, object_dict, object_validation_set):
+            print("Error in saving and gossip object. No error is thrown but validation is compromised.")
+            return
 
-            # Save object in database. If successful, gossip to all peers
-            if kermastorage.save_object(block_id, blocks_validate_again[block_id], pending_utxo, height):
-                # Gossip to all peers
-                ihaveobject_msg = mk_ihaveobject_msg(block_id)
-                for connection_queue in CONNECTIONS.values():
-                    await connection_queue.put(ihaveobject_msg)
+        # Start a task for validating objects that were waiting for this object to be validated...
+        asyncio.create_task(recursive_validation(object_id))
 
 # returns the chaintip blockid
 def get_chaintip_blockid():
-    return kermastorage.get_longest_chaintip()
+    return kermastorage.get_chaintip_blockid()
 
 
 async def handle_getchaintip_msg(msg_dict, writer):
-    await write_msg(writer, mk_chaintip_msg(get_chaintip_blockid()))  # is this it?
+    chain_tip_blockid = get_chaintip_blockid()
+    if chain_tip_blockid is None:
+        raise Exception("CRITICAL ERROR: Chain tip blockid is None.")
+    
+    chaintip_msg = mk_chaintip_msg(chain_tip_blockid)
+    await write_msg(writer, chaintip_msg)
+    print("Sent chaintip message: {}".format(chaintip_msg))
 
 
 async def handle_getmempool_msg(msg_dict, writer):
     pass  # TODO
 
 
-async def handle_chaintip_msg(msg_dict, writer):
-    blockid = msg_dict['blockid']
+async def handle_chaintip_msg(msg_dict):
+    #
+    block_id = msg_dict['blockid']
 
-    # this should check whether the object with id 'blockid' is in the db
-    if kermastorage.check_objectid_exists(blockid):
-        blockid = kermastorage.get_object(blockid)
-        # if we do know the object, but it's not a block, send an Invalid_Format error
-        if not blockid['type'] == 'block':
-            error_msg = mk_error_msg('INVALID_FORMAT', "Chaintip object is not a block: {}".format(blockid))
-            await write_msg(writer, error_msg)
-            # CR I'm not sure whether this is the proper way to disconnect from the peer?
-            print("Closing connection...")
-            writer.close()
+    # Check PoW
+    if block_id >= const.BLOCK_TARGET:
+        raise InvalidBlockPoWException('PoW is wrong for chaintip object message with block id: {}.'.format(block_id))
+    #
+    # If we have the object...
+    exists, object_type = kermastorage.check_objectid_exists(block_id, True)
+    if exists:
+        if object_type != kermastorage.BLOCK:
+            raise InvalidFormatException("Object with id {}, received in chaintip msg, is not a block.".format(block_id))
 
-        # check for valid PoW
-        elif not blockid < const.BLOCK_TARGET:
-            error_msg = mk_error_msg('INVALID_BLOCK_POW', "Chaintip block has invalid PoW: {}".format(blockid))
-            await write_msg(writer, error_msg)
+        # Get the block and its height
+        rcv_block_dict, _, rcv_height = kermastorage.get_block_full(block_id)
 
-            print("Closing connection...")
-            writer.close()
+        # Get our current chaintip height
+        curr_chaintip_height = kermastorage.get_chaintip_height()
 
+        # TODO: Well, I am not sure what to do...
+        if rcv_height == curr_chaintip_height:
+            # If its the same height, should be the same block?
+            pass
+        elif rcv_height < curr_chaintip_height:
+            # If its lower height than ours, should we send a chaintip message?
+            pass
         else:
-            pass # todo
-            # happy scenario: update your longest chain if required.
-            # However, you should never remove valid objects
-            # from your database, even if they no longer belong to the longest chain. (duh?)
+            # If its higher height than ours, and its already on our database, what does this mean?
+            pass
 
+
+    # If we don't have the block, send a getobject message
     else:
-        # request block with blockid from all peers.
-        getobject_msg = mk_getobject_msg(blockid)
+        getobject_msg = mk_getobject_msg(block_id)
         for connection_queue in CONNECTIONS.values():
             await connection_queue.put(getobject_msg)
-        #  todo "trigger validation of whole chain"?
-        pass
+        print("Sent getobject message: {}".format(getobject_msg))
+
 
 async def handle_mempool_msg(msg_dict):
     pass  # TODO
@@ -605,10 +666,12 @@ async def handshake(reader, writer):
     #
     await write_msg(writer, mk_hello_msg())
     #
-    # Create task for get peers (no need to wait for it, keep going)
+    # Create task for get peers
     asyncio.create_task(write_msg(writer, mk_getpeers_msg()))
     print("Sending getpeers message...")
-    asyncio.create_task(write_msg(writer, mk_getchaintip_msg()))  # CR hopefully this fits here
+    #
+    # Create task for getchaintip
+    asyncio.create_task(write_msg(writer, mk_getchaintip_msg()))
     print("Sending getchaintip message...")
     #
     try:
@@ -684,14 +747,6 @@ async def handle_connection(reader, writer):
             validate_msg(msg_dict)
             
             await handle_rcv_msg(msg_dict, writer)
-
-    except UnknownObjectException as e:
-        try:
-            error_msg = mk_error_msg(e.error_name, str(e.message))
-            print("Sending error message: {}".format(error_msg))
-            await write_msg(writer, error_msg)
-        except:
-            pass
 
     except MessageException as e:
         try:
