@@ -127,7 +127,7 @@ def validate_block_step_2(block_dict):
         prev_height = prev_full_block[2]
 
     prev_time = 0 if prev_block_data is None else prev_block_data['created']
-    if(not isinstance(block_dict['created'], int) or block_dict['created'] < prev_time or block_dict['created'] > int(time.time())):
+    if(not isinstance(block_dict['created'], int) or block_dict['created'] <= prev_time or block_dict['created'] > int(time.time())):
         if(isinstance(block_dict['created'], int)):
             raise InvalidBlockTimestampException('Invalid block msg "created" attribute: {}.'.format(block_dict))
         else:
