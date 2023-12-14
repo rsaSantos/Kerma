@@ -101,7 +101,7 @@ def mk_chaintip_msg(blockid):
 
 
 def mk_mempool_msg(txids):
-    pass  # TODO
+    return {'type': 'mempool', 'txids': MEMPOOL.txs}
 
 
 def mk_getchaintip_msg():
@@ -109,7 +109,7 @@ def mk_getchaintip_msg():
 
 
 def mk_getmempool_msg():
-    pass  # TODO
+    return {'type': 'getmempool'}
 
 
 # parses a message as json. returns decoded message
@@ -188,7 +188,8 @@ def validate_getchaintip_msg(msg_dict):
 
 
 def validate_getmempool_msg(msg_dict):
-    pass  # TODO
+    if (list(msg_dict.keys()) != ['type']):
+        raise InvalidFormatException("Invalid getmempool msg: {}.".format(msg_dict))
 
 
 def validate_error_msg(msg_dict):
@@ -219,7 +220,15 @@ def validate_chaintip_msg(msg_dict):
 
 
 def validate_mempool_msg(msg_dict):
-    pass  # TODO
+    if sorted(list(msg_dict.keys())) != sorted(['type', 'txids']):
+        raise InvalidFormatException('Invalid mempool msg: {}'.format(msg_dict))
+    if not isinstance(msg_dict['txids'], list):
+        raise InvalidFormatException('Invalid mempool msg: {}'.format(msg_dict))
+    for tx in msg_dict['txids']:
+        if not isinstance(tx, str):
+            raise InvalidFormatException('Invalid mempool msg: {}'.format(msg_dict))
+        objects.validate_objectid(tx)
+            
 
 
 def validate_msg(msg_dict):
@@ -366,7 +375,12 @@ async def save_and_gossip_object(object_id, object_dict, object_validation_set):
         utxo = None if 'utxo' not in object_validation_set else object_validation_set['utxo']
         height = None if 'height' not in object_validation_set else object_validation_set['height']
         #
-        if kermastorage.save_object(object_id, object_dict, utxo, height):
+        if kermastorage.save_object(object_id, object_dict, utxo, height): 
+            if(utxo is None):
+                MEMPOOL.try_add_tx(object_dict)
+            else:
+                MEMPOOL.rebase_to_block(object_id)
+            
             # Gossip to all peers
             ihaveobject_msg = mk_ihaveobject_msg(object_id)
             for connection_queue in CONNECTIONS.values():
@@ -551,7 +565,9 @@ async def handle_getchaintip_msg(msg_dict, writer):
 
 
 async def handle_getmempool_msg(msg_dict, writer):
-    pass  # TODO
+    mempool_msg = mk_mempool_msg()
+    await write_msg(writer, mempool_msg)
+    print("Sent mempool message: {}".format(mempool_msg))
 
 
 async def handle_chaintip_msg(msg_dict):
@@ -595,7 +611,15 @@ async def handle_chaintip_msg(msg_dict):
 
 
 async def handle_mempool_msg(msg_dict):
-    pass  # TODO
+    for tx in msg_dict['txids']:
+        object_dict = kermastorage.get_object(tx)
+        if object_dict is not None:
+            MEMPOOL.try_add_tx(object_dict)
+        else:
+            getobject_msg = mk_getobject_msg(tx)
+            for connection_queue in CONNECTIONS.values():
+                await connection_queue.put(getobject_msg)
+            print("Sent getobject message: {}".format(getobject_msg))
 
 async def handle_queue_msg(msg_dict, writer):
     print("Handling queue message: {}".format(msg_dict))
