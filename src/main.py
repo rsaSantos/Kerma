@@ -714,9 +714,9 @@ async def handshake(reader, writer):
     asyncio.create_task(write_msg(writer, mk_getpeers_msg()))
     print("Sending getpeers message...")
     #
-    # Create task for getchaintip
-    asyncio.create_task(write_msg(writer, mk_getchaintip_msg()))
-    print("Sending getchaintip message...")
+    # Create task for getmempool
+    asyncio.create_task(write_msg(writer, mk_getmempool_msg()))
+    print("Sending getmempool message...")
     #
     try:
         raw_hello_future = await asyncio.wait_for(
