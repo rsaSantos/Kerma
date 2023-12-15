@@ -30,9 +30,23 @@ def get_all_txids_in_blocks(blocks):
 def get_lca_and_intermediate_blocks(old_tip: str, new_tip: str):
     pass # TODO
 
-def rebase_mempool(old_tip, new_tip, mptxids):
-    pass # TODO
-
+def rebase_mempool(old_tip_block, new_tip_block, mptxids):
+    block_pointer = new_tip_block
+    while(kermastorage.get_block_height(block_pointer) != kermastorage.get_block_height(old_tip_block)):
+        block_pointer = kermastorage.get_block_data(block_pointer)['previd']
+    old_tip_divergent_blocks = []
+    old_tip_pointer = old_tip_block
+    while(kermastorage.get_block_data(old_tip_pointer)['previd'] != kermastorage.get_block_data(block_pointer)['previd']):
+        old_tip_divergent_blocks.append(old_tip_pointer)
+        old_tip_pointer = kermastorage.get_block_data(old_tip_pointer)['previd']
+        block_pointer = kermastorage.get_block_data(block_pointer)['previd']
+    old_tip_divergent_blocks.reverse()
+    missing_txs = []
+    for block_id in old_tip_divergent_blocks:
+        missing_txs += kermastorage.get_block_data(block_id)['txids']
+    missing_txs += mptxids
+    return missing_txs
+        
 class Mempool:
     def __init__(self, bbid: str, butxo: dict):
         self.base_block_id = bbid
@@ -80,4 +94,3 @@ class Mempool:
         txs = copy.deepcopy(self.txs)
         for tx in txs:
             self.try_add_tx(kermastorage.get_object(tx))
-        

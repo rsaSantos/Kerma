@@ -27,6 +27,7 @@ BLOCK_VERIFY_TASKS = dict()
 BLOCK_WAIT_LOCK = None
 TX_WAIT_LOCK = None
 MEMPOOL = mempool.Mempool(const.GENESIS_BLOCK_ID, {})
+CHAINTIP_POINTER = (const.GENESIS_BLOCK_ID, 0)  #(block_id, height)
 LISTEN_CFG = {
     "address": const.ADDRESS,
     "port": const.PORT
@@ -374,12 +375,31 @@ async def save_and_gossip_object(object_id, object_dict, object_validation_set):
         # Save object in database. If successful, gossip to all peers
         utxo = None if 'utxo' not in object_validation_set else object_validation_set['utxo']
         height = None if 'height' not in object_validation_set else object_validation_set['height']
-        #
+        
+        # Get the oldest chaintip block id (in case the block about to be added is causing a chain reorganization used for chain reorg)
+        old_tip_bid = kermastorage.get_chaintip_blockid()
+        
         if kermastorage.save_object(object_id, object_dict, utxo, height): 
             if(utxo is None):
                 MEMPOOL.try_add_tx(object_dict)
             else:
-                MEMPOOL.rebase_to_block(object_id)
+                chain_reorg_occured = False
+                OLD_MEMPOOL_TXS = []
+                # Check for chain reorganization
+                if(height > CHAINTIP_POINTER[1] and object_dict['previd'] != CHAINTIP_POINTER[0]):
+                    chain_reorg_occured = True
+                    OLD_MEMPOOL_TXS = copy.deepcopy(MEMPOOL.txs)
+                    
+                # Adjust chain-tip pointer and mempool update with new block (mempool is not updated with non-longest-chain blocks)
+                if(height > CHAINTIP_POINTER[1]):
+                    CHAINTIP_POINTER = (object_id, height)
+                    MEMPOOL.rebase_to_block(object_id)
+                
+                # Update mempool per protocol description, find last-common-ancestor block 'b', start adding txs then from old-tips 'b+1' etc
+                if(chain_reorg_occured):
+                    old_chain_missing_txs = mempool.rebase_mempool(old_tip_bid, object_id, OLD_MEMPOOL_TXS)
+                    for tx in old_chain_missing_txs:
+                        MEMPOOL.try_add_tx(tx)
             
             # Gossip to all peers
             ihaveobject_msg = mk_ihaveobject_msg(object_id)
