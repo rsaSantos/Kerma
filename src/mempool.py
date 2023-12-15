@@ -55,6 +55,13 @@ class Mempool:
         self.utxo_spent_values = dict()
 
     def try_add_tx(self, tx: dict) -> bool:
+        
+        if('height' in tx):
+            self.utxo += [{"txid": objects.get_objid(tx), "index": 0, "value": tx['outputs'][0]['value']}]
+            self.utxo_spent_values[(objects.get_objid(tx), 0)] = tx['outputs'][0]['value']
+            self.txs.append(tx)
+            return True
+        
         num_of_occurences = 0
         sum_of_inputs = 0
         for input_tx in tx['inputs']:
