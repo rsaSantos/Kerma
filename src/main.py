@@ -26,7 +26,7 @@ BACKGROUND_TASKS = set()
 BLOCK_VERIFY_TASKS = dict()
 BLOCK_WAIT_LOCK = None
 TX_WAIT_LOCK = None
-MEMPOOL = mempool.Mempool(const.GENESIS_BLOCK_ID, {})
+MEMPOOL = mempool.Mempool(const.GENESIS_BLOCK_ID, [])
 CHAINTIP_POINTER = (const.GENESIS_BLOCK_ID, 0)  #(block_id, height)
 LISTEN_CFG = {
     "address": const.ADDRESS,
@@ -102,7 +102,7 @@ def mk_chaintip_msg(blockid):
 
 
 def mk_mempool_msg(txids):
-    return {'type': 'mempool', 'txids': MEMPOOL.txs}
+    return {'type': 'mempool', 'txids': txids}
 
 
 def mk_getchaintip_msg():
@@ -371,6 +371,9 @@ async def handle_unfindable_object(objid):
                     del PENDING_VALIDATION_OBJECTS[objid]
 
 async def save_and_gossip_object(object_id, object_dict, object_validation_set):
+    
+    global CHAINTIP_POINTER
+    
     if not kermastorage.check_objectid_exists(object_id):
         # Save object in database. If successful, gossip to all peers
         utxo = None if 'utxo' not in object_validation_set else object_validation_set['utxo']
@@ -386,13 +389,13 @@ async def save_and_gossip_object(object_id, object_dict, object_validation_set):
                 chain_reorg_occured = False
                 OLD_MEMPOOL_TXS = []
                 # Check for chain reorganization
-                if(height > CHAINTIP_POINTER[1] and object_dict['previd'] != CHAINTIP_POINTER[0]):
+                if(int(height) > CHAINTIP_POINTER[1] and object_dict['previd'] != CHAINTIP_POINTER[0]):
                     chain_reorg_occured = True
                     OLD_MEMPOOL_TXS = copy.deepcopy(MEMPOOL.txs)
                     
                 # Adjust chain-tip pointer and mempool update with new block (mempool is not updated with non-longest-chain blocks)
-                if(height > CHAINTIP_POINTER[1]):
-                    CHAINTIP_POINTER = (object_id, height)
+                if(int(height) > CHAINTIP_POINTER[1]):
+                    CHAINTIP_POINTER = (object_id, int(height))
                     MEMPOOL.rebase_to_block(object_id)
                 
                 # Update mempool per protocol description, find last-common-ancestor block 'b', start adding txs then from old-tips 'b+1' etc
@@ -585,7 +588,7 @@ async def handle_getchaintip_msg(msg_dict, writer):
 
 
 async def handle_getmempool_msg(msg_dict, writer):
-    mempool_msg = mk_mempool_msg()
+    mempool_msg = mk_mempool_msg(txids=MEMPOOL.txs)
     await write_msg(writer, mempool_msg)
     print("Sent mempool message: {}".format(mempool_msg))
 

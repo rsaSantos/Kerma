@@ -147,7 +147,7 @@ def get_utxo_set(block_id):
     if block_row is None:
         return None
     else:
-        return block_row[2]
+        return json.loads(block_row[2])
     
 def get_block_height(block_id):
     block_row = get_object(block_id, BLOCK)

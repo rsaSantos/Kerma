@@ -59,7 +59,7 @@ class Mempool:
         if('height' in tx):
             self.utxo += [{"txid": objects.get_objid(tx), "index": 0, "value": tx['outputs'][0]['value']}]
             self.utxo_spent_values[(objects.get_objid(tx), 0)] = tx['outputs'][0]['value']
-            self.txs.append(tx)
+            self.txs.append(objects.get_objid(tx))
             return True
         
         num_of_occurences = 0
@@ -94,10 +94,13 @@ class Mempool:
         self.base_block_id = bid
         self.utxo = kermastorage.get_utxo_set(bid)
         
-        new_spent_values_utxo = []
-        for i in range(self.utxo):
+        new_spent_values_utxo = dict()
+        for i in range(len(self.utxo)):
             new_spent_values_utxo[(self.utxo[i]['txid'], self.utxo[i]['index'])] = self.utxo[i]['value']
             
+        self.utxo_spent_values = copy.deepcopy(new_spent_values_utxo)
         txs = copy.deepcopy(self.txs)
+        self.txs = []
+        
         for tx in txs:
-            self.try_add_tx(kermastorage.get_object(tx))
+            self.try_add_tx(kermastorage.get_object(tx, obj_type=kermastorage.TRANSACTION)[1])
