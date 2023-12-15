@@ -1,0 +1,687 @@
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Your group obtained 35 / 37 points for task 4
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+This is the output of the grading tool:
+Grading following IPs: localhost
+
+
+Grading submission 0: IP address localhost
+[000.489] info: ================ Testcase: valid blockchain ================
+
+[000.495] info: Grader successfully connected to IP address localhost on port 18018
+[000.495] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[000.496] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671122475,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb274ca0feaae","note":"Third block","previd":"0000000087d792ea6808dfecdd1df0695ff819a3c78b24f50cfdd49a645d086d","txids":[],"type":"block"},"type":"object"}
+
+[000.496] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[000.496] info: Grader received message: {"type":"getpeers"}
+
+[000.496] info: Grader received message: {"type":"getchaintip"}
+
+[000.497] info: Grader received message: {"objectid":"0000000087d792ea6808dfecdd1df0695ff819a3c78b24f50cfdd49a645d086d","type":"getobject"}
+
+[000.498] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671077307,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b19027fede5b","note":"Second block","previd":"000000003728c402ac83c3a3391e1db989aef92b6eb75a246745bbec1b0e2857","txids":[],"type":"block"},"type":"object"}
+
+[000.499] info: Grader received message: {"objectid":"000000003728c402ac83c3a3391e1db989aef92b6eb75a246745bbec1b0e2857","type":"getobject"}
+
+[000.499] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671074642,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb275157644d7","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":[],"type":"block"},"type":"object"}
+
+[000.505] info: Grader received message: {"objectid":"000000003728c402ac83c3a3391e1db989aef92b6eb75a246745bbec1b0e2857","type":"ihaveobject"}
+
+[000.526] info: Grader received message: {"objectid":"0000000087d792ea6808dfecdd1df0695ff819a3c78b24f50cfdd49a645d086d","type":"ihaveobject"}
+
+[000.526] info: Grader received message: {"objectid":"0000000063dc6268eee3938602e8a19206ae28dba111f2f2409a943d2f565ded","type":"ihaveobject"}
+
+[005.502] info: Sending message: {"objectid":"0000000063dc6268eee3938602e8a19206ae28dba111f2f2409a943d2f565ded","type":"getobject"}
+
+[005.504] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671122475,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb274ca0feaae","note":"Third block","previd":"0000000087d792ea6808dfecdd1df0695ff819a3c78b24f50cfdd49a645d086d","txids":[],"type":"block"},"type":"object"}
+
+[005.504] info: PASS: Received the requested block in time (2 points)
+
+[005.505] info:
+POINTS SO FAR: 2
+
+[005.505] info: ================ Testcase: valid blockchain ================
+
+[005.505] info: Grader successfully connected to IP address localhost on port 18018
+[005.505] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[005.506] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671190473,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f8d4d7843","note":"Third block","previd":"000000001e13434fafb2d1246cbcc09c3e1c95b39f01f1d8897004a30e12cade","txids":[],"type":"block"},"type":"object"}
+
+[005.507] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[005.507] info: Grader received message: {"type":"getpeers"}
+
+[005.507] info: Grader received message: {"type":"getchaintip"}
+
+[005.508] info: Grader received message: {"objectid":"000000001e13434fafb2d1246cbcc09c3e1c95b39f01f1d8897004a30e12cade","type":"getobject"}
+
+[005.508] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671110430,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b4424efd1090","note":"Second block","previd":"000000007a3b2076929f12e3ebfcdbf74a3a145d161840e4f1bcf75e1130d0b2","txids":[],"type":"block"},"type":"object"}
+
+[0005.51] info: Grader received message: {"objectid":"000000007a3b2076929f12e3ebfcdbf74a3a145d161840e4f1bcf75e1130d0b2","type":"getobject"}
+
+[0005.51] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671108605,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b441efde1bbc","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":[],"type":"block"},"type":"object"}
+
+[005.521] info: Grader received message: {"objectid":"000000007a3b2076929f12e3ebfcdbf74a3a145d161840e4f1bcf75e1130d0b2","type":"ihaveobject"}
+
+[005.542] info: Grader received message: {"objectid":"000000001e13434fafb2d1246cbcc09c3e1c95b39f01f1d8897004a30e12cade","type":"ihaveobject"}
+
+[005.542] info: Grader received message: {"objectid":"0000000026eecba333cdf969ccb2b53816409dfaf19de76d5795698bea685af1","type":"ihaveobject"}
+
+[010.512] info: Sending message: {"objectid":"0000000026eecba333cdf969ccb2b53816409dfaf19de76d5795698bea685af1","type":"getobject"}
+
+[010.516] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671190473,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f8d4d7843","note":"Third block","previd":"000000001e13434fafb2d1246cbcc09c3e1c95b39f01f1d8897004a30e12cade","txids":[],"type":"block"},"type":"object"}
+
+[010.517] info: PASS: Received the requested block in time (2 points)
+
+[010.517] info:
+POINTS SO FAR: 4
+
+[010.517] info: ================ Testcase: valid blockchain ================
+
+[010.518] info: Grader successfully connected to IP address localhost on port 18018
+[010.518] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[010.519] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671228810,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b44273429f1c","note":"Third block","previd":"000000001ccea13df4c23d77d8bc7a502fd6c009da293a0547c87d4dfb0e2529","txids":[],"type":"block"},"type":"object"}
+
+[010.519] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[010.519] info: Grader received message: {"type":"getpeers"}
+
+[010.519] info: Grader received message: {"type":"getchaintip"}
+
+[0010.52] info: Grader received message: {"objectid":"000000001ccea13df4c23d77d8bc7a502fd6c009da293a0547c87d4dfb0e2529","type":"getobject"}
+
+[0010.52] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671163370,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b4422d41456e","note":"Second block","previd":"000000001433a46d14133c97e4c794a56b75a3acd7a37fd86ad61dcacfcc7c62","txids":[],"type":"block"},"type":"object"}
+
+[010.522] info: Grader received message: {"objectid":"000000001433a46d14133c97e4c794a56b75a3acd7a37fd86ad61dcacfcc7c62","type":"getobject"}
+
+[010.522] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671119591,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b1905fd01689","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":[],"type":"block"},"type":"object"}
+
+[010.529] info: Grader received message: {"objectid":"000000001433a46d14133c97e4c794a56b75a3acd7a37fd86ad61dcacfcc7c62","type":"ihaveobject"}
+
+[010.549] info: Grader received message: {"objectid":"000000001ccea13df4c23d77d8bc7a502fd6c009da293a0547c87d4dfb0e2529","type":"ihaveobject"}
+
+[010.549] info: Grader received message: {"objectid":"000000007bf45c1d26661127326e0ea5fffe4bc4ce391dc4373000a41081758e","type":"ihaveobject"}
+
+[015.525] info: Sending message: {"objectid":"000000007bf45c1d26661127326e0ea5fffe4bc4ce391dc4373000a41081758e","type":"getobject"}
+
+[015.526] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671228810,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b44273429f1c","note":"Third block","previd":"000000001ccea13df4c23d77d8bc7a502fd6c009da293a0547c87d4dfb0e2529","txids":[],"type":"block"},"type":"object"}
+
+[015.526] info: PASS: Received the requested block in time (2 points)
+
+[015.526] info:
+POINTS SO FAR: 6
+
+[015.526] info: ================ Testcase: valid blockchain ================
+
+[015.527] info: Grader successfully connected to IP address localhost on port 18018
+[015.527] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[015.527] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671221342,"miner":"grader","nonce":"09e111c7e1e7acb6f8cac0bb2fc4c8bc2ae3baaab9165cc458e199cb8c85efd3","note":"Third block","previd":"000000000db195c7d0d16e6efac7cac3715525d205c947126d26eea49e7df1c5","txids":[],"type":"block"},"type":"object"}
+
+[015.528] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[015.528] info: Grader received message: {"type":"getpeers"}
+
+[015.528] info: Grader received message: {"type":"getchaintip"}
+
+[015.529] info: Grader received message: {"objectid":"000000000db195c7d0d16e6efac7cac3715525d205c947126d26eea49e7df1c5","type":"getobject"}
+
+[015.529] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671166360,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f0c7e3a78","note":"Second block","previd":"000000008ce671736d06a34738ffcf39eea07602cb757cce251fc07a93ae7e48","txids":[],"type":"block"},"type":"object"}
+
+[0015.53] info: Grader received message: {"objectid":"000000008ce671736d06a34738ffcf39eea07602cb757cce251fc07a93ae7e48","type":"getobject"}
+
+[0015.53] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671141022,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b19094510491","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":[],"type":"block"},"type":"object"}
+
+[015.539] info: Grader received message: {"objectid":"000000008ce671736d06a34738ffcf39eea07602cb757cce251fc07a93ae7e48","type":"ihaveobject"}
+
+[015.561] info: Grader received message: {"objectid":"000000000db195c7d0d16e6efac7cac3715525d205c947126d26eea49e7df1c5","type":"ihaveobject"}
+
+[015.561] info: Grader received message: {"objectid":"000000007034a2e1af95b772f7c3648d444e88db89cdbdc7495bbd40fa99dcb3","type":"ihaveobject"}
+
+[020.534] info: Sending message: {"objectid":"000000007034a2e1af95b772f7c3648d444e88db89cdbdc7495bbd40fa99dcb3","type":"getobject"}
+
+[020.535] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671221342,"miner":"grader","nonce":"09e111c7e1e7acb6f8cac0bb2fc4c8bc2ae3baaab9165cc458e199cb8c85efd3","note":"Third block","previd":"000000000db195c7d0d16e6efac7cac3715525d205c947126d26eea49e7df1c5","txids":[],"type":"block"},"type":"object"}
+
+[020.536] info: PASS: Received the requested block in time (2 points)
+
+[020.536] info:
+POINTS SO FAR: 8
+
+[020.536] info: ================ Testcase: valid blockchain ================
+
+[020.536] info: Grader successfully connected to IP address localhost on port 18018
+[020.536] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[020.537] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671199730,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb274954008e9","note":"Third block","previd":"000000004a77155d50a50390f352c4850670ac9f42f00535585f6c85a771c703","txids":[],"type":"block"},"type":"object"}
+
+[020.537] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[020.537] info: Grader received message: {"type":"getpeers"}
+
+[020.537] info: Grader received message: {"type":"getchaintip"}
+
+[020.538] info: Grader received message: {"objectid":"000000004a77155d50a50390f352c4850670ac9f42f00535585f6c85a771c703","type":"getobject"}
+
+[020.538] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671166586,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b441f05f80b4","note":"Second block","previd":"000000000d2e23fd60214133770728edbbc01daefae4988133ab6dbb817880d2","txids":[],"type":"block"},"type":"object"}
+
+[0020.54] info: Grader received message: {"objectid":"000000000d2e23fd60214133770728edbbc01daefae4988133ab6dbb817880d2","type":"getobject"}
+
+[0020.54] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671146691,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c7451deb6394e","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":[],"type":"block"},"type":"object"}
+
+[020.547] info: Grader received message: {"objectid":"000000000d2e23fd60214133770728edbbc01daefae4988133ab6dbb817880d2","type":"ihaveobject"}
+
+[020.567] info: Grader received message: {"objectid":"000000004a77155d50a50390f352c4850670ac9f42f00535585f6c85a771c703","type":"ihaveobject"}
+
+[020.567] info: Grader received message: {"objectid":"00000000289357f9b719288e57a5c9e58b7663bd0c872b9fe48e7cde61d2dffc","type":"ihaveobject"}
+
+[025.544] info: Sending message: {"objectid":"00000000289357f9b719288e57a5c9e58b7663bd0c872b9fe48e7cde61d2dffc","type":"getobject"}
+
+[025.546] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671199730,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb274954008e9","note":"Third block","previd":"000000004a77155d50a50390f352c4850670ac9f42f00535585f6c85a771c703","txids":[],"type":"block"},"type":"object"}
+
+[025.546] info: PASS: Received the requested block in time (2 points)
+
+[025.546] info:
+POINTS SO FAR: 10
+
+[025.546] info: ============= Testcase: Non-increasing timestamps =============
+
+[025.547] info: Grader 1 successfully connected to IP address localhost on port 18018
+[025.547] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[025.547] info: Grader 2 successfully connected to IP address localhost on port 18018
+[025.547] info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+[025.548] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[025.548] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671185419,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c7451ee314ba1","note":"Second block","previd":"000000009a88fcd3a1524b62c9f7cd73da785aeeb05964e77f393d754ca668c6","txids":["e3deb876da2d31a22e6296df43151a8cfd616171a92025788f426a20003f71bf","5f20ec0d955f9e45b003813cc0f95f7449edeb6e6106741b13504611152d717c"],"type":"block"},"type":"object"}
+
+[025.548] info: Grader 1 received message: {"type":"getpeers"}
+
+[025.548] info: Grader 1 received message: {"type":"getchaintip"}
+
+[025.548] info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[025.548] info: Grader 2 received message: {"type":"getpeers"}
+
+[025.549] info: Grader 2 received message: {"type":"getchaintip"}
+
+[0025.55] info: Grader 2 received message: {"objectid":"000000009a88fcd3a1524b62c9f7cd73da785aeeb05964e77f393d754ca668c6","type":"getobject"}
+
+[0025.55] info: Grader 1 received message: {"objectid":"000000009a88fcd3a1524b62c9f7cd73da785aeeb05964e77f393d754ca668c6","type":"getobject"}
+
+[0025.55] info: Grader 1 received message: {"objectid":"e3deb876da2d31a22e6296df43151a8cfd616171a92025788f426a20003f71bf","type":"getobject"}
+
+[0025.55] info: Grader 1 received message: {"objectid":"5f20ec0d955f9e45b003813cc0f95f7449edeb6e6106741b13504611152d717c","type":"getobject"}
+
+[0025.55] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671185419,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875cf26f0c3b","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":["208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e"],"type":"block"},"type":"object"}
+
+[0025.55] info: Sending message: {"object":{"height":2,"outputs":[{"pubkey":"b48a5d809726a7437798dc59bb9a0929119e478964dabb5c2fb7aee471bb6f63","value":60000000000000}],"type":"transaction"},"type":"object"}
+
+[0025.55] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e"},"sig":"ba56d91d197fa7f64b65fe84c9fec865e19ef8ad5116d2df4180f372bf7d45ff995bea66b9166f5ab2e1e4f073a66d14e4bbd3f30db327f4cf4800aa0309bd01"}],"outputs":[{"pubkey":"b48a5d809726a7437798dc59bb9a0929119e478964dabb5c2fb7aee471bb6f63","value":40000000000000}],"type":"transaction"},"type":"object"}
+
+[025.551] info: Grader 2 received message: {"objectid":"e3deb876da2d31a22e6296df43151a8cfd616171a92025788f426a20003f71bf","type":"getobject"}
+
+[025.551] info: Grader 2 received message: {"objectid":"5f20ec0d955f9e45b003813cc0f95f7449edeb6e6106741b13504611152d717c","type":"getobject"}
+
+[025.552] info: Grader 1 received message: {"objectid":"208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e","type":"getobject"}
+
+[025.552] info: Sending message: {"object":{"height":1,"outputs":[{"pubkey":"b48a5d809726a7437798dc59bb9a0929119e478964dabb5c2fb7aee471bb6f63","value":50000000000000}],"type":"transaction"},"type":"object"}
+
+[025.559] info: Grader 2 received message: {"objectid":"208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e","type":"getobject"}
+
+[025.559] info: Grader 1 received message: {"objectid":"e3deb876da2d31a22e6296df43151a8cfd616171a92025788f426a20003f71bf","type":"ihaveobject"}
+
+[0025.56] info: Grader 2 received message: {"objectid":"e3deb876da2d31a22e6296df43151a8cfd616171a92025788f426a20003f71bf","type":"ihaveobject"}
+
+[0025.56] info: Grader 1 received message: {"objectid":"208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e","type":"getobject"}
+
+[025.565] info: Grader 2 received message: {"objectid":"208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e","type":"getobject"}
+
+[025.565] info: Grader 2 received message: {"objectid":"208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e","type":"ihaveobject"}
+
+[025.565] info: Grader 1 received message: {"objectid":"208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e","type":"ihaveobject"}
+
+[025.683] info: Grader 2 received message: {"objectid":"000000009a88fcd3a1524b62c9f7cd73da785aeeb05964e77f393d754ca668c6","type":"ihaveobject"}
+
+[025.683] info: Grader 1 received message: {"objectid":"000000009a88fcd3a1524b62c9f7cd73da785aeeb05964e77f393d754ca668c6","type":"ihaveobject"}
+
+[025.683] info: Grader 1 received message: {"objectid":"5f20ec0d955f9e45b003813cc0f95f7449edeb6e6106741b13504611152d717c","type":"ihaveobject"}
+
+[025.683] info: Grader 2 received message: {"objectid":"5f20ec0d955f9e45b003813cc0f95f7449edeb6e6106741b13504611152d717c","type":"ihaveobject"}
+
+[032.556] info: FAIL: Did not receive an INVALID_BLOCK_TIMESTAMP error message in time (0 points)
+
+[034.559] info: PASS: Did not gossip an invalid block (1 points)
+
+[0034.56] info:
+POINTS SO FAR: 11
+
+[0034.56] info: ============= Testcase: Chain on top of blocks with non-increasing timestamps =============
+
+[034.562] info: Grader 1 successfully connected to IP address localhost on port 18018
+[034.562] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[034.565] info: Grader 2 successfully connected to IP address localhost on port 18018
+[034.566] info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+[034.566] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[034.567] info: Grader 1 received message: {"type":"getpeers"}
+
+[034.567] info: Grader 1 received message: {"type":"getchaintip"}
+
+[034.567] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671185419,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c7451d1beb8d7","note":"Third block","previd":"0000000049e5eeae69165883d0723f97ea1865f5566042aca75188dcc7de4ded","txids":["c3a7c28c3a72100c72ecc850ba430e62a77896bb7fbc000d48cd8646b82f6029","070a54a26c171813809d7dcc6a30b30907899e9d014e3bbb5a16bfc930553c99"],"type":"block"},"type":"object"}
+
+[034.567] info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[034.567] info: Grader 2 received message: {"type":"getpeers"}
+
+[034.567] info: Grader 2 received message: {"type":"getchaintip"}
+
+[034.569] info: Grader 2 received message: {"objectid":"0000000049e5eeae69165883d0723f97ea1865f5566042aca75188dcc7de4ded","type":"getobject"}
+
+[034.569] info: Grader 2 received message: {"objectid":"c3a7c28c3a72100c72ecc850ba430e62a77896bb7fbc000d48cd8646b82f6029","type":"getobject"}
+
+[034.569] info: Grader 2 received message: {"objectid":"070a54a26c171813809d7dcc6a30b30907899e9d014e3bbb5a16bfc930553c99","type":"getobject"}
+
+[034.569] info: Grader 1 received message: {"objectid":"0000000049e5eeae69165883d0723f97ea1865f5566042aca75188dcc7de4ded","type":"getobject"}
+
+[034.569] info: Grader 1 received message: {"objectid":"c3a7c28c3a72100c72ecc850ba430e62a77896bb7fbc000d48cd8646b82f6029","type":"getobject"}
+
+[034.569] info: Grader 1 received message: {"objectid":"070a54a26c171813809d7dcc6a30b30907899e9d014e3bbb5a16bfc930553c99","type":"getobject"}
+
+[034.569] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671185419,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c7451ee314ba1","note":"Second block","previd":"000000009a88fcd3a1524b62c9f7cd73da785aeeb05964e77f393d754ca668c6","txids":["e3deb876da2d31a22e6296df43151a8cfd616171a92025788f426a20003f71bf","5f20ec0d955f9e45b003813cc0f95f7449edeb6e6106741b13504611152d717c"],"type":"block"},"type":"object"}
+
+[0034.57] info: Sending message: {"object":{"height":3,"outputs":[{"pubkey":"b48a5d809726a7437798dc59bb9a0929119e478964dabb5c2fb7aee471bb6f63","value":80000000000000}],"type":"transaction"},"type":"object"}
+
+[0034.57] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"e3deb876da2d31a22e6296df43151a8cfd616171a92025788f426a20003f71bf"},"sig":"d379cef4b2cd1b6998ac4d3c48fcfad4a408182c9ec168916a38e422a569953de20e7c7f328d2c1cd4e841c67ede46ffd2c094b6a742c03901094dce43d69801"}],"outputs":[{"pubkey":"b48a5d809726a7437798dc59bb9a0929119e478964dabb5c2fb7aee471bb6f63","value":30000000000000}],"type":"transaction"},"type":"object"}
+
+[034.571] info: Grader 1 received message: {"objectid":"000000009a88fcd3a1524b62c9f7cd73da785aeeb05964e77f393d754ca668c6","type":"getobject"}
+
+[034.571] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671185419,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875cf26f0c3b","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":["208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e"],"type":"block"},"type":"object"}
+
+[0034.62] info: Grader 2 received message: {"objectid":"000000009a88fcd3a1524b62c9f7cd73da785aeeb05964e77f393d754ca668c6","type":"getobject"}
+
+[0034.62] info: Grader 1 received message: {"objectid":"c3a7c28c3a72100c72ecc850ba430e62a77896bb7fbc000d48cd8646b82f6029","type":"ihaveobject"}
+
+[034.631] info: Grader 1 received message: {"objectid":"070a54a26c171813809d7dcc6a30b30907899e9d014e3bbb5a16bfc930553c99","type":"ihaveobject"}
+
+[034.631] info: Grader 2 received message: {"objectid":"c3a7c28c3a72100c72ecc850ba430e62a77896bb7fbc000d48cd8646b82f6029","type":"ihaveobject"}
+
+[034.632] info: Grader 2 received message: {"objectid":"070a54a26c171813809d7dcc6a30b30907899e9d014e3bbb5a16bfc930553c99","type":"ihaveobject"}
+
+[039.576] info: Grader 1 received message: {"msg":"Dependencies of object with id 0000000049e5eeae69165883d0723f97ea1865f5566042aca75188dcc7de4ded not found in time.","name":"UNFINDABLE_OBJECT","type":"error"}
+
+[043.575] info: FAIL: Did not receive an INVALID_ANCESTRY or INVALID_BLOCK_TIMESTAMP error message in time (0 points)
+
+[045.578] info: PASS: Did not gossip an invalid block (1 points)
+
+[045.578] info:
+POINTS SO FAR: 12
+
+[045.578] info: =================== Testcase: Invalid genesis ===================
+
+[045.578] info: Grader 1 successfully connected to IP address localhost on port 18018
+[045.579] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[045.579] info: Grader 2 successfully connected to IP address localhost on port 18018
+[045.579] info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+[045.579] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[0045.58] info: Grader 1 received message: {"type":"getpeers"}
+
+[0045.58] info: Grader 1 received message: {"type":"getchaintip"}
+
+[0045.58] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671145789,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b1902a140743","note":"Incorrect genesis","previd":null,"txids":[],"type":"block"},"type":"object"}
+
+[0045.58] info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[0045.58] info: Grader 2 received message: {"type":"getpeers"}
+
+[0045.58] info: Grader 2 received message: {"type":"getchaintip"}
+
+[045.581] info: Grader 1 received message: {"msg":"Invalid genesis block: {'T': '00000000abc00000000000000000000000000000000000000000000000000000', 'created': 1671145789, 'miner': 'grader', 'nonce': 'e51c9737903343947e02086541e4c48a99630aa9aece153843a4b1902a140743', 'note': 'Incorrect genesis', 'previd': None, 'txids': [], 'type': 'block'}.","name":"INVALID_GENESIS","type":"error"}
+
+[052.588] info: PASS: Received an INVALID_GENESIS error message. (1 points)
+
+[054.591] info: PASS: Did not gossip an invalid block (1 points)
+
+[054.592] info:
+POINTS SO FAR: 14
+
+[054.592] info: =================== Testcase: Chain on invalid genesis ===================
+
+[054.593] info: Grader 1 successfully connected to IP address localhost on port 18018
+[054.594] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[054.596] info: Grader 2 successfully connected to IP address localhost on port 18018
+[054.596] info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+[054.597] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[054.597] info: Grader 1 received message: {"type":"getpeers"}
+
+[054.597] info: Grader 1 received message: {"type":"getchaintip"}
+
+[054.598] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671185191,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c74520ac3b4ab","note":"Second block","previd":"00000000aaccaa84be271eadc8e3b933ac6982617f47eb2dc395275a1c782789","txids":["e3deb876da2d31a22e6296df43151a8cfd616171a92025788f426a20003f71bf"],"type":"block"},"type":"object"}
+
+[054.599] info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[00054.6] info: Grader 2 received message: {"type":"getpeers"}
+
+[00054.6] info: Grader 2 received message: {"type":"getchaintip"}
+
+[054.601] info: Grader 1 received message: {"objectid":"00000000aaccaa84be271eadc8e3b933ac6982617f47eb2dc395275a1c782789","type":"getobject"}
+
+[054.601] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671175625,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b4423f65524e","note":"First block","previd":"00000000910c99e148dba869d508fb1f87a14104dcafe8ba693eb0e862a7c7d0","txids":["208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e"],"type":"block"},"type":"object"}
+
+[054.601] info: Grader 2 received message: {"objectid":"00000000aaccaa84be271eadc8e3b933ac6982617f47eb2dc395275a1c782789","type":"getobject"}
+
+[054.602] info: Grader 2 received message: {"objectid":"00000000910c99e148dba869d508fb1f87a14104dcafe8ba693eb0e862a7c7d0","type":"getobject"}
+
+[054.602] info: Grader 1 received message: {"objectid":"00000000910c99e148dba869d508fb1f87a14104dcafe8ba693eb0e862a7c7d0","type":"getobject"}
+
+[054.603] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671145789,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b1902a140743","note":"Incorrect genesis","previd":null,"txids":[],"type":"block"},"type":"object"}
+
+[054.604] info: Grader 1 received message: {"msg":"Object with id 00000000aaccaa84be271eadc8e3b933ac6982617f47eb2dc395275a1c782789 failed validation.","name":"INVALID_ANCESTRY","type":"error"}
+
+[054.604] info: Grader 1 received message: {"msg":"Invalid genesis block: {'T': '00000000abc00000000000000000000000000000000000000000000000000000', 'created': 1671145789, 'miner': 'grader', 'nonce': 'e51c9737903343947e02086541e4c48a99630aa9aece153843a4b1902a140743', 'note': 'Incorrect genesis', 'previd': None, 'txids': [], 'type': 'block'}.","name":"INVALID_GENESIS","type":"error"}
+
+[061.608] info: PASS: Received an INVALID_ANCESTRY error message. (1 points)
+
+[063.611] info: PASS: Did not gossip an invalid block (1 points)
+
+[063.612] info:
+POINTS SO FAR: 16
+
+[063.612] info: ============= Testcase: Incorrect height coinbase =============
+
+[063.614] info: Grader 1 successfully connected to IP address localhost on port 18018
+[063.615] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[063.616] info: Grader 2 successfully connected to IP address localhost on port 18018
+[063.616] info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+[063.616] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[063.616] info: Grader 1 received message: {"type":"getpeers"}
+
+[063.616] info: Grader 1 received message: {"type":"getchaintip"}
+
+[063.617] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671256579,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb27539707d61","note":"Third block","previd":"00000000742c3e83c5828e70a03cb41ffc67b510e5265d9d64b214c06845d8d5","txids":["3d9bcba619c0d3795d63afb54d1a9d200e6d7514183122acc58f05b50de30db5"],"type":"block"},"type":"object"}
+
+[063.617] info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[063.617] info: Grader 2 received message: {"type":"getpeers"}
+
+[063.618] info: Grader 2 received message: {"type":"getchaintip"}
+
+[063.618] info: Grader 2 received message: {"objectid":"00000000742c3e83c5828e70a03cb41ffc67b510e5265d9d64b214c06845d8d5","type":"getobject"}
+
+[063.618] info: Grader 1 received message: {"objectid":"00000000742c3e83c5828e70a03cb41ffc67b510e5265d9d64b214c06845d8d5","type":"getobject"}
+
+[063.618] info: Grader 1 received message: {"objectid":"3d9bcba619c0d3795d63afb54d1a9d200e6d7514183122acc58f05b50de30db5","type":"getobject"}
+
+[063.619] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671221918,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b190557e1b5e","note":"Second block","previd":"0000000091ba70394f6b2192338ec6be0d2b60eb273b5d758679ebc7ae5b66ca","txids":["cc1fd9c3ab195c2497d07416b4465439aa4fa4562d3e753bb0b3d8da6e1f0113"],"type":"block"},"type":"object"}
+
+[063.619] info: Grader 2 received message: {"objectid":"3d9bcba619c0d3795d63afb54d1a9d200e6d7514183122acc58f05b50de30db5","type":"getobject"}
+
+[063.619] info: Sending message: {"object":{"height":4,"outputs":[{"pubkey":"3236627fd4960786233d5bdba950d061986197253432d575152728d2729099c3","value":50000000000000}],"type":"transaction"},"type":"object"}
+
+[0063.62] info: Grader 2 received message: {"objectid":"0000000091ba70394f6b2192338ec6be0d2b60eb273b5d758679ebc7ae5b66ca","type":"getobject"}
+
+[0063.62] info: Grader 1 received message: {"objectid":"0000000091ba70394f6b2192338ec6be0d2b60eb273b5d758679ebc7ae5b66ca","type":"getobject"}
+
+[0063.62] info: Grader 1 received message: {"objectid":"cc1fd9c3ab195c2497d07416b4465439aa4fa4562d3e753bb0b3d8da6e1f0113","type":"getobject"}
+
+[0063.62] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671141044,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875cc10bc862","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":["269eb28c1501eed9d65abdd3e23ab3f7e4cbc8b6a6c79e1f9e4d9c027f55c1e5"],"type":"block"},"type":"object"}
+
+[0063.62] info: Sending message: {"object":{"height":2,"outputs":[{"pubkey":"3236627fd4960786233d5bdba950d061986197253432d575152728d2729099c3","value":50000000000000}],"type":"transaction"},"type":"object"}
+
+[063.633] info: Grader 1 received message: {"objectid":"3d9bcba619c0d3795d63afb54d1a9d200e6d7514183122acc58f05b50de30db5","type":"ihaveobject"}
+
+[063.634] info: Grader 2 received message: {"objectid":"cc1fd9c3ab195c2497d07416b4465439aa4fa4562d3e753bb0b3d8da6e1f0113","type":"getobject"}
+
+[063.635] info: Grader 1 received message: {"objectid":"269eb28c1501eed9d65abdd3e23ab3f7e4cbc8b6a6c79e1f9e4d9c027f55c1e5","type":"getobject"}
+
+[063.635] info: Sending message: {"object":{"height":1,"outputs":[{"pubkey":"3236627fd4960786233d5bdba950d061986197253432d575152728d2729099c3","value":50000000000000}],"type":"transaction"},"type":"object"}
+
+[063.635] info: Grader 2 received message: {"objectid":"3d9bcba619c0d3795d63afb54d1a9d200e6d7514183122acc58f05b50de30db5","type":"ihaveobject"}
+
+[063.641] info: Grader 2 received message: {"objectid":"269eb28c1501eed9d65abdd3e23ab3f7e4cbc8b6a6c79e1f9e4d9c027f55c1e5","type":"getobject"}
+
+[063.641] info: Grader 1 received message: {"objectid":"cc1fd9c3ab195c2497d07416b4465439aa4fa4562d3e753bb0b3d8da6e1f0113","type":"ihaveobject"}
+
+[063.646] info: Grader 2 received message: {"objectid":"cc1fd9c3ab195c2497d07416b4465439aa4fa4562d3e753bb0b3d8da6e1f0113","type":"ihaveobject"}
+
+[063.646] info: Grader 2 received message: {"objectid":"269eb28c1501eed9d65abdd3e23ab3f7e4cbc8b6a6c79e1f9e4d9c027f55c1e5","type":"ihaveobject"}
+
+[063.646] info: Grader 1 received message: {"objectid":"269eb28c1501eed9d65abdd3e23ab3f7e4cbc8b6a6c79e1f9e4d9c027f55c1e5","type":"ihaveobject"}
+
+[063.685] info: Grader 2 received message: {"objectid":"0000000091ba70394f6b2192338ec6be0d2b60eb273b5d758679ebc7ae5b66ca","type":"ihaveobject"}
+
+[063.685] info: Grader 1 received message: {"msg":"Coinbase transaction does not have the correct height. Block height is 3, coinbase height is 4.","name":"INVALID_BLOCK_COINBASE","type":"error"}
+
+[063.685] info: Grader 1 received message: {"objectid":"0000000091ba70394f6b2192338ec6be0d2b60eb273b5d758679ebc7ae5b66ca","type":"ihaveobject"}
+
+[063.685] info: Grader 1 received message: {"objectid":"00000000742c3e83c5828e70a03cb41ffc67b510e5265d9d64b214c06845d8d5","type":"ihaveobject"}
+
+[063.685] info: Grader 2 received message: {"objectid":"00000000742c3e83c5828e70a03cb41ffc67b510e5265d9d64b214c06845d8d5","type":"ihaveobject"}
+
+[068.639] info: PASS: Received an INVALID_BLOCK_COINBASE error message. (1 points)
+
+[070.641] info: PASS: Did not gossip an invalid block (1 points)
+
+[070.641] info:
+POINTS SO FAR: 18
+
+[070.642] info: ==================== Testcase: Invalid PoW ====================
+
+[070.642] info: Grader 1 successfully connected to IP address localhost on port 18018
+[070.642] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[070.643] info: Grader 2 successfully connected to IP address localhost on port 18018
+[070.643] info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+[070.643] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[070.643] info: Grader 1 received message: {"type":"getpeers"}
+
+[070.643] info: Grader 1 received message: {"type":"getchaintip"}
+
+[070.643] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671239958,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f16fec938","note":"Third block","previd":"5beb371c8676c47f2692d868fac54090df05bfc328f3d42853686ee2b391ae03","txids":["c3a7c28c3a72100c72ecc850ba430e62a77896bb7fbc000d48cd8646b82f6029","070a54a26c171813809d7dcc6a30b30907899e9d014e3bbb5a16bfc930553c99"],"type":"block"},"type":"object"}
+
+[070.643] info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[070.643] info: Grader 2 received message: {"type":"getpeers"}
+
+[070.643] info: Grader 2 received message: {"type":"getchaintip"}
+
+[070.645] info: Grader 1 received message: {"msg":"PoW of previous block (5beb371c8676c47f2692d868fac54090df05bfc328f3d42853686ee2b391ae03) is wrong.","name":"INVALID_ANCESTRY","type":"error"}
+
+[077.651] info: PASS: Received an INVALID_ANCESTRY error message. (1 points)
+
+[079.654] info: PASS: Did not gossip an invalid block (1 points)
+
+[079.655] info:
+POINTS SO FAR: 20
+
+[079.655] info: ==================== Testcase: Chain on top of block with invalid PoW ====================
+
+[079.657] info: Grader 1 successfully connected to IP address localhost on port 18018
+[079.657] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[079.659] info: Grader 2 successfully connected to IP address localhost on port 18018
+[079.659] info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+[0079.66] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[0079.66] info: Grader 1 received message: {"type":"getpeers"}
+
+[0079.66] info: Grader 1 received message: {"type":"getchaintip"}
+
+[0079.66] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671239958,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f16fec938","note":"Third block","previd":"5beb371c8676c47f2692d868fac54090df05bfc328f3d42853686ee2b391ae03","txids":["c3a7c28c3a72100c72ecc850ba430e62a77896bb7fbc000d48cd8646b82f6029","070a54a26c171813809d7dcc6a30b30907899e9d014e3bbb5a16bfc930553c99"],"type":"block"},"type":"object"}
+
+[0079.66] info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[0079.66] info: Grader 2 received message: {"type":"getpeers"}
+
+[0079.66] info: Grader 2 received message: {"type":"getchaintip"}
+
+[079.662] info: Grader 1 received message: {"msg":"PoW of previous block (5beb371c8676c47f2692d868fac54090df05bfc328f3d42853686ee2b391ae03) is wrong.","name":"INVALID_ANCESTRY","type":"error"}
+
+[086.667] info: PASS: Received an INVALID_ANCESTRY error message. (1 points)
+
+[088.669] info: PASS: Did not gossip an invalid block (1 points)
+
+[0088.67] info:
+POINTS SO FAR: 22
+
+[0088.67] info: ================= Testcase: Future timestamp =================
+
+[0088.67] info: Grader 1 successfully connected to IP address localhost on port 18018
+[0088.67] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[088.671] info: Grader 2 successfully connected to IP address localhost on port 18018
+[088.671] info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+[088.671] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[088.671] info: Grader 1 received message: {"type":"getpeers"}
+
+[088.672] info: Grader 1 received message: {"type":"getchaintip"}
+
+[088.672] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":9950650400,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f05259e88","note":"Third block","previd":"0000000038de6f33bb8d0c759256d1013faca4a51f68b4365c3b1279ed27fbcb","txids":["c3a7c28c3a72100c72ecc850ba430e62a77896bb7fbc000d48cd8646b82f6029","070a54a26c171813809d7dcc6a30b30907899e9d014e3bbb5a16bfc930553c99"],"type":"block"},"type":"object"}
+
+[088.673] info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[088.673] info: Grader 2 received message: {"type":"getpeers"}
+
+[088.673] info: Grader 2 received message: {"type":"getchaintip"}
+
+[088.674] info: Grader 2 received message: {"objectid":"0000000038de6f33bb8d0c759256d1013faca4a51f68b4365c3b1279ed27fbcb","type":"getobject"}
+
+[088.675] info: Grader 1 received message: {"objectid":"0000000038de6f33bb8d0c759256d1013faca4a51f68b4365c3b1279ed27fbcb","type":"getobject"}
+
+[088.675] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671175596,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204ef77c2a1d","note":"Second block","previd":"0000000049afb8b269f686dcdd7420c7b966f49848309c1c473fe25793c69363","txids":["e3deb876da2d31a22e6296df43151a8cfd616171a92025788f426a20003f71bf","5f20ec0d955f9e45b003813cc0f95f7449edeb6e6106741b13504611152d717c"],"type":"block"},"type":"object"}
+
+[088.677] info: Grader 2 received message: {"objectid":"0000000049afb8b269f686dcdd7420c7b966f49848309c1c473fe25793c69363","type":"getobject"}
+
+[088.677] info: Grader 1 received message: {"objectid":"0000000049afb8b269f686dcdd7420c7b966f49848309c1c473fe25793c69363","type":"getobject"}
+
+[088.677] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671114520,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b441ee7e161e","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":["208aa95eaca2b3f862308ca8c85d7eac2efc974d8f05794c8381d2cc228c949e"],"type":"block"},"type":"object"}
+
+[088.686] info: Grader 2 received message: {"objectid":"0000000049afb8b269f686dcdd7420c7b966f49848309c1c473fe25793c69363","type":"ihaveobject"}
+
+[088.687] info: Grader 1 received message: {"objectid":"0000000049afb8b269f686dcdd7420c7b966f49848309c1c473fe25793c69363","type":"ihaveobject"}
+
+[088.704] info: Grader 1 received message: {"msg":"Invalid block msg \"created\" attribute: {'T': '00000000abc00000000000000000000000000000000000000000000000000000', 'created': 9950650400, 'miner': 'grader', 'nonce': 'b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f05259e88', 'note': 'Third block', 'previd': '0000000038de6f33bb8d0c759256d1013faca4a51f68b4365c3b1279ed27fbcb', 'txids': ['c3a7c28c3a72100c72ecc850ba430e62a77896bb7fbc000d48cd8646b82f6029', '070a54a26c171813809d7dcc6a30b30907899e9d014e3bbb5a16bfc930553c99'], 'type': 'block'}.","name":"INVALID_BLOCK_TIMESTAMP","type":"error"}
+
+[088.704] info: Grader 1 received message: {"objectid":"0000000038de6f33bb8d0c759256d1013faca4a51f68b4365c3b1279ed27fbcb","type":"ihaveobject"}
+
+[088.704] info: Grader 2 received message: {"objectid":"0000000038de6f33bb8d0c759256d1013faca4a51f68b4365c3b1279ed27fbcb","type":"ihaveobject"}
+
+[095.681] info: PASS: Received an INVALID_BLOCK_TIMESTAMP error message. (1 points)
+
+[097.684] info: PASS: Did not gossip an invalid block (1 points)
+
+[097.685] info:
+POINTS SO FAR: 24
+
+[097.685] info: ============= Testcase: Unavailable previous block (bonus) =============
+
+[097.687] info: Grader 1 successfully connected to IP address localhost on port 18018
+[097.687] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[097.689] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671142347,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875cc8e3f175","note":"Previous block unavailable","previd":"000000004b688f3c571186076b3e36c81dee93a29ff635f4c801ff373e05ec8f","txids":[],"type":"block"},"type":"object"}
+
+[0097.69] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[097.691] info: Grader 1 received message: {"type":"getpeers"}
+
+[097.691] info: Grader 1 received message: {"type":"getchaintip"}
+
+[097.694] info: Grader 1 received message: {"objectid":"000000004b688f3c571186076b3e36c81dee93a29ff635f4c801ff373e05ec8f","type":"getobject"}
+
+[102.698] info: Grader 1 received message: {"msg":"Dependencies of object with id 000000001349d9ad7399ba1c065b05dcfb3f725fa35381c1c223612b367d6f2e not found in time.","name":"UNFINDABLE_OBJECT","type":"error"}
+
+[102.698] info: PASS: Received an UNFINDABLE_OBJECT error message. (1 points)
+
+[102.699] info:
+POINTS SO FAR: 25
+
+[102.699] info: ================ Testcase: longest chain - sending some blocks and expect correct chaintip (log disabled) ================
+
+[149.789] info: Grader successfully connected to IP address localhost on port 18018
+[149.789] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[149.789] info: Sending message: {"blockid":"0000000077905b7e3664183c7f1e336b8d0eef1d1569ad6d414e398d2d10bf98","type":"chaintip"}
+
+[0149.79] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[0149.79] info: Grader received message: {"type":"getpeers"}
+
+[0149.79] info: Grader received message: {"type":"getchaintip"}
+
+[156.795] info: Sending message: {"type":"getchaintip"}
+
+[156.797] info: Grader received message: {"blockid":"0000000077905b7e3664183c7f1e336b8d0eef1d1569ad6d414e398d2d10bf98","type":"chaintip"}
+
+[156.797] info: PASS: Received a chain tip message. (5 points)
+
+[156.797] info: Sending message: {"type":"getchaintip"}
+
+[156.798] info: Grader received message: {"blockid":"0000000077905b7e3664183c7f1e336b8d0eef1d1569ad6d414e398d2d10bf98","type":"chaintip"}
+
+[156.798] info: Sending message: {"objectid":"0000000077905b7e3664183c7f1e336b8d0eef1d1569ad6d414e398d2d10bf98","type":"getobject"}
+
+[00156.8] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671499378,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b19032c5409a","note":"Block 8","previd":"000000009939e20573ae1b95e942c52e7c913f5339e09f12b1e4e266872645fc","txids":[],"type":"block"},"type":"object"}
+
+[00156.8] info: Sending message: {"objectid":"000000009939e20573ae1b95e942c52e7c913f5339e09f12b1e4e266872645fc","type":"getobject"}
+
+[156.801] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671499334,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f153d44a5","note":"Block 7","previd":"000000001c134ba2e604cdaa11dfa9306f9b94a17d70195bd58e184fccb5c13e","txids":[],"type":"block"},"type":"object"}
+
+[156.802] info: Sending message: {"objectid":"000000001c134ba2e604cdaa11dfa9306f9b94a17d70195bd58e184fccb5c13e","type":"getobject"}
+
+[156.803] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671433998,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875d0f30353a","note":"Block 6","previd":"000000008b9fb9f577483ce44cc9fe2e70029af63a0e76249ee91ff4ce3b185a","txids":[],"type":"block"},"type":"object"}
+
+[156.804] info: Sending message: {"objectid":"000000008b9fb9f577483ce44cc9fe2e70029af63a0e76249ee91ff4ce3b185a","type":"getobject"}
+
+[156.805] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671376920,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b44209b3deb4","note":"Block 5","previd":"000000008de3b1895218106ccdfefc7a19a1b6a5fbf848640f187ba48cc64c42","txids":[],"type":"block"},"type":"object"}
+
+[156.806] info: Sending message: {"objectid":"000000008de3b1895218106ccdfefc7a19a1b6a5fbf848640f187ba48cc64c42","type":"getobject"}
+
+[156.807] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671291847,"miner":"grader","nonce":"09e111c7e1e7acb6f8cac0bb2fc4c8bc2ae3baaab9165cc458e199cbd50e99e0","note":"Block 4","previd":"000000005316b03da9b751a601f4ac866949cc6352725574ae9704192e833471","txids":[],"type":"block"},"type":"object"}
+
+[156.807] info: Sending message: {"objectid":"000000005316b03da9b751a601f4ac866949cc6352725574ae9704192e833471","type":"getobject"}
+
+[156.808] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671245121,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f098d85ee","note":"Block 3","previd":"00000000474e15d4b6df300181479391970253cc64a32a63eda27a1734d13a1d","txids":[],"type":"block"},"type":"object"}
+
+[156.808] info: Sending message: {"objectid":"00000000474e15d4b6df300181479391970253cc64a32a63eda27a1734d13a1d","type":"getobject"}
+
+[156.809] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671198938,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f1f0c1c1f","note":"Block 2","previd":"000000001c603af375a8a86925020abc4cac64af0d097731ed70b261d986fec8","txids":[],"type":"block"},"type":"object"}
+
+[0156.81] info: Sending message: {"objectid":"000000001c603af375a8a86925020abc4cac64af0d097731ed70b261d986fec8","type":"getobject"}
+
+[156.811] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671133479,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204ef2954194","note":"Block 1","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":[],"type":"block"},"type":"object"}
+
+[156.811] info: Sending message: {"objectid":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","type":"getobject"}
+
+[156.812] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671062400,"miner":"Marabu","nonce":"000000000000000000000000000000000000000000000000000000021bea03ed","note":"The New York Times 2022-12-13: Scientists Achieve Nuclear Fusion Breakthrough With Blast of 192 Lasers","previd":null,"txids":[],"type":"block"},"type":"object"}
+
+[156.812] info: PASS: Received correct longest chain. (5 points)
+
+[156.813] info:
+POINTS SO FAR: 35
+
+[156.813] info: Grading is done
+[156.813] info: Achieved points: 35 / 36
+
+
+
+
