@@ -476,18 +476,6 @@ async def recursive_validation(object_id):
                         except:
                             pass
 
-            except Exception as e:
-                try:
-                    await handle_object_validation_failure(object_id)
-                finally:
-                    if isinstance(e, MessageException):
-                        error_msg = mk_error_msg(e.error_name, str(e.message))
-                        try:
-                            await write_msg(writer, error_msg)
-                            print("Sent error message: {}".format(error_msg))
-                        except:
-                            pass
-        
         # Now, save and gossip all validated objects
         for object_to_save, object_validation_set in validated_objects:
             if not await save_and_gossip_object(object_to_save, object_dict, object_validation_set):
