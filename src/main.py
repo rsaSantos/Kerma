@@ -26,7 +26,8 @@ BACKGROUND_TASKS = set()
 BLOCK_VERIFY_TASKS = dict()
 BLOCK_WAIT_LOCK = None
 TX_WAIT_LOCK = None
-MEMPOOL = mempool.Mempool(const.GENESIS_BLOCK_ID, {})
+MEMPOOL = mempool.Mempool(const.GENESIS_BLOCK_ID, [])
+CHAINTIP_POINTER = (const.GENESIS_BLOCK_ID, 0)  #(block_id, height)
 LISTEN_CFG = {
     "address": const.ADDRESS,
     "port": const.PORT
@@ -101,7 +102,7 @@ def mk_chaintip_msg(blockid):
 
 
 def mk_mempool_msg(txids):
-    pass  # TODO
+    return {'type': 'mempool', 'txids': txids}
 
 
 def mk_getchaintip_msg():
@@ -109,7 +110,7 @@ def mk_getchaintip_msg():
 
 
 def mk_getmempool_msg():
-    pass  # TODO
+    return {'type': 'getmempool'}
 
 
 # parses a message as json. returns decoded message
@@ -188,7 +189,8 @@ def validate_getchaintip_msg(msg_dict):
 
 
 def validate_getmempool_msg(msg_dict):
-    pass  # TODO
+    if (list(msg_dict.keys()) != ['type']):
+        raise InvalidFormatException("Invalid getmempool msg: {}.".format(msg_dict))
 
 
 def validate_error_msg(msg_dict):
@@ -219,7 +221,15 @@ def validate_chaintip_msg(msg_dict):
 
 
 def validate_mempool_msg(msg_dict):
-    pass  # TODO
+    if sorted(list(msg_dict.keys())) != sorted(['type', 'txids']):
+        raise InvalidFormatException('Invalid mempool msg: {}'.format(msg_dict))
+    if not isinstance(msg_dict['txids'], list):
+        raise InvalidFormatException('Invalid mempool msg: {}'.format(msg_dict))
+    for tx in msg_dict['txids']:
+        if not isinstance(tx, str):
+            raise InvalidFormatException('Invalid mempool msg: {}'.format(msg_dict))
+        objects.validate_objectid(tx)
+            
 
 
 def validate_msg(msg_dict):
@@ -361,12 +371,39 @@ async def handle_unfindable_object(objid):
                     del PENDING_VALIDATION_OBJECTS[objid]
 
 async def save_and_gossip_object(object_id, object_dict, object_validation_set):
+    
+    global CHAINTIP_POINTER
+    
     if not kermastorage.check_objectid_exists(object_id):
         # Save object in database. If successful, gossip to all peers
         utxo = None if 'utxo' not in object_validation_set else object_validation_set['utxo']
         height = None if 'height' not in object_validation_set else object_validation_set['height']
-        #
-        if kermastorage.save_object(object_id, object_dict, utxo, height):
+        
+        # Get the oldest chaintip block id (in case the block about to be added is causing a chain reorganization used for chain reorg)
+        old_tip_bid = kermastorage.get_chaintip_blockid()
+        
+        if kermastorage.save_object(object_id, object_dict, utxo, height): 
+            if(utxo is None):
+                MEMPOOL.try_add_tx(object_dict)
+            else:
+                chain_reorg_occured = False
+                OLD_MEMPOOL_TXS = []
+                # Check for chain reorganization
+                if(int(height) > CHAINTIP_POINTER[1] and object_dict['previd'] != CHAINTIP_POINTER[0]):
+                    chain_reorg_occured = True
+                    OLD_MEMPOOL_TXS = copy.deepcopy(MEMPOOL.txs)
+                    
+                # Adjust chain-tip pointer and mempool update with new block (mempool is not updated with non-longest-chain blocks)
+                if(int(height) > CHAINTIP_POINTER[1]):
+                    CHAINTIP_POINTER = (object_id, int(height))
+                    MEMPOOL.rebase_to_block(object_id)
+                
+                # Update mempool per protocol description, find last-common-ancestor block 'b', start adding txs then from old-tips 'b+1' etc
+                if(chain_reorg_occured):
+                    old_chain_missing_txs = mempool.rebase_mempool(old_tip_bid, object_id, OLD_MEMPOOL_TXS)
+                    for tx in old_chain_missing_txs:
+                        MEMPOOL.try_add_tx(tx)
+            
             # Gossip to all peers
             ihaveobject_msg = mk_ihaveobject_msg(object_id)
             for connection_queue in CONNECTIONS.values():
@@ -439,18 +476,6 @@ async def recursive_validation(object_id):
                         except:
                             pass
 
-            except Exception as e:
-                try:
-                    await handle_object_validation_failure(object_id)
-                finally:
-                    if isinstance(e, MessageException):
-                        error_msg = mk_error_msg(e.error_name, str(e.message))
-                        try:
-                            await write_msg(writer, error_msg)
-                            print("Sent error message: {}".format(error_msg))
-                        except:
-                            pass
-        
         # Now, save and gossip all validated objects
         for object_to_save, object_validation_set in validated_objects:
             if not await save_and_gossip_object(object_to_save, object_dict, object_validation_set):
@@ -551,7 +576,9 @@ async def handle_getchaintip_msg(msg_dict, writer):
 
 
 async def handle_getmempool_msg(msg_dict, writer):
-    pass  # TODO
+    mempool_msg = mk_mempool_msg(txids=MEMPOOL.txs)
+    await write_msg(writer, mempool_msg)
+    print("Sent mempool message: {}".format(mempool_msg))
 
 
 async def handle_chaintip_msg(msg_dict):
@@ -595,7 +622,15 @@ async def handle_chaintip_msg(msg_dict):
 
 
 async def handle_mempool_msg(msg_dict):
-    pass  # TODO
+    for tx in msg_dict['txids']:
+        object_dict = kermastorage.get_object(tx)
+        if object_dict is not None:
+            MEMPOOL.try_add_tx(object_dict)
+        else:
+            getobject_msg = mk_getobject_msg(tx)
+            for connection_queue in CONNECTIONS.values():
+                await connection_queue.put(getobject_msg)
+            print("Sent getobject message: {}".format(getobject_msg))
 
 async def handle_queue_msg(msg_dict, writer):
     print("Handling queue message: {}".format(msg_dict))
@@ -670,9 +705,9 @@ async def handshake(reader, writer):
     asyncio.create_task(write_msg(writer, mk_getpeers_msg()))
     print("Sending getpeers message...")
     #
-    # Create task for getchaintip
-    asyncio.create_task(write_msg(writer, mk_getchaintip_msg()))
-    print("Sending getchaintip message...")
+    # Create task for getmempool
+    asyncio.create_task(write_msg(writer, mk_getmempool_msg()))
+    print("Sending getmempool message...")
     #
     try:
         raw_hello_future = await asyncio.wait_for(
