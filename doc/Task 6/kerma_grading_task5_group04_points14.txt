@@ -1,0 +1,571 @@
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Your group obtained 14 / 17 points for task 5
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+This is the output of the grading tool:
+Grading following IPs: localhost
+
+
+Grading submission 0 1st stage: IP address localhost
+[000.502] info: Testcase: Must receive "getpeers" message immediately after "hello" message.
+[000.508] info: Grader successfully connected to IP address localhost on port 18018
+[000.508] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[000.509] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[000.509] info: Received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+[0000.51] info: Grader received message: {"type":"getpeers"}
+
+[0000.51] info: Grader received message: {"type":"getmempool"}
+
+[0000.51] info: Received message: {"type":"getpeers"}
+[0000.51] info: Received message: {"type":"getmempool"}
+[0000.51] info: PASS: One of your first messages sent has type "getmempool" as required (2 points)
+
+[0000.51] info: ================= Testcase: Valid transaction =================
+
+[000.511] info: Grader successfully connected to IP address localhost on port 18018
+[000.511] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[000.512] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[000.512] info: Grader received message: {"type":"getpeers"}
+
+[000.512] info: Grader received message: {"type":"getmempool"}
+
+[000.512] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671108488,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb27461ea79f0","note":"Second block","previd":"000000009b4ebc35447722840af722059bb0ce83afb71ee2c98b3997f71c9cb4","txids":["1a4e6b85c916e80eca7e67c238ed66a1a4d4a8f22f0be83f4cdd1702a1758aea"],"type":"block"},"type":"object"}
+
+[000.513] info: Grader received message: {"objectid":"000000009b4ebc35447722840af722059bb0ce83afb71ee2c98b3997f71c9cb4","type":"getobject"}
+
+[000.514] info: Grader received message: {"objectid":"1a4e6b85c916e80eca7e67c238ed66a1a4d4a8f22f0be83f4cdd1702a1758aea","type":"getobject"}
+
+[000.514] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671067745,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb274ba157458","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":["a9a038e8415d415c5fe708d01c62d875c7182035d129075bbc9dd7d72d5bb728"],"type":"block"},"type":"object"}
+
+[000.514] info: Sending message: {"object":{"height":2,"outputs":[{"pubkey":"a6c5355e0c60642ce500feaa8f95cbd2484aa57a6f9f0f570ef1a00dd3b41dec","value":600}],"type":"transaction"},"type":"object"}
+
+[000.515] info: Grader received message: {"objectid":"a9a038e8415d415c5fe708d01c62d875c7182035d129075bbc9dd7d72d5bb728","type":"getobject"}
+
+[000.515] info: Sending message: {"object":{"height":1,"outputs":[{"pubkey":"899c822df6182f6be3a53f4550d28379001c7aaa2724a8edbf231d4638939ed3","value":400}],"type":"transaction"},"type":"object"}
+
+[0000.52] info: Grader received message: {"objectid":"1a4e6b85c916e80eca7e67c238ed66a1a4d4a8f22f0be83f4cdd1702a1758aea","type":"ihaveobject"}
+
+[000.526] info: Grader received message: {"objectid":"a9a038e8415d415c5fe708d01c62d875c7182035d129075bbc9dd7d72d5bb728","type":"ihaveobject"}
+
+[0000.55] info: Grader received message: {"objectid":"000000009b4ebc35447722840af722059bb0ce83afb71ee2c98b3997f71c9cb4","type":"ihaveobject"}
+
+[0000.55] info: Grader received message: {"objectid":"000000004e7f5695de05bc5076cf5ccf9152be57c7311ac14ea74da65a74784c","type":"ihaveobject"}
+
+[007.519] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"a9a038e8415d415c5fe708d01c62d875c7182035d129075bbc9dd7d72d5bb728"},"sig":"ca4e5d0419c93b3975a9d0f09f1bcd4ce60e0b61e9b59f8d88d49e551b06ec983c4ffc2df17020b6e1b498b4cd116dd44d95c8e04745487db2127905dff8ea0d"},{"outpoint":{"index":0,"txid":"1a4e6b85c916e80eca7e67c238ed66a1a4d4a8f22f0be83f4cdd1702a1758aea"},"sig":"4056adb64d0b852b023a1dd84bc705a1697175044fe48d81e4d38a88959bdb8d811ff349a95e8ba2a844d05c4c2e0c043c0cec33a8f8db7c6694229010cf6908"}],"outputs":[{"pubkey":"899c822df6182f6be3a53f4550d28379001c7aaa2724a8edbf231d4638939ed3","value":10}],"type":"transaction"},"type":"object"}
+
+[007.562] info: Grader received message: {"objectid":"9b47aae581b8adc7bcd6d3385013dabffa54238cf215fedbeef49b333f084f33","type":"ihaveobject"}
+
+[012.523] info: Sending message: {"objectid":"9b47aae581b8adc7bcd6d3385013dabffa54238cf215fedbeef49b333f084f33","type":"getobject"}
+
+[012.525] info: Grader received message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"a9a038e8415d415c5fe708d01c62d875c7182035d129075bbc9dd7d72d5bb728"},"sig":"ca4e5d0419c93b3975a9d0f09f1bcd4ce60e0b61e9b59f8d88d49e551b06ec983c4ffc2df17020b6e1b498b4cd116dd44d95c8e04745487db2127905dff8ea0d"},{"outpoint":{"index":0,"txid":"1a4e6b85c916e80eca7e67c238ed66a1a4d4a8f22f0be83f4cdd1702a1758aea"},"sig":"4056adb64d0b852b023a1dd84bc705a1697175044fe48d81e4d38a88959bdb8d811ff349a95e8ba2a844d05c4c2e0c043c0cec33a8f8db7c6694229010cf6908"}],"outputs":[{"pubkey":"899c822df6182f6be3a53f4550d28379001c7aaa2724a8edbf231d4638939ed3","value":10}],"type":"transaction"},"type":"object"}
+
+[012.525] info: PASS: Received the requested object in time (2 points)
+
+[012.525] info:
+POINTS SO FAR: 4
+
+[012.525] info: ================= Testcase: Valid blocks =================
+
+[012.526] info: Grader successfully connected to IP address localhost on port 18018
+[012.526] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[012.527] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671116032,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f6a632c41","note":"Second block","previd":"000000006feb23e14f84a5381f135bf6f2f36e76926d21e87e94791fe5b16015","txids":["8cd8fe8f7ceec6b770bc47faf1924d493bb20e342320466d233b941f91f5cf9e"],"type":"block"},"type":"object"}
+
+[012.527] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[012.527] info: Grader received message: {"type":"getpeers"}
+
+[012.527] info: Grader received message: {"type":"getmempool"}
+
+[012.529] info: Grader received message: {"objectid":"000000006feb23e14f84a5381f135bf6f2f36e76926d21e87e94791fe5b16015","type":"getobject"}
+
+[012.529] info: Grader received message: {"objectid":"8cd8fe8f7ceec6b770bc47faf1924d493bb20e342320466d233b941f91f5cf9e","type":"getobject"}
+
+[012.529] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671097090,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb2749753d4d6","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":["0b45a74f00073cec6cab2a13b2b47e9c14aa6c86195cf090a88af0cf9f8552b6"],"type":"block"},"type":"object"}
+
+[012.529] info: Sending message: {"object":{"height":2,"outputs":[{"pubkey":"88212b82589db5993bac62b8098d8dc0a14aa2351c18c5751abb03d9a0e69e6e","value":600}],"type":"transaction"},"type":"object"}
+
+[0012.53] info: Grader received message: {"objectid":"0b45a74f00073cec6cab2a13b2b47e9c14aa6c86195cf090a88af0cf9f8552b6","type":"getobject"}
+
+[0012.53] info: Sending message: {"object":{"height":1,"outputs":[{"pubkey":"c05b3edc4a1787c26b4f1e94466f106a0c1d990ef9295784744c232e00376655","value":400}],"type":"transaction"},"type":"object"}
+
+[012.536] info: Grader received message: {"objectid":"8cd8fe8f7ceec6b770bc47faf1924d493bb20e342320466d233b941f91f5cf9e","type":"ihaveobject"}
+
+[012.541] info: Grader received message: {"objectid":"0b45a74f00073cec6cab2a13b2b47e9c14aa6c86195cf090a88af0cf9f8552b6","type":"ihaveobject"}
+
+[012.565] info: Grader received message: {"objectid":"000000006feb23e14f84a5381f135bf6f2f36e76926d21e87e94791fe5b16015","type":"ihaveobject"}
+
+[012.565] info: Grader received message: {"objectid":"00000000861466f8c25b12383473d00da1ff072c99ab63bd1a55ae0ee64542c0","type":"ihaveobject"}
+
+[019.534] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671199843,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c745202018ba4","note":"Third block","previd":"00000000861466f8c25b12383473d00da1ff072c99ab63bd1a55ae0ee64542c0","txids":["fd5cffe3c61f8b6946fc2c6405a312a8dccc6a2bc162723c1d53f37f3c5815f6"],"type":"block"},"type":"object"}
+
+[019.536] info: Grader received message: {"objectid":"fd5cffe3c61f8b6946fc2c6405a312a8dccc6a2bc162723c1d53f37f3c5815f6","type":"getobject"}
+
+[019.537] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"0b45a74f00073cec6cab2a13b2b47e9c14aa6c86195cf090a88af0cf9f8552b6"},"sig":"6a6f4273a5f3d62368480c28eaf87abcf6da5dc061caa36d39a4288b51d838a9c587736697db33be54441bd5aaae4cf9299f9593c499403a652fccd1ac77e60b"},{"outpoint":{"index":0,"txid":"8cd8fe8f7ceec6b770bc47faf1924d493bb20e342320466d233b941f91f5cf9e"},"sig":"a31a6d212666c94c4f58d930f0f17cd031d41126558fe10004aecfa3d48c57e70830f5ed316162564f90b9006a86f518d290ae5ba2767461d7eadac3f1a39f0d"}],"outputs":[{"pubkey":"c05b3edc4a1787c26b4f1e94466f106a0c1d990ef9295784744c232e00376655","value":10}],"type":"transaction"},"type":"object"}
+
+[019.552] info: Grader received message: {"objectid":"fd5cffe3c61f8b6946fc2c6405a312a8dccc6a2bc162723c1d53f37f3c5815f6","type":"ihaveobject"}
+
+[024.541] info: Sending message: {"objectid":"000000000512cd7ea332f1ae360eee077738955cb28a9d79bc78714c349fa805","type":"getobject"}
+
+[024.543] info: Grader received message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671199843,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c745202018ba4","note":"Third block","previd":"00000000861466f8c25b12383473d00da1ff072c99ab63bd1a55ae0ee64542c0","txids":["fd5cffe3c61f8b6946fc2c6405a312a8dccc6a2bc162723c1d53f37f3c5815f6"],"type":"block"},"type":"object"}
+
+[024.543] info: PASS: Received the requested object in time (2 points)
+
+[024.543] info:
+POINTS SO FAR: 6
+
+[024.543] info: ============= Testcase: Two inputs with same outpoint =============
+
+[024.544] info: Grader 1 successfully connected to IP address localhost on port 18018
+[024.544] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[024.544] info: Grader 2 successfully connected to IP address localhost on port 18018
+[024.545] info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+[024.545] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[024.545] info: Grader 1 received message: {"type":"getpeers"}
+
+[024.545] info: Grader 1 received message: {"type":"getmempool"}
+
+[024.545] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671126064,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb2747c535cb3","note":"First block","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":["a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19"],"type":"block"},"type":"object"}
+
+[024.546] info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[024.546] info: Grader 2 received message: {"type":"getpeers"}
+
+[024.546] info: Grader 2 received message: {"type":"getmempool"}
+
+[024.547] info: Grader 2 received message: {"objectid":"a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19","type":"getobject"}
+
+[024.547] info: Grader 1 received message: {"objectid":"a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19","type":"getobject"}
+
+[024.547] info: Sending message: {"object":{"height":1,"outputs":[{"pubkey":"9e153f9c2473f24b13d38b44ad67f91945ef1a05bf5ce46315e35d423cfc444b","value":400}],"type":"transaction"},"type":"object"}
+
+[0024.56] info: Grader 2 received message: {"objectid":"a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19","type":"ihaveobject"}
+
+[024.561] info: Grader 1 received message: {"objectid":"a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19","type":"ihaveobject"}
+
+[024.578] info: Grader 2 received message: {"objectid":"0000000019bdc4067a0de425b77b2789d8a9118a350c1b6a5aede40599ba8db6","type":"ihaveobject"}
+
+[024.578] info: Grader 1 received message: {"objectid":"0000000019bdc4067a0de425b77b2789d8a9118a350c1b6a5aede40599ba8db6","type":"ihaveobject"}
+
+[031.553] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19"},"sig":"1fe388e4903a4297fdc3748bc41be91c6153eb410e00ca4ba63beca89967ca97c606c44737416df4172ce8aaab6046eb1c528b66f68589ede3f89fdf13d22d0c"},{"outpoint":{"index":0,"txid":"a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19"},"sig":"1fe388e4903a4297fdc3748bc41be91c6153eb410e00ca4ba63beca89967ca97c606c44737416df4172ce8aaab6046eb1c528b66f68589ede3f89fdf13d22d0c"}],"outputs":[{"pubkey":"9e153f9c2473f24b13d38b44ad67f91945ef1a05bf5ce46315e35d423cfc444b","value":10}],"type":"transaction"},"type":"object"}
+
+[031.555] info: Grader 1 received message: {"msg":"Double spending: [{'outpoint': {'index': 0, 'txid': 'a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19'}, 'sig': '1fe388e4903a4297fdc3748bc41be91c6153eb410e00ca4ba63beca89967ca97c606c44737416df4172ce8aaab6046eb1c528b66f68589ede3f89fdf13d22d0c'}, {'outpoint': {'index': 0, 'txid': 'a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19'}, 'sig': '1fe388e4903a4297fdc3748bc41be91c6153eb410e00ca4ba63beca89967ca97c606c44737416df4172ce8aaab6046eb1c528b66f68589ede3f89fdf13d22d0c'}].","name":"INVALID_TX_CONSERVATION","type":"error"}
+
+[036.555] info: PASS: Received an INVALID_TX_CONSERVATION error message. (1 points)
+
+[038.559] info: PASS: Did not gossip an invalid object (1 points)
+
+[038.559] info:
+POINTS SO FAR: 8
+
+[038.559] info: ================= Testcase: Note length limit  =================
+Note that this testcase will neither grant points nor cause point deductions but serves as a friendly reminder to change the length limit to the correct value
+[0038.56] info: Grader 1 successfully connected to IP address localhost on port 18018
+[0038.56] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[038.561] info: Grader 2 successfully connected to IP address localhost on port 18018
+[038.561] info: Sending message: {"agent":"Grader 2","type":"hello","version":"0.10.0"}
+
+[038.561] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671116817,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b441f69b6e26","note":"This block contains a note which has more than 128 characters. It is an invalid block. You should ensure that the note and miner fields in a block are ASCII-printable strings up to 128 characters long each.","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":[],"type":"block"},"type":"object"}
+
+[038.561] info: Grader 1 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[038.562] info: Grader 1 received message: {"type":"getpeers"}
+
+[038.562] info: Grader 1 received message: {"type":"getmempool"}
+
+[038.562] info: Grader 2 received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[038.562] info: Grader 2 received message: {"type":"getpeers"}
+
+[038.562] info: Grader 2 received message: {"type":"getmempool"}
+
+[038.563] info: Grader 1 received message: {"msg":"Invalid block msg \"note\" attribute: {'T': '00000000abc00000000000000000000000000000000000000000000000000000', 'created': 1671116817, 'miner': 'grader', 'nonce': '76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b441f69b6e26', 'note': 'This block contains a note which has more than 128 characters. It is an invalid block. You should ensure that the note and miner fields in a block are ASCII-printable strings up to 128 characters long each.', 'previd': '0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2', 'txids': [], 'type': 'block'}.","name":"INVALID_BLOCK_TIMESTAMP","type":"error"}
+
+[047.573] info: FAIL: Did not receive an INVALID_FORMAT error message in time (0 points)
+
+[049.576] info: PASS: Did not gossip an invalid object (1 points)
+
+[049.576] info:
+POINTS SO FAR: 8
+
+[049.576] info: ============ Testcase: Mempool valid and invalid transactions ============
+
+[049.577] info: Grader successfully connected to IP address localhost on port 18018
+[049.577] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[049.578] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672563497,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875cd9cdfe02","note":"Fifth block","previd":"00000000585b2e6075211c519a8052e6407dec08393c3932e52441199bc2e151","txids":["97d62a3a37e01ecad5a5c650504b70601eb25cd33f2c6017b4e78d53ded902e2","c76359669b60f5934901da8b2e602107e2edf1f5ff69fea007b6434f0cdc7891"],"type":"block"},"type":"object"}
+
+[049.578] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[049.578] info: Grader received message: {"type":"getpeers"}
+
+[049.578] info: Grader received message: {"type":"getmempool"}
+
+[0049.58] info: Grader received message: {"objectid":"00000000585b2e6075211c519a8052e6407dec08393c3932e52441199bc2e151","type":"getobject"}
+
+[0049.58] info: Grader received message: {"objectid":"97d62a3a37e01ecad5a5c650504b70601eb25cd33f2c6017b4e78d53ded902e2","type":"getobject"}
+
+[0049.58] info: Grader received message: {"objectid":"c76359669b60f5934901da8b2e602107e2edf1f5ff69fea007b6434f0cdc7891","type":"getobject"}
+
+[0049.58] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672523573,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c7451de3fbbe4","note":"Fourth block","previd":"0000000031c68b75dd1da08cb6492947dbd3026e1660d592fe8df55203693b53","txids":["5963c81fc9d277ea0a7a9ef88f8e8075b07d25bbc4ea67ec5a96359868c13377","d479d1cfa5044314bd5ea8c76b918c75f62040232b97a8c76f2662a2e54e8063"],"type":"block"},"type":"object"}
+
+[0049.58] info: Sending message: {"object":{"height":35,"outputs":[{"pubkey":"b016c7d1d1cba21db3820b9f16ede618c98183a6cc442d8315f453d832a1c090","value":400}],"type":"transaction"},"type":"object"}
+
+[0049.58] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"945b7be967c34540a597046ca34c31fc0e6c9d81617f539a980ee4acb0d70a23"},"sig":"c2caf730b683a7d8034c070a883a686f6c3db7f99bbc1dc205b3244bcc98431159121e11c462367e37093b066880268f6013439831c7ad0610526aaa0b902903"}],"outputs":[{"pubkey":"791d51c1c8051c065ca7827e8ad3ae1e1af1e7cc84b46020891ccfc161707715","value":10}],"type":"transaction"},"type":"object"}
+
+[049.582] info: Grader received message: {"objectid":"0000000031c68b75dd1da08cb6492947dbd3026e1660d592fe8df55203693b53","type":"getobject"}
+
+[049.582] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672483079,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c74520ee3471c","note":"Third block","previd":"0000000098024e3b389e779c26ce19e7a411dc48050c857f3d92ba35362c298a","txids":["945b7be967c34540a597046ca34c31fc0e6c9d81617f539a980ee4acb0d70a23","0c2d80bf451a74639293949b8676990d84f09bddbf80d5cb473f070e22a357cf"],"type":"block"},"type":"object"}
+
+[049.594] info: Grader received message: {"objectid":"5963c81fc9d277ea0a7a9ef88f8e8075b07d25bbc4ea67ec5a96359868c13377","type":"getobject"}
+
+[049.594] info: Sending message: {"object":{"height":34,"outputs":[{"pubkey":"1e026ffeb2623c028d0ca09bf352a1f496aaedd7e5ff5deae5252a1e18dbea34","value":400}],"type":"transaction"},"type":"object"}
+
+[049.594] info: Grader received message: {"objectid":"d479d1cfa5044314bd5ea8c76b918c75f62040232b97a8c76f2662a2e54e8063","type":"getobject"}
+
+[049.594] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"ef2b60e8faf559d4245362defae43d4e967dccd31004751a86f08abd92aeb550"},"sig":"6028ad5aa35af41d45773070de25ab376c824af88198ab46f7703f925e57da7f931416de674c2f67fc4c20f37b251d7fb842762266b93c4d22673820f643d204"}],"outputs":[{"pubkey":"0a6c2665456abd71e52a975a29fb8ad2218e96dc5858f6b495a24a4e3ca98191","value":10}],"type":"transaction"},"type":"object"}
+
+[049.595] info: Grader received message: {"objectid":"97d62a3a37e01ecad5a5c650504b70601eb25cd33f2c6017b4e78d53ded902e2","type":"ihaveobject"}
+
+[049.603] info: Grader received message: {"objectid":"945b7be967c34540a597046ca34c31fc0e6c9d81617f539a980ee4acb0d70a23","type":"getobject"}
+
+[049.603] info: Sending message: {"object":{"height":33,"outputs":[{"pubkey":"791d51c1c8051c065ca7827e8ad3ae1e1af1e7cc84b46020891ccfc161707715","value":400}],"type":"transaction"},"type":"object"}
+
+[049.603] info: Grader received message: {"objectid":"0000000098024e3b389e779c26ce19e7a411dc48050c857f3d92ba35362c298a","type":"getobject"}
+
+[049.603] info: Grader received message: {"objectid":"945b7be967c34540a597046ca34c31fc0e6c9d81617f539a980ee4acb0d70a23","type":"getobject"}
+
+[049.603] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672460014,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875d0039d02c","note":"Second block","previd":"00000000552aec4a539909bd32af86f784c334d6c20ca935e8b08051294574fe","txids":["ef2b60e8faf559d4245362defae43d4e967dccd31004751a86f08abd92aeb550"],"type":"block"},"type":"object"}
+
+[049.603] info: Grader received message: {"objectid":"0c2d80bf451a74639293949b8676990d84f09bddbf80d5cb473f070e22a357cf","type":"getobject"}
+
+[049.604] info: Grader received message: {"objectid":"5963c81fc9d277ea0a7a9ef88f8e8075b07d25bbc4ea67ec5a96359868c13377","type":"ihaveobject"}
+
+[049.604] info: Grader received message: {"objectid":"ef2b60e8faf559d4245362defae43d4e967dccd31004751a86f08abd92aeb550","type":"getobject"}
+
+[049.604] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"c83184003902eb8f920b8ddd0ed0b3ec8aabfdb94483d23de9f69eb82b2d0a6e"},"sig":"73448bb5b19d24da88bbedb2ea5b2d0c69f326da55ca82a907739e3888bca9233b8ce429a7d452e3562c97211cea6d14f1ef4d36e1b462e27b04ac756c8bc90b"}],"outputs":[{"pubkey":"ffa5fb163d622ace0222d94d47ea4602a5ff0216d74834fd519c516a6b660705","value":10}],"type":"transaction"},"type":"object"}
+
+[049.604] info: Sending message: {"object":{"height":32,"outputs":[{"pubkey":"0a6c2665456abd71e52a975a29fb8ad2218e96dc5858f6b495a24a4e3ca98191","value":400}],"type":"transaction"},"type":"object"}
+
+[0049.61] info: Grader received message: {"objectid":"945b7be967c34540a597046ca34c31fc0e6c9d81617f539a980ee4acb0d70a23","type":"ihaveobject"}
+
+[0049.61] info: Grader received message: {"objectid":"00000000552aec4a539909bd32af86f784c334d6c20ca935e8b08051294574fe","type":"getobject"}
+
+[0049.61] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672386408,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb27457bb78a8","note":"First block","previd":"000000004ce090228def6cf797e256bf36a21fb42164117485a7865900501055","txids":["c83184003902eb8f920b8ddd0ed0b3ec8aabfdb94483d23de9f69eb82b2d0a6e"],"type":"block"},"type":"object"}
+
+[049.611] info: Grader received message: {"objectid":"ef2b60e8faf559d4245362defae43d4e967dccd31004751a86f08abd92aeb550","type":"getobject"}
+
+[049.617] info: Grader received message: {"objectid":"c83184003902eb8f920b8ddd0ed0b3ec8aabfdb94483d23de9f69eb82b2d0a6e","type":"getobject"}
+
+[049.617] info: Sending message: {"object":{"height":31,"outputs":[{"pubkey":"1f727bedf3a1be7315f61ce8a004f32e58395a4ca21359828f59fc894bc67697","value":400}],"type":"transaction"},"type":"object"}
+
+[049.618] info: Grader received message: {"objectid":"ef2b60e8faf559d4245362defae43d4e967dccd31004751a86f08abd92aeb550","type":"ihaveobject"}
+
+[049.628] info: Grader received message: {"objectid":"000000004ce090228def6cf797e256bf36a21fb42164117485a7865900501055","type":"getobject"}
+
+[049.629] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672335503,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f3b8f4a4e","note":"Block 30","previd":"00000000565843b4b11f859b8c793b5c1a16e0073c20d809dad6cde5eecf6767","txids":[],"type":"block"},"type":"object"}
+
+[049.635] info: Grader received message: {"objectid":"c83184003902eb8f920b8ddd0ed0b3ec8aabfdb94483d23de9f69eb82b2d0a6e","type":"getobject"}
+
+[049.639] info: Grader received message: {"objectid":"c83184003902eb8f920b8ddd0ed0b3ec8aabfdb94483d23de9f69eb82b2d0a6e","type":"ihaveobject"}
+
+[0049.64] info: Grader received message: {"objectid":"c76359669b60f5934901da8b2e602107e2edf1f5ff69fea007b6434f0cdc7891","type":"ihaveobject"}
+
+[0049.64] info: Grader received message: {"objectid":"d479d1cfa5044314bd5ea8c76b918c75f62040232b97a8c76f2662a2e54e8063","type":"ihaveobject"}
+
+[0049.64] info: Grader received message: {"objectid":"0c2d80bf451a74639293949b8676990d84f09bddbf80d5cb473f070e22a357cf","type":"ihaveobject"}
+
+[0049.64] info: Grader received message: {"objectid":"00000000565843b4b11f859b8c793b5c1a16e0073c20d809dad6cde5eecf6767","type":"getobject"}
+
+[0049.64] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672312682,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb274a479e34c","note":"Block 29","previd":"000000008a798bfb606a29d3111488894322ca85ec640111a366ecb110e26eda","txids":[],"type":"block"},"type":"object"}
+
+[049.642] info: Grader received message: {"objectid":"000000008a798bfb606a29d3111488894322ca85ec640111a366ecb110e26eda","type":"getobject"}
+
+[049.642] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672244924,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204fabd91e46","note":"Block 28","previd":"0000000063551c47c0eff89887832de664e150f44e905233eadaaeb0ac89c641","txids":[],"type":"block"},"type":"object"}
+
+[049.643] info: Grader received message: {"objectid":"0000000063551c47c0eff89887832de664e150f44e905233eadaaeb0ac89c641","type":"getobject"}
+
+[049.643] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672203430,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f36f276e4","note":"Block 27","previd":"000000001fd5ef960b1586ebf6302835480a2c8079dede6f6b4e03b91d6fc02a","txids":[],"type":"block"},"type":"object"}
+
+[049.644] info: Grader received message: {"objectid":"000000001fd5ef960b1586ebf6302835480a2c8079dede6f6b4e03b91d6fc02a","type":"getobject"}
+
+[049.644] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672173121,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f4a37669f","note":"Block 26","previd":"0000000062172145634a989a538632dbe3419d3a9a5be367217442f82b4edfc2","txids":[],"type":"block"},"type":"object"}
+
+[049.645] info: Grader received message: {"objectid":"0000000062172145634a989a538632dbe3419d3a9a5be367217442f82b4edfc2","type":"getobject"}
+
+[049.645] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672149165,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c745218811c39","note":"Block 25","previd":"000000008ed1e855a922a8fef42f72fe81c1e3a1026ab75e6eea79357e52a503","txids":[],"type":"block"},"type":"object"}
+
+[049.646] info: Grader received message: {"objectid":"000000008ed1e855a922a8fef42f72fe81c1e3a1026ab75e6eea79357e52a503","type":"getobject"}
+
+[049.646] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672093467,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb2746ea001d6","note":"Block 24","previd":"0000000050fa1b40475ae569cf4c2f45a61767c29e0d550180efdfc893f23981","txids":[],"type":"block"},"type":"object"}
+
+[049.647] info: Grader received message: {"objectid":"0000000050fa1b40475ae569cf4c2f45a61767c29e0d550180efdfc893f23981","type":"getobject"}
+
+[049.647] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672022938,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b1909723287f","note":"Block 23","previd":"00000000966e77bbe6b746ab15ad5f16604928b1bf7c33d2a36ec52412207cc0","txids":[],"type":"block"},"type":"object"}
+
+[049.648] info: Grader received message: {"objectid":"00000000966e77bbe6b746ab15ad5f16604928b1bf7c33d2a36ec52412207cc0","type":"getobject"}
+
+[049.648] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672016698,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f2ef64550","note":"Block 22","previd":"000000004e3e2b6fe65027f9668e4189318c599c159756aa1ce77e8876883ba6","txids":[],"type":"block"},"type":"object"}
+
+[049.649] info: Grader received message: {"objectid":"000000004e3e2b6fe65027f9668e4189318c599c159756aa1ce77e8876883ba6","type":"getobject"}
+
+[049.649] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671948682,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b190ce425dc1","note":"Block 21","previd":"00000000922570e691ec8f39822747013cac0a972457760745ea4df0d4e1251c","txids":[],"type":"block"},"type":"object"}
+
+[0049.65] info: Grader received message: {"objectid":"00000000922570e691ec8f39822747013cac0a972457760745ea4df0d4e1251c","type":"getobject"}
+
+[0049.65] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671923851,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f44ae19ce","note":"Block 20","previd":"00000000367ea34d7041417a31f8e0d8593e72800f43046cf2ffbd7d8eaa6cfc","txids":[],"type":"block"},"type":"object"}
+
+[049.651] info: Grader received message: {"objectid":"00000000367ea34d7041417a31f8e0d8593e72800f43046cf2ffbd7d8eaa6cfc","type":"getobject"}
+
+[049.651] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671850948,"miner":"grader","nonce":"09e111c7e1e7acb6f8cac0bb2fc4c8bc2ae3baaab9165cc458e199cb8cd0cd6a","note":"Block 19","previd":"00000000048928d7022f1c438fbab94774f7917943f05c1ee0811249b0f86f33","txids":[],"type":"block"},"type":"object"}
+
+[049.652] info: Grader received message: {"objectid":"00000000048928d7022f1c438fbab94774f7917943f05c1ee0811249b0f86f33","type":"getobject"}
+
+[049.652] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671797773,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c745253e70cea","note":"Block 18","previd":"000000006d11f06a4033029e021c8000664957d37149b6206492d8d7b8646703","txids":[],"type":"block"},"type":"object"}
+
+[049.653] info: Grader received message: {"objectid":"000000006d11f06a4033029e021c8000664957d37149b6206492d8d7b8646703","type":"getobject"}
+
+[049.653] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671778742,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c7452e808a58d","note":"Block 17","previd":"000000003742fb5ab4775fe2b5907b5bcadd2d32a00f873a0d6b5b4828869634","txids":[],"type":"block"},"type":"object"}
+
+[049.654] info: Grader received message: {"objectid":"000000003742fb5ab4775fe2b5907b5bcadd2d32a00f873a0d6b5b4828869634","type":"getobject"}
+
+[049.654] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671699269,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875d173d6551","note":"Block 16","previd":"0000000088d8b5818b5508872481bae9ba57afb869fba26d814790e1b039a96e","txids":[],"type":"block"},"type":"object"}
+
+[049.655] info: Grader received message: {"objectid":"0000000088d8b5818b5508872481bae9ba57afb869fba26d814790e1b039a96e","type":"getobject"}
+
+[049.655] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671652181,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875ccbbfa3c6","note":"Block 15","previd":"000000007e5f41efd57beb45bc2059b6cf637858581cd08b1cd541e8419b8e0f","txids":[],"type":"block"},"type":"object"}
+
+[049.657] info: Grader received message: {"objectid":"000000007e5f41efd57beb45bc2059b6cf637858581cd08b1cd541e8419b8e0f","type":"getobject"}
+
+[049.657] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671630292,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875d418e5c83","note":"Block 14","previd":"000000004ce008949d36ad0f69544165dbdd4d54c401fc974830f54340cbb128","txids":[],"type":"block"},"type":"object"}
+
+[049.658] info: Grader received message: {"objectid":"000000004ce008949d36ad0f69544165dbdd4d54c401fc974830f54340cbb128","type":"getobject"}
+
+[049.658] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671624434,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c7451d72c3142","note":"Block 13","previd":"0000000070b49a36c308cac8bb75aff38dff3cdf277a3d9e41fa7296aaa759ac","txids":[],"type":"block"},"type":"object"}
+
+[049.659] info: Grader received message: {"objectid":"0000000070b49a36c308cac8bb75aff38dff3cdf277a3d9e41fa7296aaa759ac","type":"getobject"}
+
+[049.659] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671578226,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c7451d63b95ad","note":"Block 12","previd":"0000000025e7074def777d2d61d853b70ffb507d9c22475212589ef41e1b9dec","txids":[],"type":"block"},"type":"object"}
+
+[0049.66] info: Grader received message: {"objectid":"0000000025e7074def777d2d61d853b70ffb507d9c22475212589ef41e1b9dec","type":"getobject"}
+
+[0049.66] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671568708,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b19042a6c4e0","note":"Block 11","previd":"000000006e4d5bc31a66e88ebe6c6f1b75df6533669f19a97505415d30b01668","txids":[],"type":"block"},"type":"object"}
+
+[049.661] info: Grader received message: {"objectid":"000000006e4d5bc31a66e88ebe6c6f1b75df6533669f19a97505415d30b01668","type":"getobject"}
+
+[049.661] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671515141,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c74520d075e3f","note":"Block 10","previd":"000000008351b82a4abaac65b95e24babbbf1e9d2d624b833c8a0fcdfff467fe","txids":[],"type":"block"},"type":"object"}
+
+[049.662] info: Grader received message: {"objectid":"000000008351b82a4abaac65b95e24babbbf1e9d2d624b833c8a0fcdfff467fe","type":"getobject"}
+
+[049.662] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671440223,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b1905cb56057","note":"Block 9","previd":"0000000084a7e01d4b56caadbb7eedace761ee57b2cbc548f64494979e8aa827","txids":[],"type":"block"},"type":"object"}
+
+[049.663] info: Grader received message: {"objectid":"0000000084a7e01d4b56caadbb7eedace761ee57b2cbc548f64494979e8aa827","type":"getobject"}
+
+[049.663] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671396490,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875cf335caaa","note":"Block 8","previd":"00000000349bf5024cdb5f46c32d21668d9558aeb0a5e4bcf753b3d80b7fd98e","txids":[],"type":"block"},"type":"object"}
+
+[049.664] info: Grader received message: {"objectid":"00000000349bf5024cdb5f46c32d21668d9558aeb0a5e4bcf753b3d80b7fd98e","type":"getobject"}
+
+[049.664] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671395730,"miner":"grader","nonce":"8042a948aac5e884cb3ec7db925643fd34fdd467e2cca406035cb2745eb7206a","note":"Block 7","previd":"0000000090a5bef3b28d35d2bbf38e9935090f3695f02b6120c25d0fa53df245","txids":[],"type":"block"},"type":"object"}
+
+[049.665] info: Grader received message: {"objectid":"0000000090a5bef3b28d35d2bbf38e9935090f3695f02b6120c25d0fa53df245","type":"getobject"}
+
+[049.665] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671336058,"miner":"grader","nonce":"09e111c7e1e7acb6f8cac0bb2fc4c8bc2ae3baaab9165cc458e199cc2181541a","note":"Block 6","previd":"0000000043cc9cce52df26ba4abcfde7a07bc0069cd0d53df95f7e48a36b2b1f","txids":[],"type":"block"},"type":"object"}
+
+[049.666] info: Grader received message: {"objectid":"0000000043cc9cce52df26ba4abcfde7a07bc0069cd0d53df95f7e48a36b2b1f","type":"getobject"}
+
+[049.666] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671255631,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204f5ca14378","note":"Block 5","previd":"000000005803b6fec5fdc2a16704f8b1515eba818ea087799b0a177ba31d0626","txids":[],"type":"block"},"type":"object"}
+
+[049.667] info: Grader received message: {"objectid":"000000005803b6fec5fdc2a16704f8b1515eba818ea087799b0a177ba31d0626","type":"getobject"}
+
+[049.667] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671203207,"miner":"grader","nonce":"e51c9737903343947e02086541e4c48a99630aa9aece153843a4b19045ffa0d8","note":"Block 4","previd":"000000009b105cc705c461f60d19590247c874a18f6829327a14ca3a3e010d62","txids":[],"type":"block"},"type":"object"}
+
+[049.668] info: Grader received message: {"objectid":"000000009b105cc705c461f60d19590247c874a18f6829327a14ca3a3e010d62","type":"getobject"}
+
+[049.668] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671191502,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b441f38dbb44","note":"Block 3","previd":"000000004eaa90da5e8ebfa2b6bcd6d7c58bb1c0a626b9a495c326a178926d4d","txids":[],"type":"block"},"type":"object"}
+
+[049.669] info: Grader received message: {"objectid":"000000004eaa90da5e8ebfa2b6bcd6d7c58bb1c0a626b9a495c326a178926d4d","type":"getobject"}
+
+[049.669] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671183101,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875cc3e3646c","note":"Block 2","previd":"00000000942bb6dc4a10aa3d0a3752d27ee58ecddd5423a0a7a4989c7c5d0949","txids":[],"type":"block"},"type":"object"}
+
+[0049.67] info: Grader received message: {"objectid":"00000000942bb6dc4a10aa3d0a3752d27ee58ecddd5423a0a7a4989c7c5d0949","type":"getobject"}
+
+[0049.67] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1671148582,"miner":"grader","nonce":"5f8592e30a2205a485846248987550aaf2094ec59e7931dc650c7452883c6603","note":"Block 1","previd":"0000000052a0e645eca917ae1c196e0d0a4fb756747f29ef52594d68484bb5e2","txids":[],"type":"block"},"type":"object"}
+
+[049.678] info: Grader received message: {"objectid":"00000000942bb6dc4a10aa3d0a3752d27ee58ecddd5423a0a7a4989c7c5d0949","type":"ihaveobject"}
+
+[049.711] info: Grader received message: {"objectid":"000000004eaa90da5e8ebfa2b6bcd6d7c58bb1c0a626b9a495c326a178926d4d","type":"ihaveobject"}
+
+[049.712] info: Grader received message: {"objectid":"000000009b105cc705c461f60d19590247c874a18f6829327a14ca3a3e010d62","type":"ihaveobject"}
+
+[056.594] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"5963c81fc9d277ea0a7a9ef88f8e8075b07d25bbc4ea67ec5a96359868c13377"},"sig":"867fdd55f17bc8219c29f28b9cc7d03730c98bfdcc7ec408d0cd9c17acdb7018499c5247ed67c5dde2a6f36a5ff67ad11419bfbebb51f0a76f783d2f4cf3210d"}],"outputs":[{"pubkey":"1e026ffeb2623c028d0ca09bf352a1f496aaedd7e5ff5deae5252a1e18dbea34","value":10}],"type":"transaction"},"type":"object"}
+
+[056.609] info: Grader received message: {"objectid":"3c7ca73083cd291b7acc0d498c57033c5bfea759e1d2f8495c9a99860b26b5fe","type":"ihaveobject"}
+
+[056.919] info: Grader received message: {"objectid":"0000000043cc9cce52df26ba4abcfde7a07bc0069cd0d53df95f7e48a36b2b1f","type":"ihaveobject"}
+
+[056.919] info: Grader received message: {"objectid":"0000000090a5bef3b28d35d2bbf38e9935090f3695f02b6120c25d0fa53df245","type":"ihaveobject"}
+
+[056.919] info: Grader received message: {"objectid":"00000000349bf5024cdb5f46c32d21668d9558aeb0a5e4bcf753b3d80b7fd98e","type":"ihaveobject"}
+
+[056.919] info: Grader received message: {"objectid":"0000000084a7e01d4b56caadbb7eedace761ee57b2cbc548f64494979e8aa827","type":"ihaveobject"}
+
+[056.919] info: Grader received message: {"objectid":"000000008351b82a4abaac65b95e24babbbf1e9d2d624b833c8a0fcdfff467fe","type":"ihaveobject"}
+
+[056.919] info: Grader received message: {"objectid":"000000006e4d5bc31a66e88ebe6c6f1b75df6533669f19a97505415d30b01668","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"0000000025e7074def777d2d61d853b70ffb507d9c22475212589ef41e1b9dec","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"0000000070b49a36c308cac8bb75aff38dff3cdf277a3d9e41fa7296aaa759ac","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"000000004ce008949d36ad0f69544165dbdd4d54c401fc974830f54340cbb128","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"000000007e5f41efd57beb45bc2059b6cf637858581cd08b1cd541e8419b8e0f","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"0000000088d8b5818b5508872481bae9ba57afb869fba26d814790e1b039a96e","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"000000003742fb5ab4775fe2b5907b5bcadd2d32a00f873a0d6b5b4828869634","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"000000006d11f06a4033029e021c8000664957d37149b6206492d8d7b8646703","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"00000000048928d7022f1c438fbab94774f7917943f05c1ee0811249b0f86f33","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"00000000367ea34d7041417a31f8e0d8593e72800f43046cf2ffbd7d8eaa6cfc","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"00000000922570e691ec8f39822747013cac0a972457760745ea4df0d4e1251c","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"000000004e3e2b6fe65027f9668e4189318c599c159756aa1ce77e8876883ba6","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"00000000966e77bbe6b746ab15ad5f16604928b1bf7c33d2a36ec52412207cc0","type":"ihaveobject"}
+
+[0056.92] info: Grader received message: {"objectid":"0000000050fa1b40475ae569cf4c2f45a61767c29e0d550180efdfc893f23981","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"000000008ed1e855a922a8fef42f72fe81c1e3a1026ab75e6eea79357e52a503","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"0000000062172145634a989a538632dbe3419d3a9a5be367217442f82b4edfc2","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"000000001fd5ef960b1586ebf6302835480a2c8079dede6f6b4e03b91d6fc02a","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"0000000063551c47c0eff89887832de664e150f44e905233eadaaeb0ac89c641","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"000000008a798bfb606a29d3111488894322ca85ec640111a366ecb110e26eda","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"00000000565843b4b11f859b8c793b5c1a16e0073c20d809dad6cde5eecf6767","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"000000004ce090228def6cf797e256bf36a21fb42164117485a7865900501055","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"00000000552aec4a539909bd32af86f784c334d6c20ca935e8b08051294574fe","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"0000000098024e3b389e779c26ce19e7a411dc48050c857f3d92ba35362c298a","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"0000000031c68b75dd1da08cb6492947dbd3026e1660d592fe8df55203693b53","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"00000000585b2e6075211c519a8052e6407dec08393c3932e52441199bc2e151","type":"ihaveobject"}
+
+[056.921] info: Grader received message: {"objectid":"00000000311447f4c3d6aa76269c4a3974e151785eb79432bc6829303b18123f","type":"ihaveobject"}
+
+[063.603] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"97d62a3a37e01ecad5a5c650504b70601eb25cd33f2c6017b4e78d53ded902e2"},"sig":"6381d84d1bc4db4ed42300ba79e3398de6ea79ee6c57164fef9cd13f098274f9fe6c4336b3a421d799444a3a926386fe54a45d0a4d8285d86891c97276778e0e"}],"outputs":[{"pubkey":"b016c7d1d1cba21db3820b9f16ede618c98183a6cc442d8315f453d832a1c090","value":10}],"type":"transaction"},"type":"object"}
+
+[063.617] info: Grader received message: {"objectid":"6a44f51414671ed88350e676e35b71fc5d7bf5018fcc8251f9476ad90b186385","type":"ihaveobject"}
+
+[070.612] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"c83184003902eb8f920b8ddd0ed0b3ec8aabfdb94483d23de9f69eb82b2d0a6e"},"sig":"0e61c9cbf6b3bceb9572e00ab7eafb83927820e29b402becb3c79c8b0d1ca533e99645edb91bea1846f89bfc6182ef8f154a277d405b40bc88140bf813146406"}],"outputs":[{"pubkey":"ffa5fb163d622ace0222d94d47ea4602a5ff0216d74834fd519c516a6b660705","value":20}],"type":"transaction"},"type":"object"}
+
+[070.613] info: Sending message: {"object":{"height":31,"outputs":[{"pubkey":"1f727bedf3a1be7315f61ce8a004f32e58395a4ca21359828f59fc894bc67697","value":400}],"type":"transaction"},"type":"object"}
+
+[0070.62] info: Grader received message: {"objectid":"24720b1b6200abc0e18a3a372b96294bcd0e38e1003a5f97403d52ef7840b76f","type":"ihaveobject"}
+
+[075.618] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"ef2b60e8faf559d4245362defae43d4e967dccd31004751a86f08abd92aeb550"},"sig":"7ed36faaba065c301c97ee84ea16373e2a06f1ee26c81ae1fe33296232f09369c42e87fb4b799dc2b473852f391706298dad5424394f2bce002b28a04517ae04"}],"outputs":[{"pubkey":"0a6c2665456abd71e52a975a29fb8ad2218e96dc5858f6b495a24a4e3ca98191","value":20}],"type":"transaction"},"type":"object"}
+
+[075.619] info: Sending message: {"object":{"height":32,"outputs":[{"pubkey":"0a6c2665456abd71e52a975a29fb8ad2218e96dc5858f6b495a24a4e3ca98191","value":400}],"type":"transaction"},"type":"object"}
+
+[075.633] info: Grader received message: {"objectid":"81a0cd5270b8bff8d2e8f1ef6c4ff7b95b29f0c2336cde9f6eee488089148a7b","type":"ihaveobject"}
+
+[080.626] info: Sending message: {"object":{"height":36,"outputs":[{"pubkey":"d95a4c2908ac91138a6da70a86b8df618d20edaaec5a5dabc4e67374ce238438","value":400}],"type":"transaction"},"type":"object"}
+
+[080.642] info: Grader received message: {"objectid":"74e868e09b4430e4f60ecb59025e6c533c8eaf23f4f1035e525e84c0f86708be","type":"ihaveobject"}
+
+[085.632] info: Sending message: {"type":"getmempool"}
+
+[085.633] info: Grader received message: {"txids":["1a4e6b85c916e80eca7e67c238ed66a1a4d4a8f22f0be83f4cdd1702a1758aea","a9a038e8415d415c5fe708d01c62d875c7182035d129075bbc9dd7d72d5bb728","9b47aae581b8adc7bcd6d3385013dabffa54238cf215fedbeef49b333f084f33","8cd8fe8f7ceec6b770bc47faf1924d493bb20e342320466d233b941f91f5cf9e","0b45a74f00073cec6cab2a13b2b47e9c14aa6c86195cf090a88af0cf9f8552b6","fd5cffe3c61f8b6946fc2c6405a312a8dccc6a2bc162723c1d53f37f3c5815f6","a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19","97d62a3a37e01ecad5a5c650504b70601eb25cd33f2c6017b4e78d53ded902e2","5963c81fc9d277ea0a7a9ef88f8e8075b07d25bbc4ea67ec5a96359868c13377","945b7be967c34540a597046ca34c31fc0e6c9d81617f539a980ee4acb0d70a23","ef2b60e8faf559d4245362defae43d4e967dccd31004751a86f08abd92aeb550","c83184003902eb8f920b8ddd0ed0b3ec8aabfdb94483d23de9f69eb82b2d0a6e","c76359669b60f5934901da8b2e602107e2edf1f5ff69fea007b6434f0cdc7891","d479d1cfa5044314bd5ea8c76b918c75f62040232b97a8c76f2662a2e54e8063","0c2d80bf451a74639293949b8676990d84f09bddbf80d5cb473f070e22a357cf","3c7ca73083cd291b7acc0d498c57033c5bfea759e1d2f8495c9a99860b26b5fe","6a44f51414671ed88350e676e35b71fc5d7bf5018fcc8251f9476ad90b186385","74e868e09b4430e4f60ecb59025e6c533c8eaf23f4f1035e525e84c0f86708be"],"type":"mempool"}
+
+[085.634] info: PASS: Receive mempool message. (1 points)
+
+[085.634] info: PASS: Valid transaction exists in the mempool: 3c7ca73083cd291b7acc0d498c57033c5bfea759e1d2f8495c9a99860b26b5fe (1 points)
+
+[085.634] info: PASS: Valid transaction exists in the mempool: 6a44f51414671ed88350e676e35b71fc5d7bf5018fcc8251f9476ad90b186385 (1 points)
+
+[085.635] info: PASS: Invalid transaction doesn't exist in the mempool: 24720b1b6200abc0e18a3a372b96294bcd0e38e1003a5f97403d52ef7840b76f (1 points)
+
+[085.635] info: PASS: Invalid transaction doesn't exist in the mempool: 81a0cd5270b8bff8d2e8f1ef6c4ff7b95b29f0c2336cde9f6eee488089148a7b (1 points)
+
+[085.635] info: FAIL: Invalid transaction exists in the mempool: 74e868e09b4430e4f60ecb59025e6c533c8eaf23f4f1035e525e84c0f86708be (0 points)
+
+[085.635] info:
+POINTS SO FAR: 13
+
+Grading submission 0 2nd stage: IP address localhost
+[085.635] info: ============ Testcase: Mempool with longer chain ============
+
+[085.636] info: Grader successfully connected to IP address localhost on port 18018
+[085.636] info: Sending message: {"agent":"Grader 1","type":"hello","version":"0.10.0"}
+
+[085.637] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672665386,"miner":"grader","nonce":"b1acf38984b35ae882809dd4cfe7abc5c61baa52e053b4c3643f204efb550ab3","note":"New sixth block","previd":"000000003051cb9d27d9075f6cfe77cad96cc98e9d2100d49ada0e2c547424e8","txids":[],"type":"block"},"type":"object"}
+
+[085.637] info: Grader received message: {"agent":"kerma-node-g4","type":"hello","version":"0.10.1"}
+
+[085.637] info: Grader received message: {"type":"getpeers"}
+
+[085.637] info: Grader received message: {"type":"getmempool"}
+
+[085.638] info: Grader received message: {"objectid":"000000003051cb9d27d9075f6cfe77cad96cc98e9d2100d49ada0e2c547424e8","type":"getobject"}
+
+[085.638] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672593884,"miner":"grader","nonce":"76931fac9dab2b36c248b87d6ae33f9a62d7183a5d5789e4b2d6b442b8d0db84","note":"New fifth block","previd":"0000000071c01f51a9bda1146994133df020314fea6186f9d83f3ae549ae09ab","txids":[],"type":"block"},"type":"object"}
+
+[0085.64] info: Grader received message: {"objectid":"0000000071c01f51a9bda1146994133df020314fea6186f9d83f3ae549ae09ab","type":"getobject"}
+
+[0085.64] info: Sending message: {"object":{"T":"00000000abc00000000000000000000000000000000000000000000000000000","created":1672526693,"miner":"grader","nonce":"5f7091a5abb0874df3e8cb4543a5eb93b0441e9ca4c2b0fb3d30875cf3406bcc","note":"New fourth block","previd":"0000000031c68b75dd1da08cb6492947dbd3026e1660d592fe8df55203693b53","txids":["b0ac6d459216da6732fd50db594ffcae1dada9d380ec2f74a14936b5dea901e2"],"type":"block"},"type":"object"}
+
+[085.641] info: Grader received message: {"objectid":"b0ac6d459216da6732fd50db594ffcae1dada9d380ec2f74a14936b5dea901e2","type":"getobject"}
+
+[085.641] info: Sending message: {"object":{"inputs":[{"outpoint":{"index":0,"txid":"945b7be967c34540a597046ca34c31fc0e6c9d81617f539a980ee4acb0d70a23"},"sig":"63930b16ba5c4c724cabdd1323dca794bf06216bdd2adf011a532afe9e6f7e75e6b95c94bfe075e1b46ad5ec1dad35c41623b0dd090299f4f586b13391d2b80f"}],"outputs":[{"pubkey":"791d51c1c8051c065ca7827e8ad3ae1e1af1e7cc84b46020891ccfc161707715","value":20}],"type":"transaction"},"type":"object"}
+
+[085.648] info: Grader received message: {"objectid":"b0ac6d459216da6732fd50db594ffcae1dada9d380ec2f74a14936b5dea901e2","type":"ihaveobject"}
+
+[085.686] info: Grader received message: {"objectid":"0000000071c01f51a9bda1146994133df020314fea6186f9d83f3ae549ae09ab","type":"ihaveobject"}
+
+[085.686] info: Grader received message: {"objectid":"000000003051cb9d27d9075f6cfe77cad96cc98e9d2100d49ada0e2c547424e8","type":"ihaveobject"}
+
+[092.652] info: Sending message: {"type":"getmempool"}
+
+[092.654] info: Grader received message: {"txids":["1a4e6b85c916e80eca7e67c238ed66a1a4d4a8f22f0be83f4cdd1702a1758aea","a9a038e8415d415c5fe708d01c62d875c7182035d129075bbc9dd7d72d5bb728","9b47aae581b8adc7bcd6d3385013dabffa54238cf215fedbeef49b333f084f33","8cd8fe8f7ceec6b770bc47faf1924d493bb20e342320466d233b941f91f5cf9e","0b45a74f00073cec6cab2a13b2b47e9c14aa6c86195cf090a88af0cf9f8552b6","fd5cffe3c61f8b6946fc2c6405a312a8dccc6a2bc162723c1d53f37f3c5815f6","a9890ffa29a02b79128814d86293038b97dbf700b1f4d948c402280a2888ee19","97d62a3a37e01ecad5a5c650504b70601eb25cd33f2c6017b4e78d53ded902e2","5963c81fc9d277ea0a7a9ef88f8e8075b07d25bbc4ea67ec5a96359868c13377","945b7be967c34540a597046ca34c31fc0e6c9d81617f539a980ee4acb0d70a23","ef2b60e8faf559d4245362defae43d4e967dccd31004751a86f08abd92aeb550","c83184003902eb8f920b8ddd0ed0b3ec8aabfdb94483d23de9f69eb82b2d0a6e","c76359669b60f5934901da8b2e602107e2edf1f5ff69fea007b6434f0cdc7891","d479d1cfa5044314bd5ea8c76b918c75f62040232b97a8c76f2662a2e54e8063","0c2d80bf451a74639293949b8676990d84f09bddbf80d5cb473f070e22a357cf","3c7ca73083cd291b7acc0d498c57033c5bfea759e1d2f8495c9a99860b26b5fe","6a44f51414671ed88350e676e35b71fc5d7bf5018fcc8251f9476ad90b186385","74e868e09b4430e4f60ecb59025e6c533c8eaf23f4f1035e525e84c0f86708be"],"type":"mempool"}
+
+[092.654] info: FAIL: Invalid transaction exists in the mempool: 0c2d80bf451a74639293949b8676990d84f09bddbf80d5cb473f070e22a357cf (0 points)
+
+[092.654] info: PASS: Valid transaction exists in the mempool: d479d1cfa5044314bd5ea8c76b918c75f62040232b97a8c76f2662a2e54e8063 (1 points)
+
+[092.655] info: FAIL: Invalid transaction exists in the mempool: c76359669b60f5934901da8b2e602107e2edf1f5ff69fea007b6434f0cdc7891 (0 points)
+
+[092.655] info:
+POINTS SO FAR: 14
+
+[092.655] info: Grading is done
+[092.655] info: Achieved points: 14 / 17
+The provided ed25519 keys are to be used for the *kerma bonus task 6* and not for the *mandatory payment channels task*:
+
+## SECTION KEYS ##
+The public key of your group's account:
+9a5fcf4a52ca8ac8264ec5e4c1f9405515ac5525a91f2562519cf6ff365ecd0b
+The corresponding secret key (ENSURE THAT THIS VALUE STAYS SECRET):
+493760656fb4c3c5a7ad029ae317df23f387813ea33a372351db110ec98c6c69
+
+Your group's target address/pubkey:
+0a8c55804cbf3e9d1ccf8e32e2f5d5c6ed048e584788d957d70eb1454bf27aaa
+## END KEYS ##
+
